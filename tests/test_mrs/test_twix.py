@@ -1,13 +1,11 @@
-import suspect.mrs.twix
-
 import pytest
-import numpy
-import numpy.testing
+
+import suspect.io.twix
 
 
 def test_twix_nofile():
     with pytest.raises(FileNotFoundError):
-        suspect.mrs.twix.load_twix("")
+        suspect.io.twix.load_twix("")
 
 
 #def test_veriofile():

@@ -1,4 +1,4 @@
-from suspect.mrs import MRSData
+from suspect import MRSData
 
 import struct
 import numpy
