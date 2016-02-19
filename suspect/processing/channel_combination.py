@@ -1,5 +1,3 @@
-from suspect import MRSData
-
 import numpy
 
 

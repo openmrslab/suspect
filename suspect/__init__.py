@@ -1,3 +1,3 @@
 from suspect.mrsdata import MRSData
-from suspect import processing
-from suspect import io
+from . import processing
+from . import io

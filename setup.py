@@ -1,9 +1,9 @@
-from setuptools import setup
+from setuptools import setup, find_packages
 
 setup(
         name='suspect',
-        version='0.0.2',
-        packages=['suspect', 'tests'],
+        version='0.0.5',
+        packages=find_packages(),
         url='https://github.com/bennyrowland/suspect.git',
         license='MIT',
         author='bennyrowland',
