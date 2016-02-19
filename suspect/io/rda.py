@@ -2,7 +2,6 @@ from suspect import MRSData
 
 import numpy
 import struct
-import itertools
 import re
 
 # The RDA format consists of a large number of key value pairs followed by raw
