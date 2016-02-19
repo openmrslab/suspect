@@ -37,7 +37,6 @@ def load_rda(filename):
     header_dict = {}
     with open(filename, 'rb') as fin:
         header_line = fin.readline().strip()
-        print(header_line)
         if header_line != b">>> Begin of header <<<":
             raise Exception("Error reading file {} as a .rda".format(filename))
         header_line = fin.readline().strip().decode('windows-1252')
@@ -51,7 +50,7 @@ def load_rda(filename):
                 header_dict[key] = float(value)
             elif "[" in key and "]" in key:
                 # could be a dict or a list
-                key, index = re.split("\]?\[?", key)[0:2]
+                key, index = re.split("\]|\[", key)[0:2]
                 if key in rda_types["dictionaries"]:
                     if key not in header_dict:
                         header_dict[key] = {}
