@@ -1,3 +1,3 @@
 suspect
 =======
-MRS processing tools for pyflo environment
+A library for processing MR spectroscopy data.
