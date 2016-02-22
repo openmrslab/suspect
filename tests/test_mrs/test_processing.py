@@ -44,5 +44,5 @@ def test_apodize():
 def test_gaussian_denoising():
     # constant signal denoised should be the same as original
     data = numpy.ones(128)
-    denoised_data = suspect.processing.denoising.sliding_gaussian(data, {"window_width": 11})
+    denoised_data = suspect.processing.denoising.sliding_gaussian(data, 11)
     numpy.testing.assert_almost_equal(data, denoised_data)
