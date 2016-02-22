@@ -31,3 +31,8 @@ def test_frequency_transform():
         transformed_fid = suspect.processing.frequency_correction.transform_fid(fid, -i, 0)
         transformed_spectrum = numpy.fft.fft(transformed_fid)
         numpy.testing.assert_almost_equal(transformed_spectrum, spectrum)
+
+
+def test_apodize():
+    print(suspect.processing.gaussian_window(1, {"line_broadening": 4}))
+
