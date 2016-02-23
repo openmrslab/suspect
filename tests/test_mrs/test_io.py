@@ -1,12 +1,32 @@
 import suspect
 import suspect.io.tarquin
+import pytest
+import unittest.mock
+import builtins
+from unittest.mock import patch
 
 import numpy
 
 
 def test_write_dpt():
     data = suspect.MRSData(numpy.zeros(1), 1e-3, 123.456)
-    suspect.io.tarquin.save_dpt("/home/ben/test_dpt.dpt", data)
+    mock = unittest.mock.mock_open()
+    with patch.object(builtins, 'open', mock):
+        suspect.io.tarquin.save_dpt("/home/ben/test_dpt.dpt", data)
+    #print(mock.mock_calls)
+    handle = mock()
+    #print(handle.write.call_args())
+
+
+def test_write_raw():
+    data = suspect.MRSData(numpy.zeros(1, 'complex'), 1e-3, 123.456)
+    mock = unittest.mock.mock_open()
+    with patch.object(builtins, 'open', mock):
+        suspect.io.lcmodel.save_raw("/home/ben/test_raw.raw", data)
+    print(mock().write.mock_calls)
+    #handle = mock()
+    #print(handle.write.call_args())
+
 
 
 def test_extract_csi_fid():

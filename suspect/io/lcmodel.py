@@ -14,4 +14,4 @@ def save_raw(filename, data):
         fout.write(" VOLUME = %f\n".format(data.voxel_size() * 1e-3))
         fout.write(" $END\n")
         for point in numpy.nditer(data, order='C'):
-            fout.write("  { 4.6e}  { 4.6e}\n".format(point.real, point.imag))
+            fout.write("  {0: 4.6e}  {1: 4.6e}\n".format(float(point.real), float(point.imag)))
