@@ -38,7 +38,7 @@ def test_apodize():
     raw_spectrum = numpy.fft.fft(data)
     apodized_data = suspect.processing.apodize(data, suspect.processing.gaussian_window, {"line_broadening": data.df * 8})
     spectrum = numpy.fft.fft(apodized_data)
-    numpy.testing.assert_allclose(spectrum[4].real, 0.5 * numpy.amax(spectrum), rtol=0.05)
+    numpy.testing.assert_almost_equal(spectrum[4].real, 0.5 * numpy.amax(spectrum), decimal=2)
     numpy.testing.assert_allclose(numpy.sum(spectrum), numpy.sum(raw_spectrum))
 
 
