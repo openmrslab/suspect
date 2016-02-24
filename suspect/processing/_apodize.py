@@ -1,3 +1,5 @@
+import suspect.basis
+
 import numpy
 
 
@@ -9,8 +11,11 @@ def gaussian_window(t, params):
     :param params:
     :return:
     """
-    window = numpy.sqrt(numpy.pi / 4 / numpy.log(2)) / params["line_broadening"] * numpy.exp(- t ** 2 / 4 * numpy.pi ** 2 / numpy.log(2) * params["line_broadening"] ** 2)
-    return window / numpy.sum(window)
+    window = suspect.basis.gaussian(t, 0, 0, params["line_broadening"])
+
+    # the above gaussian function returns an area 1 fid, for a windowing
+    # function we need to be area preserving (first point must be 1)
+    return window / window[0]
 
 
 def apodize(data, function, params):

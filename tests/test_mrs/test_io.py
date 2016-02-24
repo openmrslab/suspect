@@ -14,7 +14,7 @@ def test_write_dpt():
     with patch.object(builtins, 'open', mock):
         suspect.io.tarquin.save_dpt("/home/ben/test_dpt.dpt", data)
     #print(mock.mock_calls)
-    handle = mock()
+    #handle = mock()
     #print(handle.write.call_args())
 
 
@@ -23,7 +23,7 @@ def test_write_raw():
     mock = unittest.mock.mock_open()
     with patch.object(builtins, 'open', mock):
         suspect.io.lcmodel.save_raw("/home/ben/test_raw.raw", data)
-    print(mock().write.mock_calls)
+    #print(mock().write.mock_calls)
     #handle = mock()
     #print(handle.write.call_args())
 
