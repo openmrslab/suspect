@@ -40,3 +40,67 @@ def sliding_gaussian(input_signal, window_width):
     for i in range(len(input_signal)):
         result[i] = numpy.dot(window, padded_input[i:(i + window_width)])
     return result
+
+
+def sift(input_signal, threshold):
+    ft = numpy.fft.fft(input_signal)
+    ft[numpy.absolute(ft) < threshold] = 0.0
+    sifted = numpy.fft.ifft(ft)
+    return numpy.real(sifted)
+
+
+def svd(input_signal, rank):
+    matrix_width = int(len(input_signal) / 2)
+    matrix_height = len(input_signal) - matrix_width + 1
+    hankel_matrix = numpy.zeros((matrix_width, matrix_height))
+    for i in range(matrix_height):
+        hankel_matrix[:, i] = input_signal[i:(i + matrix_width)]
+    # perform the singular value decomposition
+    U, s, V = numpy.linalg.svd(numpy.matrix(hankel_matrix), full_matrices=False)
+
+    s[rank:] = 0.0
+
+    recon = U * numpy.diag(s) * V
+    result = numpy.zeros(len(input_signal))
+    for i in range(len(input_signal)):
+        count = 0
+        for j in range(matrix_height):
+            x_offset = i - j
+            if 0 <= x_offset < matrix_width:
+                count += 1
+                result[i] += recon[x_offset, j]
+        result[i] /= count
+    return result
+
+
+def spline(input_signal, num_splines, spline_order):
+    # input signal  has to be a multiple of num_splines
+    padded_input_signal = _pad(input_signal, (numpy.ceil(len(input_signal) / float(num_splines))) * num_splines)
+    stride = len(padded_input_signal) / num_splines
+    import scipy.signal
+    # we construct the spline basis by building the first one, then the rest
+    # are identical copies offset by stride
+    first_spline = scipy.signal.bspline(numpy.arange(-spline_order, num_splines - spline_order, 1.0 / stride), spline_order)
+    first_spline = numpy.roll(first_spline, -spline_order * stride)
+    spline_basis = numpy.zeros((num_splines + 1, len(padded_input_signal)), input_signal.dtype)
+    for i in range(num_splines + 1):
+        spline_basis[i, :] = numpy.roll(first_spline, i * stride)
+    spline_basis[:(num_splines / 4), (len(padded_input_signal) / 2):] = 0.0
+    spline_basis[(num_splines * 3 / 4):, :(len(padded_input_signal) / 2)] = 0.0
+    coefficients = numpy.linalg.lstsq(spline_basis.T, padded_input_signal)
+    recon = numpy.dot(coefficients[0], spline_basis)
+    start_offset = (len(padded_input_signal) - len(input_signal)) / 2.0
+    return recon[start_offset:(start_offset + len(input_signal))]
+
+
+def wavelet(input_signal, wavelet_shape, threshold):
+    import pywt
+    # we have to pad the signal to make it a power of two
+    next_power_of_two = int(numpy.floor(numpy.log2(len(input_signal))) + 1)
+    padded_input_signal = _pad(input_signal, 2**next_power_of_two)
+    wt_coeffs = pywt.wavedec(padded_input_signal, wavelet_shape, level=next_power_of_two, mode='per')
+    denoised_coeffs = wt_coeffs[:]
+    denoised_coeffs[1:] = (pywt.thresholding.soft(i, value=threshold) for i in denoised_coeffs[1:])
+    recon = pywt.waverec(denoised_coeffs, wavelet_shape, mode='per')
+    start_offset = (len(padded_input_signal) - len(input_signal)) / 2.0
+    return recon[start_offset:(start_offset + len(input_signal))]
