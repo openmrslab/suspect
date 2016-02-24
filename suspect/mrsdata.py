@@ -2,6 +2,10 @@ import numpy
 
 
 class MRSData(numpy.ndarray):
+    """
+    numpy.ndarray subclass with additional metadata like sampling rate and echo
+    time.
+    """
 
     def __new__(cls, input_array, dt, f0, te=30, ppm0=4.7, voxel_dimensions=(10, 10, 10)):
         # Input array is an already formed ndarray instance
@@ -29,6 +33,14 @@ class MRSData(numpy.ndarray):
         self.voxel_dimensions = getattr(obj, 'voxel_dimensions', (10, 10, 10))
 
     def inherit(self, new_array):
+        """
+        Converts a generic numpy ndarray into an MRSData instance by copying
+        its own MRS specific parameters. This is useful when performing some
+        processing on the MRSData object gives a bare NDArray result.
+
+        :param new_array: the ndarray to be converted to MRSData
+        :return: a new MRSData instance with data from new_array and parameters from self.
+        """
         cast_array = new_array.view(MRSData)
         cast_array.dt = self.dt
         cast_array.f0 = self.f0
@@ -40,11 +52,28 @@ class MRSData(numpy.ndarray):
         return cast_array
 
     def time_axis(self):
+        """
+        Returns an array of the sample times in seconds for each point in the
+        FID.
+
+        :return: an array of the sample times in seconds for each point in the FID.
+        """
         return numpy.arange(0.0, self.dt * self.np, self.dt)
 
     def frequency_axis(self):
+        """
+        Returns an array of frequencies in Hertz ranging from -sw/2 to
+        sw/2.
+
+        :return: an array of frequencies in Hertz ranging from -sw/2 to sw/2.
+        """
         sw = 1.0 / self.dt
         return numpy.linspace(-sw / 2, sw / 2, self.np, endpoint=False)
 
     def voxel_size(self):
+        """
+        Returns the size of the voxel in mm^3.
+
+        :return: the size of the voxel in mm^3.
+        """
         return numpy.prod(self.voxel_dimensions)
