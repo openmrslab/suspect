@@ -18,6 +18,7 @@ class MRSData(numpy.ndarray):
         obj.ppm0 = ppm0
         obj.np = obj.shape[-1]
         obj.df = 1.0 / dt / obj.np
+        obj.sw = 1.0 / dt
         obj.voxel_dimensions = voxel_dimensions
         return obj
 
@@ -29,6 +30,7 @@ class MRSData(numpy.ndarray):
         self.ppm0 = getattr(obj, 'ppm0', None)
         self.df = getattr(obj, 'df', None)
         self.np = getattr(obj, 'np', None)
+        self.sw = getattr(obj, 'sw', None)
         #self.np = self.shape[-1]
         self.voxel_dimensions = getattr(obj, 'voxel_dimensions', (10, 10, 10))
 
@@ -48,8 +50,27 @@ class MRSData(numpy.ndarray):
         cast_array.df = self.df
         cast_array.te = self.te
         cast_array.ppm0 = self.ppm0
+        cast_array.sw = self.sw
         cast_array.voxel_dimensions = self.voxel_dimensions
         return cast_array
+
+    def hertz_to_ppm(self, frequency):
+        """
+        Converts a frequency in Hertz to the corresponding PPM for this dataset.
+
+        :param frequency: the frequency in Hz
+        :return:
+        """
+        return self.ppm0 - frequency / self.f0
+
+    def ppm_to_hertz(self, frequency):
+        """
+        Converts a frequency in PPM to the corresponding Hertz for this dataset.
+
+        :param frequency: the frequency in PPM
+        :return:
+        """
+        return (self.ppm0 - frequency) * self.f0
 
     def time_axis(self):
         """
@@ -69,6 +90,16 @@ class MRSData(numpy.ndarray):
         """
         sw = 1.0 / self.dt
         return numpy.linspace(-sw / 2, sw / 2, self.np, endpoint=False)
+
+    def frequency_axis_ppm(self):
+        """
+        Returns an array of frequencies in PPM.
+
+        :return:
+        """
+        numpy.linspace(self.hertz_to_ppm(-self.sw / 2.0),
+                       self.hertz_to_ppm(self.sw / 2.0),
+                       self.np, endpoint=False)
 
     def voxel_size(self):
         """
