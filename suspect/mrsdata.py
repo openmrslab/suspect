@@ -88,8 +88,7 @@ class MRSData(numpy.ndarray):
 
         :return: an array of frequencies in Hertz ranging from -sw/2 to sw/2.
         """
-        sw = 1.0 / self.dt
-        return numpy.linspace(-sw / 2, sw / 2, self.np, endpoint=False)
+        return numpy.linspace(-self.sw / 2, self.sw / 2, self.np, endpoint=False)
 
     def frequency_axis_ppm(self):
         """
@@ -97,7 +96,7 @@ class MRSData(numpy.ndarray):
 
         :return:
         """
-        numpy.linspace(self.hertz_to_ppm(-self.sw / 2.0),
+        return numpy.linspace(self.hertz_to_ppm(-self.sw / 2.0),
                        self.hertz_to_ppm(self.sw / 2.0),
                        self.np, endpoint=False)
 
