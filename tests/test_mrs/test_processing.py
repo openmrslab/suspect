@@ -10,6 +10,18 @@ def test_null_transform():
     assert type(transformed_data) == suspect.MRSData
 
 
+def test_water_peak_alignment_misshape():
+    spectrum = numpy.zeros(128, 'complex')
+    spectrum[0] = 1
+    fids = suspect.MRSData(numpy.zeros((16, 128), 'complex'), 1.0 / 128, 123)
+    for i in range(fids.shape[0]):
+        rolled_spectrum = numpy.roll(spectrum, i)
+        fids[i] = numpy.fft.ifft(rolled_spectrum)
+        current_fid = numpy.reshape(fids[i], (1, 128))
+        frequency_shift = suspect.processing.frequency_correction.residual_water_alignment(current_fid)
+        numpy.testing.assert_almost_equal(frequency_shift, i)
+
+
 def test_water_peak_alignment():
     spectrum = numpy.zeros(128, 'complex')
     spectrum[0] = 1
@@ -38,7 +50,7 @@ def test_apodize():
     raw_spectrum = numpy.fft.fft(data)
     apodized_data = suspect.processing.apodize(data, suspect.processing.gaussian_window, {"line_broadening": data.df * 8})
     spectrum = numpy.fft.fft(apodized_data)
-    numpy.testing.assert_almost_equal(spectrum[4].real, 0.5 * numpy.amax(spectrum), decimal=2)
+    numpy.testing.assert_allclose(spectrum[4].real, 0.5 * numpy.amax(spectrum), rtol=0.01)
     numpy.testing.assert_allclose(numpy.sum(spectrum), numpy.sum(raw_spectrum))
 
 

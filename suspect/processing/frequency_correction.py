@@ -9,6 +9,9 @@ def transform_fid(fid, frequency_shift, phase_shift):
 
 
 def residual_water_alignment(data):
+
+    # get rid of any extraneous dimensions to the data
+    data = data.squeeze()
     current_spectrum = numpy.fft.fft(data)
     peak_index = numpy.argmax(numpy.abs(current_spectrum))
     if peak_index > len(data) / 2:
