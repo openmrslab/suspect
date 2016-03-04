@@ -6,6 +6,7 @@ def _pad(input_signal, length, average=10):
     Helper function which increases the length of an input signal. The original
     is inserted at the centre of the new signal and the extra values are set to
     the average of the first and last parts of the original, respectively.
+
     :param input_signal:
     :param length:
     :param average:
