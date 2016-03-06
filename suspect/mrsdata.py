@@ -7,7 +7,7 @@ class MRSData(numpy.ndarray):
     time.
     """
 
-    def __new__(cls, input_array, dt, f0, te=30, ppm0=4.7, voxel_dimensions=(10, 10, 10)):
+    def __new__(cls, input_array, dt, f0, te=30, ppm0=4.7, voxel_dimensions=(10, 10, 10), metadata=None):
         # Input array is an already formed ndarray instance
         # We first cast to be our class type
         obj = numpy.asarray(input_array).view(cls)
@@ -20,6 +20,7 @@ class MRSData(numpy.ndarray):
         obj.df = 1.0 / dt / obj.np
         obj.sw = 1.0 / dt
         obj.voxel_dimensions = voxel_dimensions
+        obj.metadata = metadata
         return obj
 
     def __array_finalize__(self, obj):
@@ -31,6 +32,7 @@ class MRSData(numpy.ndarray):
         self.df = getattr(obj, 'df', None)
         self.np = getattr(obj, 'np', None)
         self.sw = getattr(obj, 'sw', None)
+        self.metadata = getattr(obj, 'metadata', None)
         #self.np = self.shape[-1]
         self.voxel_dimensions = getattr(obj, 'voxel_dimensions', (10, 10, 10))
 
@@ -52,6 +54,7 @@ class MRSData(numpy.ndarray):
         cast_array.ppm0 = self.ppm0
         cast_array.sw = self.sw
         cast_array.voxel_dimensions = self.voxel_dimensions
+        cast_array.metadata = self.metadata
         return cast_array
 
     def hertz_to_ppm(self, frequency):

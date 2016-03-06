@@ -53,7 +53,12 @@ class TwixBuilder(object):
         # get rid of all the size 1 dimensions
         data = data.squeeze()
 
-        mrs_data = MRSData(data, self.header_params["dt"], self.header_params["f0"])
+        metadata = {
+            "patient_name": self.header_params["patient_name"],
+            "patient_id": self.header_params["patient_id"],
+            "patient_birthdate": self.header_params["patient_birthdate"]
+        }
+        mrs_data = MRSData(data, self.header_params["dt"], self.header_params["f0"], metadata=metadata)
 
         return mrs_data
 
@@ -65,6 +70,8 @@ def parse_twix_header(header_string):
     # get information about the subject being scanned
     patient_id_string = re.search(r"<ParamString.\"PatientID\">  { \".+\"  }\n", header_string).group()
     patient_id = patient_id_string.split("\"")[3]
+    patient_name = re.escape(re.search(r"(<ParamString.\"PatientName\">  { \")(.+)(\"  }\n)", header_string).group(2))
+    patient_birthday = re.search(r"(<ParamString.\"PatientBirthDay\">  { \")(.+)(\"  }\n)", header_string).group(2)
     # get the scan parameters
     frequency_string = re.search(r"<ParamLong.\"Frequency\">  { \d*  }", header_string).group()
     number_string = re.search(r"[0-9]+", frequency_string).group()
@@ -73,7 +80,9 @@ def parse_twix_header(header_string):
     number_string = re.search(r"[0-9]+", frequency_string).group()
     dwell_time = int(number_string) * 1e-9
     return {"protocol_name": protocol_name,
+            "patient_name": patient_name,
             "patient_id": patient_id,
+            "patient_birthdate": patient_birthday,
             "dt": dwell_time,
             "f0": frequency
             }
@@ -93,7 +102,6 @@ def load_twix_vb(fin, builder):
     # the way that vb files are set up we just keep reading scans until the acq_end flag is set
 
     while True:
-
         # start by keeping track of where in the file this scan started
         # this will be used to jump to the start of the next scan
         start_position = fin.tell()
@@ -208,3 +216,94 @@ def load_twix(filename):
             load_twix_vb(fin, builder)
 
     return builder.build_mrsdata()
+
+
+def anonymize_twix_header(header_string):
+    """
+    Removes the PHI from the supplied twix header and returns the sanitized
+    version. This consists of:
+    1) Replacing the patient id and name with strings of lower case x
+    characters.
+    2) Replacing the patient birthday with 19700101
+    3) Replacing the patient gender with the number 0
+    4) All references to the date and time of the exam have all alphanumeric
+    characters replaced by lower case x. Other characters (notably the period)
+    are left unchanged.
+
+    :param header_string: The header string to be anonymized
+    :return: The anonymized version of the header.
+    """
+    patient_id = re.search(r"(<ParamString.\"PatientID\">  { )(\".+\")(  }\n)", header_string).group(2)
+    header_string = re.sub(patient_id, "\"" + ("x" * (len(patient_id) - 2)) + "\"", header_string)
+
+    patient_birthday = re.search(r"(<ParamString.\"PatientBirthDay\">  { )(\".+\")(  }\n)", header_string).group(2)
+    header_string = re.sub(patient_birthday, "\"19700101\"", header_string)
+
+    patient_name = re.escape(re.search(r"(<ParamString.\"PatientName\">  { )(\".+\")(  }\n)", header_string).group(2))
+    # every occurrence of patient_name, replace it with a string where all the
+    # characters apart from the surrounding quotations are replaced with x
+    header_string = re.sub(patient_name, lambda x: re.sub(r"[^\"]", "x", x.group()), header_string)
+
+    patient_gender_span = re.search(r"(<ParamLong.\"PatientSex\">  { )(\d+)(  }\n)", header_string).span(2)
+    header_string = header_string[:patient_gender_span[0]] + "0" + header_string[patient_gender_span[1]:]
+
+    header_string = re.sub("(Sex\">\s+\{\s*)(\d)(\s*\})",
+                           lambda match: "".join((match.group(1), "0", match.group(3))),
+                           header_string)
+
+    # We need to remove information which contains the date and time of the exam
+    # this is not stored in a helpful way which complicates finding it.
+    # I think that this FrameOfReference parameter is the correct time, it is
+    # certainly the correct date.
+    # As Siemens uses date and time to refer to other scans, we need to censor
+    # any string which contains the date of this exam. Also some references
+    # seem to use the date with the short form of the year so we match that
+    frame_of_reference = re.search(r"(<ParamString.\"FrameOfReference\">  { )(\".+\")(  }\n)", header_string).group(2)
+    exam_date_time = frame_of_reference.split(".")[10]
+    exam_date = exam_date_time[2:8]
+
+    # any string which contains the exam date has all alpha-numerics replaced
+    # by the character x
+    header_string = re.sub(r"\"[\d\.]*{0}[\d\.]*\"".format(exam_date),
+                           lambda match: re.sub(r"\w", "x", match.group()),
+                           header_string)
+
+    return header_string
+
+
+def anonymize_twix_vd(fin, fout):
+    pass
+
+
+def anonymize_twix_vb(fin, fout):
+    # first four bytes are the size of the header
+    header_size = struct.unpack("I", fin.read(4))[0]
+
+    # read the rest of the header minus the four bytes we already read
+    header = fin.read(header_size - 4)
+    # for some reason the last 24 bytes of the header contain some stuff that
+    # is not a string, I don't know what it is
+    header_string = header[:-24].decode('windows-1252')
+
+    anonymized_header = anonymize_twix_header(header_string)
+
+    fout.write(struct.pack("I", header_size))
+    fout.write(anonymized_header.encode('windows-1252'))
+    fout.write(header[-24:])
+    fout.write(fin.read())
+
+
+def anonymize_twix(filename, anonymized_filename):
+    with open(filename, 'rb') as fin:
+
+        # we can tell the type of file from the first two uints in the header
+        first_uint, second_uint = struct.unpack("II", fin.read(8))
+
+        # reset the file pointer before giving to specific function
+        fin.seek(0)
+
+        with open(anonymized_filename, 'wb') as fout:
+            if first_uint == 0 and second_uint <= 64:
+                anonymize_twix_vd(fin, fout)
+            else:
+                anonymize_twix_vb(fin, fout)

@@ -10,6 +10,9 @@ setup(
         author_email='bennyrowland@mac.com',
         description='',
         entry_points={
+            "console_scripts": [
+                "anonymize_twix = suspect.scripts.anonymize:anonymize_twix"
+            ]
         },
         classifiers=[
             # How mature is this project? Common values are
