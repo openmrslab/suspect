@@ -39,7 +39,6 @@ def test_spectral_registration():
     for i in range(1, 15):
         input_fid = suspect.MRSData(suspect.basis.gaussian(time_axis, i, 0, 50.0), 5e-4, 123)
         frequency_shift, phase_shift = suspect.processing.frequency_correction.spectral_registration(input_fid, target_fid)
-        transformed_fid = suspect.processing.frequency_correction.transform_fid(input_fid, frequency_shift, 0.0)
         numpy.testing.assert_allclose(frequency_shift, i)
 
 
