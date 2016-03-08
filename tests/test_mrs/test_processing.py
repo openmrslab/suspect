@@ -33,6 +33,27 @@ def test_water_peak_alignment():
         numpy.testing.assert_almost_equal(frequency_shift, i)
 
 
+def test_spectral_registration():
+    time_axis = numpy.arange(0, 0.512, 5e-4)
+    target_fid = suspect.MRSData(suspect.basis.gaussian(time_axis, 0, 0, 50.0), 5e-4, 123)
+    for i in range(1, 15):
+        input_fid = suspect.MRSData(suspect.basis.gaussian(time_axis, i, 0, 50.0), 5e-4, 123)
+        frequency_shift, phase_shift = suspect.processing.frequency_correction.spectral_registration(input_fid, target_fid)
+        transformed_fid = suspect.processing.frequency_correction.transform_fid(input_fid, frequency_shift, 0.0)
+        numpy.testing.assert_allclose(frequency_shift, i)
+
+
+def test_compare_frequency_correction():
+    test_data = suspect.io.load_twix("suspect/tests/test_data/twix_vb.dat")
+    test_data = test_data.inherit(numpy.average(test_data, axis=1, weights=suspect.processing.channel_combination.svd_weighting(numpy.average(test_data, axis=0))))
+    sr_target = test_data[0]
+    for i in range(test_data.shape[0]):
+        current_fid = test_data[i]
+        wpa_fs = suspect.processing.frequency_correction.residual_water_alignment(current_fid)
+        sr_fs = suspect.processing.frequency_correction.spectral_registration(current_fid, sr_target)[0]
+        numpy.testing.assert_allclose(wpa_fs, sr_fs, atol=current_fid.df)
+
+
 def test_frequency_transform():
     spectrum = numpy.zeros(128, 'complex')
     spectrum[0] = 1

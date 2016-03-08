@@ -57,6 +57,14 @@ class MRSData(numpy.ndarray):
         cast_array.metadata = self.metadata
         return cast_array
 
+    def spectrum(self):
+        """
+        Returns the Fourier transformed and shifted data
+
+        :return:
+        """
+        return numpy.fft.fftshift(numpy.fft.fft(self, axis=-1), axes=-1)
+
     def hertz_to_ppm(self, frequency):
         """
         Converts a frequency in Hertz to the corresponding PPM for this dataset.
