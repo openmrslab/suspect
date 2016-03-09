@@ -34,6 +34,10 @@ def spectral_registration(data, target, initial_guess=(0.0, 0.0), frequency_rang
     :return:
     """
 
+    # make sure that there are no extra dimensions in the data
+    data = data.squeeze()
+    target = target.squeeze()
+
     # the supplied frequency range can be none, in which case we use the whole
     # spectrum, or it can be a tuple defining two frequencies in Hz, in which
     # case we use the spectral points between those two frequencies, or it can
