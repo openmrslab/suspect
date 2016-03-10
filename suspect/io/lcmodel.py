@@ -97,6 +97,7 @@ def write_all_files(filename, data, wref_data=None, params=None):
     # have to add single quotes to the various paths
     base_params["FILRAW"] = "'{}'".format(base_params["FILRAW"])
     base_params["FILBAS"] = "'{}'".format(base_params["FILBAS"])
+    base_params["FILPS"] = "'{}'".format(base_params["FILPS"])
     if wref_data is not None:
         base_params["FILH20"] = "'{}'".format(base_params["FILH20"])
 
