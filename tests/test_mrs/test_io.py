@@ -28,6 +28,15 @@ def test_write_raw():
     #print(handle.write.call_args())
 
 
+def test_lcmodel_all_files():
+    data = suspect.MRSData(numpy.zeros(1, 'complex'), 1e-3, 123.456)
+    mock = unittest.mock.mock_open()
+    with patch.object(builtins, 'open', mock):
+        suspect.io.lcmodel.write_all_files("/home/ben/lcmodel",
+                                           data)
+    print(mock.call_args)
+    print(mock().write.mock_calls)
+
 
 def test_extract_csi_fid():
     data = suspect.io.rda.load_rda("suspect/tests/test_data/CSITEST_20151028_97_1.rda")
