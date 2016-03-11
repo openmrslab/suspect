@@ -114,3 +114,42 @@ def write_all_files(filename, data, wref_data=None, params=None):
             for key, value in base_params.items():
                 fout.write(" {0} = {1}\n".format(key, value))
             fout.write(" $END\n")
+
+
+def read_coord(filename):
+    with open(filename, 'rt') as fin:
+        coord_lines = fin.readlines()
+
+    metabolite_table_info_line = 4
+    metabolite_table_line_count = int(coord_lines[metabolite_table_info_line].split()[0])
+    metabolite_table_lines = coord_lines[(metabolite_table_info_line + 2):(metabolite_table_info_line + 1 + metabolite_table_line_count)]
+    metabolite_fits = {}
+    for metabolite_line in metabolite_table_lines:
+        conc = float(metabolite_line[:9])
+        sd = int(metabolite_line[9:13])
+        cr_ratio = float(metabolite_line[14:22])
+        name = metabolite_line[22:].strip()
+        metabolite_fits[name] = {
+            "concentration": conc,
+            "sd": sd,
+        }
+    # add some aliases for some of the composite metabolites
+    metabolite_fits["TNAA"] = metabolite_fits["NAA+NAAG"]
+    metabolite_fits["TCho"] = metabolite_fits["GPC+PCh"]
+    metabolite_fits["TCr"] = metabolite_fits["Cr+PCr"]
+    metabolite_fits["Glx"] = metabolite_fits["Glu+Gln"]
+
+    misc_output_info_line = metabolite_table_info_line + metabolite_table_line_count + 1
+    misc_output_line_count = int(coord_lines[misc_output_info_line].split()[0])
+    misc_output_lines = coord_lines[(misc_output_info_line + 1):(misc_output_info_line + misc_output_line_count + 1)]
+    misc_output = {}
+    misc_output["fwhm"] = float(misc_output_lines[0].split()[2])
+    misc_output["snr"] = float(misc_output_lines[0].split()[6])
+    misc_output["frequency_shift"] = float(misc_output_lines[1].split()[3])
+    misc_output["phase0"] = float(misc_output_lines[2].split()[1])
+    misc_output["phase1"] = float(misc_output_lines[2].split()[3])
+
+    return {
+        "metabolite_fits": metabolite_fits,
+        "misc_output": misc_output
+    }

@@ -1,0 +1,77 @@
+ LCModel (Version 6.3-1B)
+ SVS_97
+ Data of: Center for Clinical Spectroscopy, Brigham and Women’s Hospital, Harvard Medical School
+ 28-May-2015  14:21
+
+$$CONC 38 lines in following concentration table = NCONC+1
+    Conc.  %SD /Cr+PCr  Metabolite                                         
+ 2.88E-02  88%   0.115 2HG                                                 
+ 1.38E-02  64% 5.5E-02 Ala                                                 
+ 1.86E-02  94% 7.4E-02 Asp                                                 
+    0.000 999%   0.000 Cr                                                  
+ 4.05E-02  32%   0.162 GABA                                                
+    0.115   2%   0.457 GPC                                                 
+ 1.06E-02 177% 4.2E-02 Glc                                                 
+ 2.95E-02  53%   0.118 Gln                                                 
+ 1.46E-02  49% 5.8E-02 Glth                                                
+ 3.27E-02  55%   0.131 Glu                                                 
+    0.297   5%   1.186 Ins                                                 
+    0.112  22%   0.446 Lac                                                 
+ 7.97E-02  11%   0.318 NAA                                                 
+ 6.83E-02  13%   0.273 NAAG                                                
+    0.000 999%   0.000 PCh                                                 
+    0.251   3%   1.000 PCr                                                 
+ 3.45E-03  88% 1.4E-02 Scyllo                                              
+    0.000 999%   0.000 Tau                                                 
+ 6.78E-02  16%   0.271 -CrCH2                                              
+ 2.05E-02  40% 8.2E-02 Gua                                                 
+    0.115   2%   0.457 GPC+PCh                                             
+    0.148   6%   0.591 NAA+NAAG                                            
+    0.251   3%   1.000 Cr+PCr                                              
+ 6.22E-02  40%   0.248 Glu+Gln                                             
+    0.000 999%   0.000 Lip13a                                              
+    0.200  22%   0.798 Lip13b                                              
+ 3.42E-02  60%   0.137 Lip09                                               
+ 8.84E-02  33%   0.353 MM09                                                
+ 3.26E-02  42%   0.130 Lip20                                               
+    0.154  31%   0.615 MM20                                                
+ 2.89E-02  49%   0.115 MM12                                                
+    0.129  35%   0.513 MM14                                                
+ 6.83E-02  37%   0.272 MM17                                                
+    0.200  22%   0.798 Lip13a+Lip13b                                       
+    0.357  17%   1.426 MM14+Lip13a+Lip13b+MM12                             
+    0.123  23%   0.489 MM09+Lip09                                          
+    0.187  26%   0.745 MM20+Lip20                                          
+
+$$MISC  6 lines in following misc. output table
+  FWHM = 0.043 ppm    S/N =  13                                            
+  Data shift = 0.000 ppm                                                   
+  Ph:  21 deg      12.2 deg/ppm                                            
+  alphaB,S = 4.8E-02,   3.7E+01                                            
+   28 spline knots.   Ns = 7(1)                                            
+  (11) 1 infls.   (12) 2 extrs.                                            
+
+$$DIAG  2 lines in following diagnostic table:
+   2 info's    TWOREG  8                                                  
+   1 info      FINOUT  9                                                  
+
+$$INPU 19 lines in following table of input changes:
+ DELTAT = 0.000833                                                        
+ HZPPPM = 123.226103                                                      
+ NUNFIL = 1024                                                            
+ NEACH = 60                                                               
+ FILCOO = '/media/mrs_proc/ben/97ms demo/LCModel                          
+   files/svs_97.COORD'                                                    
+ LCOORD = 9                                                               
+ FILCSV = '/media/mrs_proc/ben/97ms demo/LCModel                          
+   files/svs_97.CSV'                                                      
+ LCSV = 11                                                                
+ FILTAB = '/media/mrs_proc/ben/97ms demo/LCModel                          
+   files/svs_97.TABLE'                                                    
+ LTABLE = 7                                                               
+ FILPS = '/media/mrs_proc/ben/97ms demo/LCModel f                         
+   iles/svs_97.PS'                                                        
+ FILRAW = '/media/mrs_proc/ben/97ms demo/LCModel                          
+   files/svs_97.RAW'                                                      
+ FILBAS = '/media/mrs_proc/ben/97ms demo/LCModel                          
+   files/97_basis_set.basis'                                              
