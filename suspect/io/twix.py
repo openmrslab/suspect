@@ -96,7 +96,10 @@ def load_twix_vb(fin, builder):
     # read the rest of the header minus the four bytes we already read
     header = fin.read(header_size - 4)
     # for some reason the last 24 bytes of the header contain some junk that is not a string
-    header = header[:-24].decode('windows-1250')
+    try:
+        header = header[:-24].decode('windows-1252')
+    except UnicodeDecodeError as e:
+        header = header[:-24].decode('windows-1250')
     builder.set_header_string(header)
 
     # the way that vb files are set up we just keep reading scans until the acq_end flag is set
