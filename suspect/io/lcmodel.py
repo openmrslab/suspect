@@ -67,7 +67,7 @@ def write_all_files(filename, data, wref_data=None, params=None):
         "FILPS": os.path.join(folder, file_root + ".PS")
     }
     if wref_data is not None:
-        base_params["FILH20"] = os.path.join(folder, file_root + ".H2O"),
+        base_params["FILH20"] = os.path.join(folder, file_root + ".H2O")
 
     # add the user supplied parameters to the list
     if params is not None:
