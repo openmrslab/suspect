@@ -96,7 +96,6 @@ def load_twix_vb(fin, builder):
     # read the rest of the header minus the four bytes we already read
     header = fin.read(header_size - 4)
     # for some reason the last 24 bytes of the header contain some junk that is not a string
-    print(len(header))
     header = header[:-24].decode('windows-1250')
     builder.set_header_string(header)
 
