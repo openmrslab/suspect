@@ -38,6 +38,11 @@ def test_lcmodel_all_files():
     print(mock().write.mock_calls)
 
 
+def test_lcmodel_read_coord():
+    fitting_result = suspect.io.lcmodel.read_coord("suspect/tests/test_data/lcmodel/svs_97.COORD")
+    assert len(fitting_result["metabolite_fits"]) == 41
+
+
 def test_extract_csi_fid():
     data = suspect.io.rda.load_rda("suspect/tests/test_data/CSITEST_20151028_97_1.rda")
     single_voxel = data[0, 8, 8]
