@@ -67,7 +67,7 @@ def write_all_files(filename, data, wref_data=None, params=None):
         "FILPS": os.path.join(folder, file_root + ".PS")
     }
     if wref_data is not None:
-        base_params["FILH20"] = os.path.join(folder, file_root + ".H2O")
+        base_params["FILH2O"] = os.path.join(folder, file_root + ".H2O")
 
     # add the user supplied parameters to the list
     if params is not None:
@@ -93,13 +93,13 @@ def write_all_files(filename, data, wref_data=None, params=None):
 
     save_raw(base_params["FILRAW"], data)
     if wref_data is not None:
-        save_raw(base_params["FILH20"], wref_data)
+        save_raw(base_params["FILH2O"], wref_data)
     # have to add single quotes to the various paths
     base_params["FILRAW"] = "'{}'".format(base_params["FILRAW"])
     base_params["FILBAS"] = "'{}'".format(base_params["FILBAS"])
     base_params["FILPS"] = "'{}'".format(base_params["FILPS"])
     if wref_data is not None:
-        base_params["FILH20"] = "'{}'".format(base_params["FILH20"])
+        base_params["FILH2O"] = "'{}'".format(base_params["FILH2O"])
 
     for slice_index in range(shape[2]):
         control_filename = "{0}_sl{1}.CONTROL".format(file_root, slice_index)
