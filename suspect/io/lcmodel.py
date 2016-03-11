@@ -79,17 +79,19 @@ def write_all_files(filename, data, wref_data=None, params=None):
         base_params["FILTAB"] = "'{}'".format(base_params["FILTAB"])
     elif "LTABLE" in base_params:
         base_params["LTABLE"] = 7
-        base_params["FILTAB"] = os.path.join(folder, file_root + ".TABLE")
+        base_params["FILTAB"] = "'{}'".format(os.path.join(folder, file_root + ".TABLE"))
     if "FILCSV" in base_params:
         base_params["LCSV"] = 11
+        base_params["FILCSV"] = "'{}'".format(base_params["FILCSV"])
     elif "LCSV" in base_params:
         base_params["LCSV"] = 11
-        base_params["FILCSV"] = os.path.join(folder, file_root + ".CSV")
+        base_params["FILCSV"] = "'{}'".format(os.path.join(folder, file_root + ".CSV"))
     if "FILCOO" in base_params:
         base_params["LCOORD"] = 9
+        base_params["FILCOO"] = "'{}'".format(base_params["FILCOO"])
     elif "LCOORD" in base_params:
         base_params["LCOORD"] = 9
-        base_params["FILCOO"] = os.path.join(folder, file_root + ".COORD")
+        base_params["FILCOO"] = "'{}'".format(os.path.join(folder, file_root + ".COORD"))
 
     save_raw(base_params["FILRAW"], data)
     if wref_data is not None:
