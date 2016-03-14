@@ -16,6 +16,12 @@ def test_twix_nofile():
 #    numpy.testing.assert_almost_equal(data.f0, 123.261716)
 
 
+def test_skyra():
+    data = suspect.io.load_twix("suspect/tests/test_data/twix_vd_csi.dat")
+    print(data.metadata)
+    assert data.np == 2048
+
+
 def test_anonymize_verio():
     data = suspect.io.load_twix("suspect/tests/test_data/meas_MID178_svs_se_30_PCG_FID95017.dat")
     suspect.io.twix.anonymize_twix("suspect/tests/test_data/meas_MID178_svs_se_30_PCG_FID95017.dat", "suspect/tests/test_data/twix_vb.dat")
