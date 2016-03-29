@@ -10,7 +10,7 @@ def gaussian(time_axis, frequency, phase, fwhm):
 
 
 def lorentzian(time_axis, frequency, phase, fwhm):
-    oscillatory_term = numpy.exp(2j * numpy.pi * (frequency * time_axis + phase))
+    oscillatory_term = numpy.exp(1j * (2 * numpy.pi * frequency * time_axis + phase))
     damping = numpy.exp(-time_axis * numpy.pi * fwhm)
     fid = oscillatory_term * damping
     return fid / len(time_axis)

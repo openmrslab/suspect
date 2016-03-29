@@ -4,6 +4,8 @@ import numpy
 
 
 def test_null_transform():
+    import os
+    print("cwd is {}".format(os.getcwd()))
     fid = numpy.ones(128, 'complex')
     data = suspect.MRSData(fid, 1.0 / 128, 123)
     transformed_data = suspect.processing.frequency_correction.transform_fid(data, 0, 0)
@@ -79,3 +81,12 @@ def test_gaussian_denoising():
     data = numpy.ones(128)
     denoised_data = suspect.processing.denoising.sliding_gaussian(data, 11)
     numpy.testing.assert_almost_equal(data, denoised_data)
+
+
+def test_water_suppression():
+    data = suspect.io.load_twix("suspect/tests/test_data/meas_MID178_svs_se_30_PCG_FID95017.dat")
+    print(data.shape)
+    channel_combined_data = data.inherit(numpy.average(data, axis=1))
+    components = suspect.processing.water_suppression.hsvd(channel_combined_data[10], 4, int(data.np / 2))
+    fid = suspect.processing.water_suppression.construct_fid(components, data.time_axis())
+    assert len(components) == 4
