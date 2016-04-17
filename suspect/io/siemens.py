@@ -1,3 +1,4 @@
+import pydicom.tag
 import pydicom.dicomio
 import numpy
 import struct
@@ -14,12 +15,21 @@ ima_types = {
                "PixelBandwidth", "SAR", "PixelSpacing", "ImagePositionPatient", "VoiPosition", "SliceLocation",
                "FlipAngle", "VoiInPlaneRotation", "VoiPhaseFoV", "SliceMeasurementDuration", "HammingFilterWidth",
                "RSatPositionTra", "MagneticFieldStrength", "VoiOrientation", "PercentSampling", "EchoTime",
-               "VoiReadoutFoV", "RSatThickness", "RSatOrientationCor", "ImagingFrequency", "TriggerTime", "dBdt"],
+               "VoiReadoutFoV", "RSatThickness", "RSatOrientationCor", "ImagingFrequency", "TriggerTime", "dBdt",
+               "TransmitterCalibration", "PhaseGradientAmplitude", "ReadoutGradientAmplitude",
+               "SelectionGradientAmplitude", "GradientDelayTime", "dBdt_max", "t_puls_max", "dBdt_thresh",
+               "dBdt_limit", "SW_korr_faktor", "Stim_lim", "Stim_faktor"],
     "integers": ["Rows", "Columns", "DataPointColumns", "SpectroscopyAcquisitionOut-of-planePhaseSteps",
                  "EchoPartitionPosition", "AcquisitionMatrix", "NumberOfFrames", "EchoNumbers", "RealDwellTime",
                  "EchoTrainLength", "EchoLinePosition", "EchoColumnPosition", "SpectroscopyAcquisitionDataColumns",
-                 "SpectroscopyAcquisitionPhaseColumns", "SpectroscopyAcquisitionPhaseRows",
-                 "NumberOfPhaseEncodingSteps"],
+                 "SpectroscopyAcquisitionPhaseColumns", "SpectroscopyAcquisitionPhaseRows", "RfWatchdogMask",
+                 "NumberOfPhaseEncodingSteps", "DataPointRows", "UsedPatientWeight", "NumberOfPrescans",
+                 "Stim_mon_mode", "Operation_mode_flag", "CoilId", "MiscSequenceParam", "MrProtocolVersion"],
+    "strings": ["ReferencedImageSequence", "ScanningSequence", "SequenceName", "ImagedNucleus", "TransmittingCoil",
+                "PhaseEncodingDirection", "VariableFlipAngleFlag", "SequenceMask", "AcquisitionMatrixText",
+                "MultistepIndex", "DataRepresentation", "SignalDomainColumns", "k-spaceFiltering", "ResonantNucleus",
+                "ImaCoilString", "FrequencyCorrection", "WaterReferencedPhaseCorrection", "SequenceFileOwner",
+                "CoilForGradient", "CoilForGradient2", "PositivePCSDirections", ],
 }
 
 
@@ -29,7 +39,7 @@ def read_csa_header(csa_header_bytes):
     # containing the value 77. in CSA1 there is just the number of tags and the delimiter. after that the two formats
     # contain the same structure for each tag, but the definition of the size of the items in each tag is different
     # between the two versions
-    if csa_header_bytes[:4] == "SV10":
+    if csa_header_bytes[:4] == "SV10".encode('latin-1'):
         num_tags, delimiter = struct.unpack("<II", csa_header_bytes[8:16])
         header_offset = 16
         header_format = CSA2
@@ -45,6 +55,7 @@ def read_csa_header(csa_header_bytes):
         header_offset += 84
         # the name of the tag is 64 bytes long, but the string we want is null-terminated inside, so extract the
         # real name by taking only bytes up until the first 0x00
+        name = name.decode('latin-1')
         name = name.split("\x00", 1)[0]
         # read all the items inside this tag
         item_list = []
@@ -56,15 +67,20 @@ def read_csa_header(csa_header_bytes):
                 if (header_offset + item_length) > len(csa_header_bytes):
                     item_length = len(csa_header_bytes) - header_offset
             elif header_format == CSA1:
-                item_length == sizes[0]
+                item_length = sizes[0]
             item, = struct.unpack("<%ds" % item_length,
                                   csa_header_bytes[header_offset:(header_offset + item_length)])
+            item = item.decode('latin-1')
             item = item.split("\x00", 1)[0]
             if item_length > 0:
                 if name in ima_types["floats"]:
                     item = float(item)
                 elif name in ima_types["integers"]:
                     item = int(item)
+                elif name in ima_types["strings"]:
+                    pass
+                else:
+                    raise Exception("Unhandled name {0} with vr {1} and value {2}".format(name, vr, item))
                 item_list.append(item)
             header_offset += item_length
             header_offset += (4 - (item_length % 4)) % 4  # move the offset to the next 4 byte boundary
@@ -74,7 +90,7 @@ def read_csa_header(csa_header_bytes):
     return csa_header
 
 
-def load_siemens_ima(filename):
+def load_siemens_dicom(filename):
     """
     Imports a file in the Siemens .IMA format.
     :param filename: The filename of the file to import
@@ -97,8 +113,8 @@ def load_siemens_ima(filename):
     # now we know which tag contains the CSA image header info: (0029, xx10)
     csa_header_bytes = dataset[0x0029, 0x0100 * header_index + 0x0010].value
     csa_header = read_csa_header(csa_header_bytes)
-    for key, value in csa_header.items():
-        print("%s : %s" % (str(key), str(value)))
+    #for key, value in csa_header.items():
+    #    print("%s : %s" % (str(key), str(value)))
     # we can also get the series header info: (0029, xx20), but this seems to be mostly pretty boring
 
     # now we can work out the shape of the data (slices, rows, columns, fid_points)
@@ -128,11 +144,45 @@ def load_siemens_ima(filename):
     data_iter = iter(data_floats)
     complex_iter = (complex(r, i) for r, i in zip(data_iter, data_iter))
     # give this iterator to numpy to build the data array
-    complex_data = numpy.fromiter(complex_iter, "complex64", len(csa_data_bytes) / 8)
+    print(len(csa_data_bytes))
+    complex_data = numpy.fromiter(complex_iter, "complex128", int(len(csa_data_bytes) / 8))
     # reshape the array to structure of rows, columns and slices
-    complex_data = numpy.reshape(complex_data, data_shape)
+    complex_data = numpy.reshape(complex_data, data_shape).squeeze()
 
     return MRSData(complex_data,
                    csa_header["RealDwellTime"] * 1e-9,
                    csa_header["ImagingFrequency"],
                    te=csa_header["EchoTime"])
+
+
+# def anonymize_siemens_dicom(filename, anonymized_filename):
+# TODO: anonymize dicom
+#     """
+#     Anonymizes an MRS data file in Siemens IMA DICOM format.
+#
+#     :param filename:
+#     :param anonymized_filename:
+#     :return:
+#     """
+#     dataset = pydicom.dicomio.read_file(filename)
+#     print(dataset.PatientName)
+#     xx = 0x0010
+#     header_index = 0
+#     for i in range(4624):
+#         if pydicom.tag.Tag(0x0029, i) in dataset:
+#             print(pydicom.tag.Tag(0x0029, i))
+#             print(dataset[(0x0029, i)].value)
+#     xx = 0x0010
+#     header_index = 0
+#     while (0x0029, xx) in dataset:
+#         if dataset[0x0029, xx].value == "SIEMENS CSA HEADER":
+#             header_index = xx
+#         xx += 1
+#     # check that we have found the header
+#     if header_index == 0:
+#         raise KeyError("Could not find header index")
+#     # now we know which tag contains the CSA image header info: (0029, xx10)
+#     csa_header_bytes = dataset[0x0029, 0x0100 * header_index + 0x0010].value
+#     csa_header = read_csa_header(csa_header_bytes)
+#     csa_series_header = dataset[0x0029, 0x0100 * header_index + 0x0020].value
+#     csa_series = read_csa_header(csa_series_header)

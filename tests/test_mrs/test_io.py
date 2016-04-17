@@ -34,8 +34,8 @@ def test_lcmodel_all_files():
     with patch.object(builtins, 'open', mock):
         suspect.io.lcmodel.write_all_files("/home/ben/lcmodel",
                                            data)
-    print(mock.call_args)
-    print(mock().write.mock_calls)
+    #print(mock.call_args)
+    #print(mock().write.mock_calls)
 
 
 def test_lcmodel_read_coord():
@@ -43,14 +43,14 @@ def test_lcmodel_read_coord():
     assert len(fitting_result["metabolite_fits"]) == 41
 
 
-def test_extract_csi_fid():
-    data = suspect.io.rda.load_rda("suspect/tests/test_data/CSITEST_20151028_97_1.rda")
-    single_voxel = data[0, 8, 8]
-    suspect.io.tarquin.save_dpt("/home/ben/test_dpt2.dpt", single_voxel)
+#def test_extract_csi_fid():
+#    data = suspect.io.rda.load_rda("suspect/tests/test_data/CSITEST_20151028_97_1.rda")
+#    single_voxel = data[0, 8, 8]
+#    suspect.io.tarquin.save_dpt("/home/ben/test_dpt2.dpt", single_voxel)
 
 
-def test_load_sdat():
-    data = suspect.io.load_sdat("suspect/tests/test_data/SS0044_214-SS0044_214-WIP_SV_P40_LOC_R1-601_act.sdat")
-    assert data.te == 30
-    assert data.f0 == 127.769903
-    assert data.shape == (192, 2048)
+#def test_load_sdat():
+#    data = suspect.io.load_sdat("suspect/tests/test_data/SS0044_214-SS0044_214-WIP_SV_P40_LOC_R1-601_act.sdat")
+#    assert data.te == 30
+#    assert data.f0 == 127.769903
+#    assert data.shape == (192, 2048)
