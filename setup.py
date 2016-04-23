@@ -36,5 +36,5 @@ setup(
             'Programming Language :: Python :: 3.3',
             'Programming Language :: Python :: 3.4',
         ],
-        install_requires=['numpy', 'pytest', 'mock', 'pywavelets', 'scipy', 'lmfit']
+        install_requires=['numpy', 'pytest', 'mock', 'pywavelets', 'scipy', 'lmfit', 'pydicom']
 )
