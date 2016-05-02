@@ -122,7 +122,11 @@ def read_coord(filename):
     with open(filename, 'rt') as fin:
         coord_lines = fin.readlines()
 
-    metabolite_table_info_line = 4
+    # find start of metabolite table
+    for index, line in enumerate(coord_lines):
+        if "lines in following concentration table" in line:
+            break
+    metabolite_table_info_line = index
     metabolite_table_line_count = int(coord_lines[metabolite_table_info_line].split()[0])
     metabolite_table_lines = coord_lines[(metabolite_table_info_line + 2):(metabolite_table_info_line + 1 + metabolite_table_line_count)]
     metabolite_fits = {}
@@ -151,7 +155,51 @@ def read_coord(filename):
     misc_output["phase0"] = float(misc_output_lines[2].split()[1])
     misc_output["phase1"] = float(misc_output_lines[2].split()[3])
 
+    # get the ppm axis
+    ppm_axis_info_line = misc_output_info_line + misc_output_line_count + 1
+    num_ppm_points = int(coord_lines[ppm_axis_info_line].split()[0])
+    # there are always 10 points of data per line
+    number_of_point_lines = int((num_ppm_points + 9) / 10)
+
+    def read_points(starting_line):
+        points = []
+        # we can use map to convert the 10 string numbers on each line to a
+        # list of floats, then extend the current list with the new one
+        for line_number in range(starting_line, starting_line + number_of_point_lines):
+            points.extend(map(float, coord_lines[line_number].split()))
+        return points
+
+    ppm_points = read_points(ppm_axis_info_line + 1)
+
+    # after ppm axis is the phased data
+    data_info_line = ppm_axis_info_line + number_of_point_lines + 1
+    data_points = read_points(data_info_line + 1)
+
+    # after data is the fit
+    fit_info_line = data_info_line + number_of_point_lines + 1
+    fit_points = read_points(fit_info_line + 1)
+
+    # after the fit is the baseline
+    baseline_info_line = fit_info_line + number_of_point_lines + 1
+    baseline_points = read_points(baseline_info_line + 1)
+
+    # now come 0 or more metabolite spectra, followed by the diagnostic table
+    metabolite_spectra = {}
+    metabolite_info_line = baseline_info_line + number_of_point_lines + 1
+    while "diagnostic table" not in coord_lines[metabolite_info_line]:
+        metabolite_name = coord_lines[metabolite_info_line].split()[0]
+        metabolite_points = read_points(metabolite_info_line + 1)
+        metabolite_spectra[metabolite_name] = metabolite_points
+
+        # move to the next block of data
+        metabolite_info_line = metabolite_info_line + number_of_point_lines + 1
+
     return {
         "metabolite_fits": metabolite_fits,
-        "misc_output": misc_output
+        "misc_output": misc_output,
+        "ppm": ppm_points,
+        "fit": fit_points,
+        "data": data_points,
+        "baseline": baseline_points,
+        "metabolite_spectra": metabolite_spectra
     }
