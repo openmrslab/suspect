@@ -50,6 +50,11 @@ def write_all_files(filename, data, wref_data=None, params=None):
     # about where to save the output (.ps, .csv, .table etc.) that should also
     # be saved in the same folder as the input data for LCModel.
     folder, file_root = os.path.split(filename)
+
+    # make sure that the folder exists before trying to save things to it
+    if not os.path.isdir(folder):
+        os.makedirs(folder)
+
     file_root, ext = os.path.splitext(file_root)
 
     base_params = {
