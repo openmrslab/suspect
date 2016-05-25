@@ -196,96 +196,97 @@ def load_twix_vb(fin, builder):
 
 def load_twix_vd(fin, builder):
     twix_id, num_measurements = struct.unpack("II", fin.read(8))
-    # vd file can contain multiple measurements, but we only want one
-    assert num_measurements == 1
-    for measurement_index in range(num_measurements):
-        # measurement headers are each 152 bytes at start of file
-        fin.seek(8 + 152 * measurement_index)
-        meas_id, file_id, offset, length, patient_name, protocol_name = struct.unpack("IIQQ64s64s", fin.read(152))
-        # offset points to where the actual data is in the file
-        fin.seek(offset)
+    # vd file can contain multiple measurements, but we only want the MRS
+    # assume that the MRS is the last measurement
+    measurement_index = num_measurements - 1
 
-        # start with the header
-        header_size = struct.unpack("I", fin.read(4))[0]
-        header = fin.read(header_size - 4)
-        header = header.decode('latin-1')
-        builder.set_header_string(header)
+    # measurement headers are each 152 bytes at start of file
+    fin.seek(8 + 152 * measurement_index)
+    meas_id, file_id, offset, length, patient_name, protocol_name = struct.unpack("IIQQ64s64s", fin.read(152))
+    # offset points to where the actual data is in the file
+    fin.seek(offset)
 
-        # read each scan until we hit the acq_end flag
-        while True:
+    # start with the header
+    header_size = struct.unpack("I", fin.read(4))[0]
+    header = fin.read(header_size - 4)
+    header = header.decode('latin-1')
+    builder.set_header_string(header)
 
-            # read the initial position, combined with DMA_length below that
-            # tells us how to get to the start of the next scan
-            initial_position = fin.tell()
+    # read each scan until we hit the acq_end flag
+    while True:
 
-            # the first four bytes contain some composite information,
-            # read in an int and do bit shift magic to get the values
-            temp = struct.unpack("I", fin.read(4))[0]
-            DMA_length = temp & (2 ** 26 - 1)
-            pack_flag = (temp >> 25) & 1
-            PCI_rx = temp >> 26
-            meas_uid, scan_counter, time_stamp, pmu_time_stamp = struct.unpack("IIII", fin.read(16))
-            system_type, ptab_pos_delay, ptab_pos_x, ptab_pos_y, ptab_pos_z, reserved = struct.unpack("HHIIII", fin.read(20))
+        # read the initial position, combined with DMA_length below that
+        # tells us how to get to the start of the next scan
+        initial_position = fin.tell()
 
-            # more composite information
-            eval_info_mask = struct.unpack("Q", fin.read(8))[0]
-            acq_end = eval_info_mask & 1
-            rt_feedback = eval_info_mask >> 1 & 1
-            hp_feedback = eval_info_mask >> 2 & 1
-            sync_data = eval_info_mask >> 5 & 1
-            raw_data_correction = eval_info_mask >> 10 & 1
-            ref_phase_stab_scan = eval_info_mask >> 14 & 1
-            phase_stab_scan = eval_info_mask >> 15 & 1
-            sign_rev = eval_info_mask >> 17 & 1
-            phase_correction = eval_info_mask >> 21 & 1
-            pat_ref_scan = eval_info_mask >> 22 & 1
-            pat_ref_ima_scan = eval_info_mask >> 23 & 1
-            reflect = eval_info_mask >> 24 & 1
-            noise_adj_scan = eval_info_mask >> 25 & 1
+        # the first four bytes contain some composite information,
+        # read in an int and do bit shift magic to get the values
+        temp = struct.unpack("I", fin.read(4))[0]
+        DMA_length = temp & (2 ** 26 - 1)
+        pack_flag = (temp >> 25) & 1
+        PCI_rx = temp >> 26
+        meas_uid, scan_counter, time_stamp, pmu_time_stamp = struct.unpack("IIII", fin.read(16))
+        system_type, ptab_pos_delay, ptab_pos_x, ptab_pos_y, ptab_pos_z, reserved = struct.unpack("HHIIII", fin.read(20))
 
-            # if acq_end is set, there is no more data
-            if acq_end:
-                break
+        # more composite information
+        eval_info_mask = struct.unpack("Q", fin.read(8))[0]
+        acq_end = eval_info_mask & 1
+        rt_feedback = eval_info_mask >> 1 & 1
+        hp_feedback = eval_info_mask >> 2 & 1
+        sync_data = eval_info_mask >> 5 & 1
+        raw_data_correction = eval_info_mask >> 10 & 1
+        ref_phase_stab_scan = eval_info_mask >> 14 & 1
+        phase_stab_scan = eval_info_mask >> 15 & 1
+        sign_rev = eval_info_mask >> 17 & 1
+        phase_correction = eval_info_mask >> 21 & 1
+        pat_ref_scan = eval_info_mask >> 22 & 1
+        pat_ref_ima_scan = eval_info_mask >> 23 & 1
+        reflect = eval_info_mask >> 24 & 1
+        noise_adj_scan = eval_info_mask >> 25 & 1
 
-            # there are some data frames that contain auxilliary data, we ignore those for now
-            if rt_feedback or hp_feedback or phase_correction or noise_adj_scan or sync_data:
-                fin.seek(initial_position + DMA_length)
-                continue
+        # if acq_end is set, there is no more data
+        if acq_end:
+            break
 
-            num_samples, num_channels = struct.unpack("HH", fin.read(4))
-            builder.set_num_channels(num_channels)
-            loop_counters = struct.unpack("14H", fin.read(28))
-            cut_off_data, kspace_centre_column, coil_select, readout_offcentre = struct.unpack("IHHI", fin.read(12))
-            time_since_rf, kspace_centre_line_num, kspace_centre_partition_num = struct.unpack("IHH", fin.read(8))
-            slice_position = struct.unpack("7f", fin.read(28))
-            ice_program_params = struct.unpack("24H", fin.read(48))
-            reserved_params = struct.unpack("4H", fin.read(8))
-            fid_start_offset = ice_program_params[4]
-            num_dummy_points = reserved_params[0]
-            fid_start = fid_start_offset + num_dummy_points
-            np = int(2 ** numpy.floor(numpy.log2(num_samples - fid_start)))
-            builder.set_np(np)
-            application_counter, application_mask, crc = struct.unpack("HHI", fin.read(8))
-
-            # read the data for each channel in turn
-            scan_data = numpy.zeros((num_channels, np), dtype='complex')
-            for channel_index in range(num_channels):
-
-                # start with the header
-                dma_length, meas_uid, scan_counter, sequence_time, channel_id = struct.unpack("III4xI4xH6x", fin.read(32))
-
-                # now the data itself, which consists of num_samples * 4 (bytes per float) * 2 (two floats per complex)
-                raw_data = struct.unpack("<{}f".format(num_samples * 2), fin.read(num_samples * 4 * 2))
-
-                # we need to massage the list of floats into a numpy array of complex numbers
-                data_iter = iter(raw_data)
-                complex_iter = (complex(r, -i) for r, i in zip(data_iter, data_iter))
-                scan_data[channel_index, :] = numpy.fromiter(complex_iter, "complex64", num_samples)[fid_start:(fid_start + np)]
-
-            builder.add_scan(loop_counters, scan_data)
-
-            # move the file pointer to the start of the next scan
+        # there are some data frames that contain auxilliary data, we ignore those for now
+        if rt_feedback or hp_feedback or phase_correction or noise_adj_scan or sync_data:
             fin.seek(initial_position + DMA_length)
+            continue
+
+        num_samples, num_channels = struct.unpack("HH", fin.read(4))
+        builder.set_num_channels(num_channels)
+        loop_counters = struct.unpack("14H", fin.read(28))
+        cut_off_data, kspace_centre_column, coil_select, readout_offcentre = struct.unpack("IHHI", fin.read(12))
+        time_since_rf, kspace_centre_line_num, kspace_centre_partition_num = struct.unpack("IHH", fin.read(8))
+        slice_position = struct.unpack("7f", fin.read(28))
+        ice_program_params = struct.unpack("24H", fin.read(48))
+        reserved_params = struct.unpack("4H", fin.read(8))
+        fid_start_offset = ice_program_params[4]
+        num_dummy_points = reserved_params[0]
+        fid_start = fid_start_offset + num_dummy_points
+        np = int(2 ** numpy.floor(numpy.log2(num_samples - fid_start)))
+        builder.set_np(np)
+        application_counter, application_mask, crc = struct.unpack("HHI", fin.read(8))
+
+        # read the data for each channel in turn
+        scan_data = numpy.zeros((num_channels, np), dtype='complex')
+        for channel_index in range(num_channels):
+
+            # start with the header
+            dma_length, meas_uid, scan_counter, sequence_time, channel_id = struct.unpack("III4xI4xH6x", fin.read(32))
+
+            # now the data itself, which consists of num_samples * 4 (bytes per float) * 2 (two floats per complex)
+            raw_data = struct.unpack("<{}f".format(num_samples * 2), fin.read(num_samples * 4 * 2))
+
+            # we need to massage the list of floats into a numpy array of complex numbers
+            data_iter = iter(raw_data)
+            complex_iter = (complex(r, -i) for r, i in zip(data_iter, data_iter))
+            scan_data[channel_index, :] = numpy.fromiter(complex_iter, "complex64", num_samples)[fid_start:(fid_start + np)]
+
+        builder.add_scan(loop_counters, scan_data)
+
+        # move the file pointer to the start of the next scan
+        fin.seek(initial_position + DMA_length)
 
 
 def load_twix(filename):
