@@ -170,13 +170,13 @@ def read_coord(filename):
     # misc_output_info_line = metabolite_table_info_line + metabolite_table_line_count + 1
     misc_output_line_count = int(coord_lines[misc_output_info_line].split()[0])
     misc_output_lines = coord_lines[(misc_output_info_line + 1):(misc_output_info_line + misc_output_line_count + 1)]
-    print(misc_output_lines)
-    misc_output = {}
-    misc_output["fwhm"] = float(misc_output_lines[0].split()[2])
-    misc_output["snr"] = float(misc_output_lines[0].split()[6])
-    misc_output["frequency_shift"] = float(misc_output_lines[1].split("=")[1].split()[0])
-    misc_output["phase0"] = float(misc_output_lines[2].split()[1])
-    misc_output["phase1"] = float(misc_output_lines[2].split()[3])
+    misc_output = {
+        "fwhm": float(misc_output_lines[0].split()[2]),
+        "snr": float(misc_output_lines[0].split()[6]),
+        "frequency_shift": float(misc_output_lines[1].split("=")[1].split()[0]),
+        "phase0": float(misc_output_lines[2].split()[1]),
+        "phase1": float(misc_output_lines[2].split()[3])
+    }
 
     # get the ppm axis
     ppm_axis_info_line = misc_output_info_line + misc_output_line_count + 1
