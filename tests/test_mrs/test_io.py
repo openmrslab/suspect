@@ -4,6 +4,7 @@ import pytest
 import unittest.mock
 import builtins
 from unittest.mock import patch
+import os
 
 import numpy
 
@@ -32,7 +33,7 @@ def test_lcmodel_all_files():
     data = suspect.MRSData(numpy.zeros(1, 'complex'), 1e-3, 123.456)
     mock = unittest.mock.mock_open()
     with patch.object(builtins, 'open', mock):
-        suspect.io.lcmodel.write_all_files("/home/ben/lcmodel",
+        suspect.io.lcmodel.write_all_files(os.path.join(os.getcwd(), "lcmodel"),
                                            data)
     #print(mock.call_args)
     #print(mock().write.mock_calls)
@@ -41,6 +42,10 @@ def test_lcmodel_all_files():
 def test_lcmodel_read_coord():
     fitting_result = suspect.io.lcmodel.read_coord("suspect/tests/test_data/lcmodel/svs_97.COORD")
     assert len(fitting_result["metabolite_fits"]) == 41
+
+
+def test_lcmodel_read_liver_coord():
+    fitting_result = suspect.io.lcmodel.read_coord("suspect/tests/test_data/lcmodel/liver.COORD")
 
 
 #def test_extract_csi_fid():

@@ -132,7 +132,18 @@ def read_coord(filename):
         if "lines in following concentration table" in line:
             break
     metabolite_table_info_line = index
-    metabolite_table_line_count = int(coord_lines[metabolite_table_info_line].split()[0])
+    # unfortunately LCModel sometimes lies to us about how many metabolites are
+    # in the table, so the line below does not work
+    # metabolite_table_line_count = int(coord_lines[metabolite_table_info_line].split()[0])
+    # instead we have to look for the start of the next section and use that to
+    # work out how many lines are left
+
+    for index, line in enumerate(coord_lines):
+        if "following misc. output table" in line:
+            break
+    misc_output_info_line = index
+    metabolite_table_line_count = misc_output_info_line - 1 - metabolite_table_info_line
+
     metabolite_table_lines = coord_lines[(metabolite_table_info_line + 2):(metabolite_table_info_line + 1 + metabolite_table_line_count)]
     metabolite_fits = {}
     for metabolite_line in metabolite_table_lines:
@@ -145,18 +156,25 @@ def read_coord(filename):
             "sd": sd,
         }
     # add some aliases for some of the composite metabolites
-    metabolite_fits["TNAA"] = metabolite_fits["NAA+NAAG"]
-    metabolite_fits["TCho"] = metabolite_fits["GPC+PCh"]
-    metabolite_fits["TCr"] = metabolite_fits["Cr+PCr"]
-    metabolite_fits["Glx"] = metabolite_fits["Glu+Gln"]
+    if "NAA+NAAG" in metabolite_fits:
+        metabolite_fits["TNAA"] = metabolite_fits["NAA+NAAG"]
+    if "GPC+PCh" in metabolite_fits:
+        metabolite_fits["TCho"] = metabolite_fits["GPC+PCh"]
+    if "Cr+PCr" in metabolite_fits:
+        metabolite_fits["TCr"] = metabolite_fits["Cr+PCr"]
+    if "Glu+Gln" in metabolite_fits:
+        metabolite_fits["Glx"] = metabolite_fits["Glu+Gln"]
 
-    misc_output_info_line = metabolite_table_info_line + metabolite_table_line_count + 1
+    # because LCModel lies to us about the number of metabolites we have to get
+    # the position of the misc output a different way higher up
+    # misc_output_info_line = metabolite_table_info_line + metabolite_table_line_count + 1
     misc_output_line_count = int(coord_lines[misc_output_info_line].split()[0])
     misc_output_lines = coord_lines[(misc_output_info_line + 1):(misc_output_info_line + misc_output_line_count + 1)]
+    print(misc_output_lines)
     misc_output = {}
     misc_output["fwhm"] = float(misc_output_lines[0].split()[2])
     misc_output["snr"] = float(misc_output_lines[0].split()[6])
-    misc_output["frequency_shift"] = float(misc_output_lines[1].split()[3])
+    misc_output["frequency_shift"] = float(misc_output_lines[1].split("=")[1].split()[0])
     misc_output["phase0"] = float(misc_output_lines[2].split()[1])
     misc_output["phase1"] = float(misc_output_lines[2].split()[3])
 
