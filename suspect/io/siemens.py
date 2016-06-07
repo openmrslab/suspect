@@ -144,7 +144,6 @@ def load_siemens_dicom(filename):
     data_iter = iter(data_floats)
     complex_iter = (complex(r, i) for r, i in zip(data_iter, data_iter))
     # give this iterator to numpy to build the data array
-    print(len(csa_data_bytes))
     complex_data = numpy.fromiter(complex_iter, "complex128", int(len(csa_data_bytes) / 8))
     # reshape the array to structure of rows, columns and slices
     complex_data = numpy.reshape(complex_data, data_shape).squeeze()
