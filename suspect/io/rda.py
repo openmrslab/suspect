@@ -1,4 +1,4 @@
-from suspect import MRSData
+from suspect import MRSData, transformation_matrix
 
 import numpy
 import struct
@@ -70,6 +70,7 @@ def load_rda(filename):
             header_line = fin.readline().strip().decode('windows-1252')
         # now we can read the data
         data = fin.read()
+
     # the shape of the data in slice, column, row, time format
     data_shape = header_dict["CSIMatrixSize"][::-1]
     data_shape.append(header_dict["VectorSize"])
@@ -77,17 +78,47 @@ def load_rda(filename):
     data_size = numpy.prod(data_shape) * 16  # each data point is a complex double, 16 bytes
     if data_size != len(data):
         raise ValueError("Error reading file {}: expected {} bytes of data, got {}".format(filename, data_size, len(data)))
+
     # unpack the data into complex numbers
     data_as_floats = struct.unpack("<{}d".format(numpy.prod(data_shape) * 2), data)
     float_iter = iter(data_as_floats)
     complex_iter = (complex(r, i) for r, i in zip(float_iter, float_iter))
-    complex_data = numpy.fromiter(complex_iter, "complex64", numpy.prod(data_shape))
+    complex_data = numpy.fromiter(complex_iter, "complex64", int(numpy.prod(data_shape)))
     complex_data = numpy.reshape(complex_data, data_shape)
+
     # some .rda files have a misnamed field, correct this here
     if "VOIReadoutFOV" not in header_dict:
         if "VOIReadoutVOV" in header_dict:
             header_dict["VOIReadoutFOV"] = header_dict.pop("VOIReadoutVOV")
+
+    # combine positional elements in the header
+    voi_size = (header_dict["VOIReadoutFOV"],
+                header_dict["VOIPhaseFOV"],
+                header_dict["VOIThickness"])
+    voi_center = (header_dict["VOIPositionSag"],
+                  header_dict["VOIPositionCor"],
+                  header_dict["VOIPositionTra"])
+    voxel_size = (header_dict["PixelSpacingRow"],
+                  header_dict["PixelSpacingCol"],
+                  header_dict["PixelSpacing3D"])
+
+    x_vector = numpy.array(header_dict["RowVector"])
+    y_vector = numpy.array(header_dict["ColumnVector"])
+
+    to_scanner = transformation_matrix(x_vector, y_vector, numpy.array(voi_center), voxel_size)
+
+    # put useful components from the header in the metadata
+    metadata = {
+        "voi_size": voi_size,
+        "position": voi_center,
+        "voxel_size": voxel_size,
+        "protocol": header_dict["ProtocolName"],
+        "to_scanner": to_scanner,
+        "from_scanner": numpy.linalg.inv(to_scanner)
+    }
+
     return MRSData(complex_data,
                    header_dict["DwellTime"] * 1e-6,
                    header_dict["MRFrequency"],
-                   te=header_dict["TE"])
+                   te=header_dict["TE"],
+                   metadata=metadata)
