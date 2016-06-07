@@ -8,6 +8,11 @@ def test_twix_nofile():
         suspect.io.rda.load_rda("")
 
 
+def test_svs_file():
+    data = suspect.io.load_rda("suspect/tests/test_data/siemens/SVS_30.rda")
+    assert data.shape == (1, 1, 1, 1024)
+
+
 #def test_csi_file():
 #    data = suspect.io.rda.load_rda("suspect/tests/test_data/CSITEST_20151028_97_1.rda")
 #    assert data.shape == (1, 16, 16, 1024)
