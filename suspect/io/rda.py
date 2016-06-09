@@ -98,8 +98,8 @@ def load_rda(filename):
     voi_center = (header_dict["VOIPositionSag"],
                   header_dict["VOIPositionCor"],
                   header_dict["VOIPositionTra"])
-    voxel_size = (header_dict["PixelSpacingRow"],
-                  header_dict["PixelSpacingCol"],
+    voxel_size = (header_dict["PixelSpacingCol"],
+                  header_dict["PixelSpacingRow"],
                   header_dict["PixelSpacing3D"])
 
     x_vector = numpy.array(header_dict["RowVector"])
@@ -121,4 +121,5 @@ def load_rda(filename):
                    header_dict["DwellTime"] * 1e-6,
                    header_dict["MRFrequency"],
                    te=header_dict["TE"],
+                   transform=to_scanner,
                    metadata=metadata)
