@@ -7,7 +7,7 @@ class MRSData(numpy.ndarray):
     time.
     """
 
-    def __new__(cls, input_array, dt, f0, te=30, ppm0=4.7, voxel_dimensions=(10, 10, 10), metadata=None):
+    def __new__(cls, input_array, dt, f0, te=30, ppm0=4.7, voxel_dimensions=(10, 10, 10), transform=None, metadata=None):
         # Input array is an already formed ndarray instance
         # We first cast to be our class type
         obj = numpy.asarray(input_array).view(cls)
@@ -20,6 +20,7 @@ class MRSData(numpy.ndarray):
         obj.df = 1.0 / dt / obj.np
         obj.sw = 1.0 / dt
         obj.voxel_dimensions = voxel_dimensions
+        obj.transform = transform
         obj.metadata = metadata
         return obj
 
@@ -32,6 +33,7 @@ class MRSData(numpy.ndarray):
         self.df = getattr(obj, 'df', None)
         self.np = getattr(obj, 'np', None)
         self.sw = getattr(obj, 'sw', None)
+        self.transform = getattr(obj, 'transform', None)
         self.metadata = getattr(obj, 'metadata', None)
         #self.np = self.shape[-1]
         self.voxel_dimensions = getattr(obj, 'voxel_dimensions', (10, 10, 10))
@@ -54,6 +56,7 @@ class MRSData(numpy.ndarray):
         cast_array.ppm0 = self.ppm0
         cast_array.sw = self.sw
         cast_array.voxel_dimensions = self.voxel_dimensions
+        cast_array.transform = self.transform
         cast_array.metadata = self.metadata
         return cast_array
 
@@ -118,3 +121,35 @@ class MRSData(numpy.ndarray):
         :return: the size of the voxel in mm^3.
         """
         return numpy.prod(self.voxel_dimensions)
+
+    def to_scanner(self, x, y, z):
+        """
+        Converts a 3d position in MRSData space to the scanner reference frame
+
+        :param x:
+        :param y:
+        :param z:
+        :return:
+        """
+        if self.transform is None:
+            raise ValueError("No transform set for MRSData object {}".format(self))
+
+        transformed_point = self.transform * numpy.matrix([x, y, z, 1]).T
+
+        return numpy.squeeze(numpy.asarray(transformed_point))[0:3]
+
+    def from_scanner(self, x, y, z):
+        """
+        Converts a 3d position in the scanner reference frame to the MRSData space
+
+        :param x:
+        :param y:
+        :param z:
+        :return:
+        """
+        if self.transform is None:
+            raise ValueError("No transform set for MRSData object {}".format(self))
+
+        transformed_point = numpy.linalg.inv(self.transform) * numpy.matrix([x, y, z, 1]).T
+
+        return numpy.squeeze(numpy.asarray(transformed_point))[0:3]
