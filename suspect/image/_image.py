@@ -11,7 +11,7 @@ def load_dicom_volume(filename):
     seriesUID = ds.SeriesInstanceUID
 
     # get the position of the image
-    position = numpy.array(map(float, ds.ImagePositionPatient))
+    position = numpy.array(list(map(float, ds.ImagePositionPatient)))
 
     # get the direction normal to the plane of the image
     row_vector = numpy.array(ds.ImageOrientationPatient[:3])
@@ -34,6 +34,8 @@ def load_dicom_volume(filename):
 
             # check that the series UID matches
             if new_ds.SeriesInstanceUID == seriesUID:
+                if new_ds.pixel_array.shape != ds.pixel_array.shape:
+                    continue
                 new_position = list(map(float, new_ds.ImagePositionPatient))
                 slices[normal_distance(new_position)] = new_ds.pixel_array
 
@@ -66,5 +68,6 @@ def load_dicom_volume(filename):
         "voxel_spacing": voxel_spacing,
         "position": position,
         "volume": voxel_array,
-        "vectors": [row_vector, col_vector, normal_vector]
+        "vectors": [row_vector, col_vector, normal_vector],
+        "transform": transform
     }
