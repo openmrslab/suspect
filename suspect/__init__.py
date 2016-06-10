@@ -4,5 +4,6 @@ from . import processing
 from . import io
 from . import basis
 from . import fitting
+from . import viz
 
 import numpy as np
