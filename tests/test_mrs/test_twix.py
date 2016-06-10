@@ -10,7 +10,7 @@ def test_twix_nofile():
 
 
 def test_veriofile():
-    data = suspect.io.load_twix("suspect/tests/test_data/twix_vb.dat")
+    data = suspect.io.load_twix("suspect/tests/test_data/siemens/twix_vb.dat")
     assert data.shape == (128, 32, 2048)
     assert data.np == 2048
     assert data.dt == 2.5e-4
