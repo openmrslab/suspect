@@ -1,3 +1,3 @@
-import plot_raw_signals
+import plot_signals
 
 

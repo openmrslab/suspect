@@ -4,13 +4,24 @@ Created on Fri Jun 03 13:45:41 2016
 
 @author: laurajanem
 
-This module does some things
-new comments
-new comments 2
+This module does some plotting things
+
 """
 
+def spectra(xdata, ydata, plot_params={},current_axis=None):
+    if len(plot_params)==0:
+        plot_params = get_default_plot_params('spectra')
+    fig, line_handles, current_axis = plot(xdata,ydata,plot_params,current_axis)
+    return fig, line_handles, current_axis
 
-def plot_signals(xdata, ydata, plot_type='', plot_params={}, current_axis=None):
+def fids(xdata, ydata, plot_params={},current_axis=None):
+    if len(plot_params)==0:
+        plot_params = get_default_plot_params('fid')
+    fig, line_handles, current_axis = plot(xdata,ydata,plot_params,current_axis)
+    return fig, line_handles, current_axis
+    
+
+def plot(xdata, ydata, plot_type='', plot_params, current_axis=None):
     """
     
     Parameters
@@ -40,7 +51,7 @@ def plot_signals(xdata, ydata, plot_type='', plot_params={}, current_axis=None):
     
     # Check on the shape of the input data
     if ydata.shape[0] != xdata.shape[0] and ydata.shape[0] != xdata.shape[0]:
-        # Throw and error
+        # Throw an error
         pass
     elif ydata.shape[0] != xdata.shape[0]:
         # Transpose the data
@@ -157,19 +168,20 @@ def get_default_plot_params(plot_type=''):
     
     # Add more plot-type specific parameters to the dictionary   
     # Note: This is a good spot                
-    if plot_type is 'spectrum':
+    if plot_type is 'spectra':
         default_plot_params.update({'reverse_x':True})
     elif plot_type is 'fid':
         default_plot_params['reverse_x']=False
-#    else:
+    else:
         # Note: Here is a good spot to add customized plotting parameters
+        pass
             
                        
     return default_plot_params
     
 
 def apply_plot_params(plot_params):
-    """Apply parameters to current figure."""
+    """Apply parameters to current axis."""
     
     import matplotlib.pyplot as plt
     
@@ -192,7 +204,7 @@ def apply_plot_params(plot_params):
     
     if plot_params['save_fig']:
         # Save the figure to the specified location
-#        plt.savefig(plot_params['output_fig_path'],transparent=True)
+        plt.savefig(plot_params['output_fig_path'],transparent=True)
         pass
     
     if plot_params['suppress_fig'] is False:
