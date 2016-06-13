@@ -1,3 +1,3 @@
-import plot_signals
+from . import plot_signals
 
 
