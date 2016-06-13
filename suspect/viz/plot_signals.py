@@ -9,20 +9,71 @@ This module does some plotting things
 """
 
 def spectra(xdata, ydata, plot_params={},current_axis=None):
+    """
+    Plots MR spectra
+    
+    Parameters
+    ----------
+    xdata : array_like
+            Data to plot on x-axis
+    ydata : array_like
+            Data to plot on y-axis
+    plot_params : dictionary-optional
+                  Dictionary of parameters to use for generating the graph and formatting the axes. 
+                  If plot_params = {}, default parameters for plotting spectra are used.
+    current_axis : axis handle-optional
+                   If not empty, add the plot to this axis, instead of generating a new figure + axis
+                  
+    Returns
+    -------
+    fig_handle : figure handle
+                Handle of the figure the data was added to
+    line_handles : 2D line object handle(s)
+                    List of handles to each of the line objects added to the current axis
+    current_axis : axis handle
+                   Handle of the axis data was added to
+     
+    """
     if len(plot_params)==0:
         plot_params = get_default_plot_params('spectra')
-    fig, line_handles, current_axis = plot(xdata,ydata,plot_params,current_axis)
-    return fig, line_handles, current_axis
+    fig_handle, line_handles, current_axis = plot(xdata,ydata,plot_params,current_axis)
+    return fig_handle, line_handles, current_axis
 
 def fids(xdata, ydata, plot_params={},current_axis=None):
+    """
+        Plots MRS FIDs
+        
+        Parameters
+        ----------
+        xdata : array_like
+                Data to plot on x-axis
+        ydata : array_like
+                Data to plot on y-axis
+        plot_params : dictionary-optional
+                      Dictionary of parameters to use for generating the graph and formatting the axes. 
+                      If plot_params = {}, default parameters for plotting FIDs are used.
+        current_axis : axis handle-optional
+                       If not empty, add the plot to this axis, instead of generating a new figure + axis
+                      
+        Returns
+        -------
+        fig_handle : figure handle
+                    Handle of the figure the data was added to
+        line_handles : 2D line object handle(s)
+                        List of handles to each of the line objects added to the current axis
+        current_axis : axis handle
+                       Handle of the axis data was added to
+     
+    """
     if len(plot_params)==0:
         plot_params = get_default_plot_params('fid')
-    fig, line_handles, current_axis = plot(xdata,ydata,plot_params,current_axis)
-    return fig, line_handles, current_axis
+    fig_handle, line_handles, current_axis = plot(xdata,ydata,plot_params,current_axis)
+    return fig_handle, line_handles, current_axis
     
 
-def plot(xdata, ydata, plot_type='', plot_params, current_axis=None):
+def plot(xdata, ydata, plot_type='', plot_params={}, current_axis=None):
     """
+    Generic function for plotting any kind of MRS data.    
     
     Parameters
     ----------
@@ -32,6 +83,7 @@ def plot(xdata, ydata, plot_type='', plot_params, current_axis=None):
             Data to plot on y-axis
     plot_type : string-optional
                 Type of plot to generate. Determines some default plotting parameters, if they are specified.
+                Currently implemented: ['spectra', 'fids']
     plot_params : dictionary-optional
                   Dictionary of parameters to use for generating the graph and formatting the axes. 
                   If plot_params = {}, default parameters are used.
@@ -40,8 +92,12 @@ def plot(xdata, ydata, plot_type='', plot_params, current_axis=None):
                   
     Returns
     -------
+    fig_handle : figure handle
+                Handle of the figure the data was added to
+    line_handles : 2D line object handle(s)
+                    List of handles to each of the line objects added to the current axis
     current_axis : axis handle
-                   Handle of the axis the line plots were added to
+                   Handle of the axis data was added to
      
     """
     import numpy as np
@@ -67,10 +123,10 @@ def plot(xdata, ydata, plot_type='', plot_params, current_axis=None):
     if current_axis is not None:
         # Add the plot to a previously specified axis
         line_handles = current_axis.plot(xdata,ydata)
-        fig = plt.gcf()
+        fig_handle = plt.gcf()
     else:
-        fig=plt.figure()  
-        current_axis = fig.add_subplot(1,1,1)
+        fig_handle=plt.figure()  
+        current_axis = fig_handle.add_subplot(1,1,1)
         line_handles = current_axis.plot(xdata,ydata)
 
     
@@ -87,13 +143,13 @@ def plot(xdata, ydata, plot_type='', plot_params, current_axis=None):
 
     if plot_params['autoclose']:
         # Close the figure before exiting the function
-        plt.close(fig)
-        fig = []
+        plt.close(fig_handle)
+        fig_handle = []
         line_handles = []
         current_axis = []
 
     
-    return fig, line_handles, current_axis
+    return fig_handle, line_handles, current_axis
     
 
 def suggest_channel(data):
