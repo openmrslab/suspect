@@ -5,3 +5,4 @@ from . import io
 from . import basis
 from . import fitting
 from . import image
+from . import viz
