@@ -2,7 +2,7 @@ from setuptools import setup, find_packages
 
 setup(
         name='suspect',
-        version='0.0.5',
+        version='0.0.6',
         packages=find_packages(),
         url='https://github.com/bennyrowland/suspect.git',
         license='MIT',
@@ -36,5 +36,6 @@ setup(
             'Programming Language :: Python :: 3.3',
             'Programming Language :: Python :: 3.4',
         ],
-        install_requires=['numpy', 'pytest', 'mock', 'pywavelets', 'scipy', 'lmfit', 'pydicom']
+        install_requires=['numpy', 'pywavelets', 'scipy', 'lmfit', 'pydicom'],
+        test_requires=['pytest', 'mock']
 )
