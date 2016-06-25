@@ -18,15 +18,10 @@ import os
 import shlex
 
 import sys
-from unittest.mock import Mock as MagicMock
-
-class Mock(MagicMock):
-    @classmethod
-    def __getattr__(cls, name):
-            return Mock()
+from unittest.mock import MagicMock
 
 MOCK_MODULES = ['pydicom']
-sys.modules.update((mod_name, Mock()) for mod_name in MOCK_MODULES)
+sys.modules.update((mod_name, MagicMock()) for mod_name in MOCK_MODULES)
 
 # If extensions (or modules to document with autodoc) are in another directory,
 # add these directories to sys.path here. If the directory is relative to the
