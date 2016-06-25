@@ -1,7 +1,5 @@
 from setuptools import setup, find_packages
-import os
 
-install_requires = ['pywavelets', 'scipy', 'numpy', 'lmfit', 'pydicom'] if os.environ.get('READTHEDOCS') else []
 
 setup(
         name='suspect',
@@ -39,6 +37,6 @@ setup(
             'Programming Language :: Python :: 3.3',
             'Programming Language :: Python :: 3.4',
         ],
-        install_requires=install_requires,
+        install_requires=['pywavelets', 'scipy', 'numpy', 'lmfit', 'pydicom'],
         test_requires=['pytest', 'mock']
 )
