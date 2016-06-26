@@ -10,6 +10,8 @@ Welcome! This is the documentation for Suspect 0.0.6, last updated June 24th, 20
 
 Parts of the documentation:
 
+Overview
+
 .. toctree::
    :maxdepth: 2
 
