@@ -7,12 +7,13 @@ def _pad(input_signal, length, average=10):
     is inserted at the centre of the new signal and the extra values are set to
     the average of the first and last parts of the original, respectively.
 
-    :param input_signal:
-    :param length:
-    :param average:
+    :param input_signal: the signal to be padded
+    :param length: the length of the padded signal
+    :param average: the number of points at the beginning/end of the signal
+    which are averaged to calculate the padded value
     :return:
     """
-    padded_input_signal = numpy.zeros(length)
+    padded_input_signal = numpy.zeros(length, input_signal.dtype)
     start_offset = (len(padded_input_signal) - len(input_signal)) / 2.
     padded_input_signal[:start_offset] = numpy.average(input_signal[0:average])
     padded_input_signal[start_offset:(start_offset + len(input_signal))] = input_signal[:]
@@ -99,9 +100,9 @@ def wavelet(input_signal, wavelet_shape, threshold):
     # we have to pad the signal to make it a power of two
     next_power_of_two = int(numpy.floor(numpy.log2(len(input_signal))) + 1)
     padded_input_signal = _pad(input_signal, 2**next_power_of_two)
-    wt_coeffs = pywt.wavedec(padded_input_signal, wavelet_shape, level=next_power_of_two, mode='per')
+    wt_coeffs = pywt.wavedec(padded_input_signal, wavelet_shape, level=None, mode='per')
     denoised_coeffs = wt_coeffs[:]
-    denoised_coeffs[1:] = (pywt.thresholding.soft(i, value=threshold) for i in denoised_coeffs[1:])
+    denoised_coeffs[1:] = (pywt.threshold(i, value=threshold) for i in denoised_coeffs[1:])
     recon = pywt.waverec(denoised_coeffs, wavelet_shape, mode='per')
     start_offset = (len(padded_input_signal) - len(input_signal)) / 2.0
     return recon[start_offset:(start_offset + len(input_signal))]
