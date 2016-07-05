@@ -43,7 +43,7 @@ def test_spectral_registration():
 
 
 def test_compare_frequency_correction():
-    test_data = suspect.io.load_twix("suspect/tests/test_data/twix_vb.dat")
+    test_data = suspect.io.load_twix("tests/test_data/siemens/twix_vb.dat")
     test_data = test_data.inherit(numpy.average(test_data, axis=1, weights=suspect.processing.channel_combination.svd_weighting(numpy.average(test_data, axis=0))))
     sr_target = test_data[0]
     for i in range(test_data.shape[0]):
@@ -82,7 +82,7 @@ def test_gaussian_denoising():
 
 
 def test_water_suppression():
-    data = suspect.io.load_twix("suspect/tests/test_data/twix_vb.dat")
+    data = suspect.io.load_twix("tests/test_data/siemens/twix_vb.dat")
     channel_combined_data = data.inherit(numpy.average(data, axis=1))
     components = suspect.processing.water_suppression.hsvd(channel_combined_data[10], 4, int(data.np / 2))
     fid = suspect.processing.water_suppression.construct_fid(components, data.time_axis())
