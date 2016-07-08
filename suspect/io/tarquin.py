@@ -10,7 +10,7 @@ def save_dpt(filename, data):
         fout.write("Phi0\t{0:8.8e}\n".format(0).encode())
         fout.write("Phi1\t{0:8.8e}\n".format(0).encode())
         fout.write("PPM_reference\t{0:8.8e}\n".format(data.ppm0).encode())
-        fout.write("Echo_time\t{0:8.8e}\n".format(data.te).encode())
+        fout.write("Echo_time\t{0:8.8e}\n".format(data.te * 1e-3).encode())
         fout.write("Real_FID\tImag_FID\t\n".encode())
         for x in data:
             fout.write("{0.real:8.8e} {0.imag:8.8e}\n".format(x).encode())
