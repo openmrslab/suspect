@@ -47,7 +47,7 @@ def load_dicom_volume(filename):
     # that is all the slices in the folder, assemble them into a 3d volume
     voxel_array = numpy.zeros((len(slices),
                                ds.pixel_array.shape[0],
-                               ds.pixel_array.shape[1]), dtype=numpy.float)
+                               ds.pixel_array.shape[1]), dtype=ds.pixel_array.dtype)
     sorted_slice_positions = sorted(slices.keys())
     for i, slice_position in enumerate(sorted_slice_positions):
         voxel_array[i] = slices[slice_position]
