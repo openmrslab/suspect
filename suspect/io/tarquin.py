@@ -1,3 +1,6 @@
+import subprocess
+
+
 def save_dpt(filename, data):
     with open(filename, 'wb') as fout:
         fout.write("Dangerplot_version\t1.0\n".encode())
@@ -11,3 +14,18 @@ def save_dpt(filename, data):
         fout.write("Real_FID\tImag_FID\t\n".encode())
         for x in data:
             fout.write("{0.real:8.8e} {0.imag:8.8e}\n".format(x).encode())
+
+
+def read_output(filename):
+    with open(filename) as fin:
+        pass
+
+
+def process(data):
+    save_dpt("/tmp/temp.dpt", data)
+    subprocess.run("tarquin --input {} --format dpt --output_txt {}".format(
+        "/tmp/temp.dpt", "/tmp/output.txt"
+    ), shell=True)
+    with open("/tmp/output.txt") as fin:
+        result = fin.read()
+    return result
