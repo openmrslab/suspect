@@ -1,5 +1,26 @@
 import numpy
 import os
+import itertools
+import parsley
+
+basis_grammar = r"""
+namelist = '$' name:n pairs:p ws -> (n, dict(p))
+pairs = (pair:first (pair)*:rest -> [first] + rest) | -> []
+pair = ws name:k ws '=' ws valuelist:v ws ','? -> (k.upper(), v)
+valuelist = ws (stringlist|numberlist|truth|falsehood):v -> v
+truth = 'T' -> True
+falsehood = 'F' -> False
+stringlist = (string:first (ws string)+:rest -> [first] + rest) | string
+string = '\'' (~'\'' anything)*:c '\'' -> ''.join(c).strip()
+numberlist = (number:first (ws number)+:rest -> [first] + rest) | number
+number = ('-' | -> ''):sign (digits:ds (floatPart(sign ds) | -> int(sign + ds)))
+digits = <digit+>
+name = <letter (letter | digit | '_')*>
+floatPart :sign :ds = <('.' digits? exponent?) | exponent>:tail -> float(sign + ds + tail)
+exponent = ('e' | 'E') ('+' | '-')? digits
+"""
+
+parser = parsley.makeGrammar(basis_grammar, {})
 
 
 def save_raw(filename, data):
@@ -226,3 +247,44 @@ def read_coord(filename):
         "baseline": baseline_points,
         "metabolite_spectra": metabolite_spectra
     }
+
+
+def read_basis(filename):
+    with open(filename) as fin:
+        basis_set = {"SPECTRA": {}}
+        data = fin.read().lstrip()
+        # does the data start with a namelist
+        while data.startswith("$"):
+            # where does the namelist end
+            namelist_data, _, data = data.partition("$END")
+            data = data.lstrip()
+            namelist = parser(namelist_data).namelist()
+
+            if namelist[0].upper() == "SEQPAR":
+                basis_set["SEQPAR"] = namelist[1]
+
+            elif namelist[0].upper() == "BASIS1":
+                basis_set["BASIS1"] = namelist[1]
+                # find out the number of points in each spectrum
+                np = namelist[1]["NDATAB"]
+                # 3 complex points per line, how many lines
+                num_lines = ((np - 1) // 3) + 1
+
+            elif namelist[0].upper() == "BASIS":
+                metabolite_name = namelist[1]["METABO"]
+                basis_set["SPECTRA"][metabolite_name] = namelist[1]
+                # after each BASIS namelist come the actual data points
+                points = []
+                for line in itertools.islice(data.splitlines(), num_lines):
+                    points.extend(map(float, line.split()))
+
+                points = iter(points)
+
+                complex_points = (complex(r, i) for r, i in zip(points, points))
+                complex_data = numpy.fromiter(complex_points, "complex64", np)
+                basis_set["SPECTRA"][metabolite_name]["data"] = complex_data
+                # find start of next namelist
+                start = data.find("$")
+                data = data[start:]
+
+        return basis_set

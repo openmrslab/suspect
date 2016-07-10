@@ -40,12 +40,26 @@ def test_lcmodel_all_files():
 
 
 def test_lcmodel_read_coord():
-    fitting_result = suspect.io.lcmodel.read_coord("suspect/tests/test_data/lcmodel/svs_97.COORD")
+    fitting_result = suspect.io.lcmodel.read_coord("tests/test_data/lcmodel/svs_97.COORD")
     assert len(fitting_result["metabolite_fits"]) == 41
 
 
 def test_lcmodel_read_liver_coord():
-    fitting_result = suspect.io.lcmodel.read_coord("suspect/tests/test_data/lcmodel/liver.COORD")
+    fitting_result = suspect.io.lcmodel.read_coord("tests/test_data/lcmodel/liver.COORD")
+
+
+def test_lcmodel_read_basis():
+    basis = suspect.io.lcmodel.read_basis("tests/test_data/lcmodel/press_30ms_3T.basis")
+    #print(basis)
+    #from matplotlib import pyplot
+    #met = "NAA"
+    #sw = 1.0 / basis["BASIS1"]["BADELT"]
+    #fa = numpy.linspace(0, sw, len(basis[met]["data"]))
+    #pyplot.plot(fa, numpy.abs(numpy.roll(basis[met]["data"], -basis[met]["ISHIFT"])))
+    #pyplot.show()
+    assert basis["BASIS1"]["BADELT"] == 0.000207357807
+    assert basis["BASIS1"]["NDATAB"] == 4944
+    assert "NAA" in basis["SPECTRA"]
 
 
 #def test_extract_csi_fid():
