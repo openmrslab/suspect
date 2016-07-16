@@ -119,11 +119,11 @@ def write_all_files(filename, data, wref_data=None, params=None):
         base_params["LCOORD"] = 9
         base_params["FILCOO"] = "'{}'".format(os.path.join(folder, file_root + ".COORD"))
     if "FILCOR" in base_params:
-        base_params["LCOORD"] = 10
-        base_params["FILCOO"] = "'{}'".format(base_params["FILCOR"])
+        base_params["LCORAW"] = 10
+        base_params["FILCOR"] = "'{}'".format(base_params["FILCOR"])
     elif "LCORAW" in base_params:
-        base_params["LCOORD"] = 10
-        base_params["FILCOO"] = "'{}'".format(os.path.join(folder, file_root + ".CORAW"))
+        base_params["LCORAW"] = 10
+        base_params["FILCOR"] = "'{}'".format(os.path.join(folder, file_root + ".CORAW"))
 
     save_raw(base_params["FILRAW"], data)
     if wref_data is not None:
