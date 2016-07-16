@@ -118,6 +118,12 @@ def write_all_files(filename, data, wref_data=None, params=None):
     elif "LCOORD" in base_params:
         base_params["LCOORD"] = 9
         base_params["FILCOO"] = "'{}'".format(os.path.join(folder, file_root + ".COORD"))
+    if "FILCOR" in base_params:
+        base_params["LCOORD"] = 10
+        base_params["FILCOO"] = "'{}'".format(base_params["FILCOR"])
+    elif "LCORAW" in base_params:
+        base_params["LCOORD"] = 10
+        base_params["FILCOO"] = "'{}'".format(os.path.join(folder, file_root + ".CORAW"))
 
     save_raw(base_params["FILRAW"], data)
     if wref_data is not None:
@@ -288,3 +294,43 @@ def read_basis(filename):
                 data = data[start:]
 
         return basis_set
+
+
+def save_basis(filename, basis):
+    # make sure that the basis object has the necessary components
+    if "BASIS1" not in basis:
+        raise ValueError("Basis object {} is missing required component BASIS1".format(basis))
+    if len(basis["SPECTRA"]) == 0:
+        raise ValueError("Basis object {} contains zero spectra".format(basis))
+
+    with open(filename, 'wt') as fout:
+
+        # write SEQPAR if it is in the basis
+        if "SEQPAR" in basis:
+            write_namelist(fout, "SEQPAR", basis["SEQPAR"])
+
+        # write BASIS1
+        write_namelist(fout, "BASIS1", basis["BASIS1"])
+
+        # write the metabolite namelists and data
+        for metabolite, properties in basis["SPECTRA"].items():
+
+            # remove the data object (the spectrum itself)
+            data = properties.pop("data")
+            # write the remainder of the basis namelist to the file
+            write_namelist(fout, "BASIS", properties)
+            for i, point in enumerate(data):
+                fout.write(" {0: 4.5e} {1: 4.5e}".format(point.real, point.imag))
+                if (i + 1) % 3 == 0:
+                    fout.write("\n")
+            if (i+1) % 3 != 0:
+                fout.write("\n")
+
+
+def write_namelist(fout, name, components):
+    fout.write(" ${}\n".format(name))
+    for key, value in components.items():
+        if isinstance(value, str):
+            value = "'{0}'".format(value)
+        fout.write(" {0} = {1},\n".format(key, value))
+    fout.write(" $END\n")

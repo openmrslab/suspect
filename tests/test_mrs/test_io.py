@@ -62,6 +62,16 @@ def test_lcmodel_read_basis():
     assert "NAA" in basis["SPECTRA"]
 
 
+def test_lcmodel_write_basis():
+    basis = suspect.io.lcmodel.read_basis("tests/test_data/lcmodel/press_30ms_3T.basis")
+    mock = unittest.mock.mock_open()
+    with patch.object(builtins, 'open', mock):
+        suspect.io.lcmodel.save_basis("/home/ben/test_raw.raw", basis)
+        #print(mock().write.mock_calls)
+        # handle = mock()
+        # print(handle.write.call_args())
+
+
 #def test_extract_csi_fid():
 #    data = suspect.io.rda.load_rda("suspect/tests/test_data/CSITEST_20151028_97_1.rda")
 #    single_voxel = data[0, 8, 8]
