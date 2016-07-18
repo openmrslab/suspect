@@ -5,7 +5,7 @@ import suspect.basis
 
 def hsvd(data, rank, L=None):
     if L is None:
-        L = data.np / 2
+        L = data.np // 2
     # start by building the Hankel matrix
     hankel_matrix = numpy.zeros((L, data.np - L), "complex")
     for i in range(int(data.np - L)):
