@@ -19,6 +19,11 @@ def test_write_dpt():
     #print(handle.write.call_args())
 
 
+def test_read_tarquin_results():
+    fitting_result = suspect.io.tarquin.read_output("tests/test_data/tarquin/tarquin_results.txt")
+    assert "metabolite_fits" in fitting_result
+
+
 def test_write_raw():
     data = suspect.MRSData(numpy.zeros(1, 'complex'), 1e-3, 123.456)
     mock = unittest.mock.mock_open()

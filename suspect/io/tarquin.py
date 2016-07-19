@@ -17,8 +17,31 @@ def save_dpt(filename, data):
 
 
 def read_output(filename):
+    """
+    Reads in a Tarquin txt results file and returns a dict of the information
+
+    :param filename: The filename to read from
+    :return:
+    """
     with open(filename) as fin:
-        pass
+        data = fin.read()
+
+        metabolite_fits = {}
+
+        sections = data.split("\n\n")
+
+        # first section is the metabolite concentrations
+        metabolite_lines = sections[0].splitlines()[2:]
+        for line in metabolite_lines:
+            name, concentration, pc_sd, sd = line.split()
+            metabolite_fits[name] = {
+                "concentration": concentration,
+                "sd": pc_sd,
+            }
+
+        return {
+            "metabolite_fits": metabolite_fits
+        }
 
 
 def process(data):
@@ -26,6 +49,7 @@ def process(data):
     subprocess.run("tarquin --input {} --format dpt --output_txt {}".format(
         "/tmp/temp.dpt", "/tmp/output.txt"
     ), shell=True)
-    with open("/tmp/output.txt") as fin:
-        result = fin.read()
+    #with open("/tmp/output.txt") as fin:
+    #    result = fin.read()
+    result = read_output("/tmp/output.txt")
     return result
