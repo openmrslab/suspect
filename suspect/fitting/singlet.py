@@ -1,5 +1,6 @@
 import lmfit
 import numpy
+import scipy.optimize
 import numbers
 
 import suspect
@@ -32,7 +33,7 @@ def real_to_complex(real_fid):
     :param real_fid: the real FID to be converted to complex.
     :return: the complex version of the FID
     """
-    np = real_fid.shape[0] / 2
+    np = int(real_fid.shape[0] / 2)
     complex_fid = numpy.zeros(np, 'complex')
     complex_fid[:] = real_fid[:np]
 
@@ -42,83 +43,113 @@ def real_to_complex(real_fid):
     return complex_fid
 
 
-def gaussian_fid(x, amplitude=1, frequency=0.0, phase=0.0, fwhm=1.0):
+# metabolite_name_list = []
+
+
+def phase_fid(fid_in, phase0, phase1):
     """
-    Generates a Gaussian FID for use with the lmfit GaussianFidModel class. The
-    helper function complex_to_real is used to convert the FID to a real form.
+    This function performs a Fourier Transform on the FID to shift it into phase.
 
-    :param x: the time axis for the fid data
-    :param amplitude: the amplitude of the Gaussian
-    :param frequency: the frequency of the Gaussian in Hz
-    :param phase: the phase in radians
-    :param fwhm: the full width at half maximum of the Gaussian
-    :return: a real FID describing a Gaussian relaxation
+    :param fid_in: FID to be fitted.
+    :param phase1: phase1 value.
+    :param phase0: phase0 value.
+    :return:
     """
-
-    complex_fid = amplitude * suspect.basis.gaussian(x, frequency, phase, fwhm)
-    return complex_to_real(complex_fid)
-
-
-class GaussianFidModel(lmfit.models.Model):
-    def __init__(self, *args, **kwargs):
-        super(GaussianFidModel, self).__init__(gaussian_fid, *args, **kwargs)
-        self.set_param_hint('fwhm', min=0)
-        self.set_param_hint('amplitude', min=0)
-        self.set_param_hint('phase', min=-numpy.pi, max=numpy.pi)
-
-    def guess(self, data=None, **kwargs):
-        return self.make_params()
-
-    def copy(self, **kwargs):
-        raise NotImplementedError
+    spectrum = numpy.fft.fftshift(numpy.fft.fft(fid_in))
+    np = fid_in.np
+    phase_shift = phase0 + phase1 * numpy.linspace(-np / 2, np / 2, np, endpoint=False)
+    phased_spectrum = spectrum * numpy.exp(1j * phase_shift)
+    return fid_in.inherit(numpy.fft.ifft(numpy.fft.ifftshift(phased_spectrum)))
 
 
-class Model:
-    def __init__(self, peaks):
-        self.model = None
-        self.params = lmfit.Parameters()
-        for peak_name, peak_params in peaks.items():
+def make_basis(params, time_axis):
+    """
+    This function generates a basis set.
 
-            current_peak_model = GaussianFidModel(prefix="{}".format(peak_name))
-            self.params.update(current_peak_model.make_params())
+    :param params: lmfit Parameters object containing fitting parameters.
+    :param time_axis: the time axis.
+    :return: a matrix containing the generated basis set.
+    """
+    metabolite_name_list = []
+    for param in params.keys():
+        split = param.split('_')
+        if len(split) == 2:
+            if split[0] not in metabolite_name_list:
+                metabolite_name_list.append(split[0])
 
-            for param_name, param_data in peak_params.items():
-                # the
-                full_name = "{0}{1}".format(peak_name, param_name)
+    basis_matrix = numpy.matrix(numpy.zeros((len(metabolite_name_list), len(time_axis) * 2)))
+    for i, metabolite_name in enumerate(metabolite_name_list):
+        gaussian = suspect.basis.gaussian(time_axis,
+                                          params["{}_frequency".format(metabolite_name)],
+                                          params["{}_phase".format(metabolite_name)].value,
+                                          params["{}_width".format(metabolite_name)])
+        real_gaussian = complex_to_real(gaussian)
+        basis_matrix[i, :] = real_gaussian
+    return basis_matrix
 
-                if full_name in self.params:
-                    if type(param_data) is str:
-                        self.params[full_name].set(expr=param_data)
-                    elif type(param_data) is dict:
-                        if "value" in param_data:
-                            self.params[full_name].set(value=param_data["value"])
-                        if "min" in param_data:
-                            self.params[full_name].set(min=param_data["min"])
-                        if "max" in param_data:
-                            self.params[full_name].set(max=param_data["max"])
-                        if "expr" in param_data:
-                            self.params[full_name].set(expr=param_data)
-                    elif type(param_data) is numbers.Number:
-                        self.params[full_name].set(param_data)
 
-            if self.model is None:
-                self.model = current_peak_model
-            else:
-                self.model += current_peak_model
+def do_fit(params, time_axis, real_unphased_data):
+    """
+    This function performs the fitting.
 
-    def fit(self, data):
-        fit_result = self.model.fit(complex_to_real(data), x=data.time_axis(), params=self.params)
-        result_params = {}
-        for component in self.model.components:
-            component_name = component.prefix
-            result_params[component.prefix] = {}
-            for param in component.make_params():
-                param_name = str(param).replace(component_name, "")
-                result_params[component.prefix][param_name] = fit_result.params[param].value
-        fit_curve = real_to_complex(fit_result.best_fit)
-        fit_components = {k: real_to_complex(v) for k, v in fit_result.eval_components().items()}
-        return {
-            "params": result_params,
-            "fit": fit_curve,
-            "fit_components": fit_components
-        }
+    :param params: lmfit Parameters object containing fitting parameters.
+    :param time_axis: the time axis.
+    :param real_unphased_data:
+    :return: List of fitted data points.
+    """
+    baseline_points = 16
+    basis = make_basis(params, time_axis)
+
+    weights = scipy.optimize.nnls(basis[:, baseline_points:-baseline_points].T,
+                                  real_unphased_data[baseline_points:-baseline_points])[0]
+
+    fitted_data = numpy.array(numpy.dot(weights, basis)).squeeze()
+    return fitted_data
+
+
+def residual(params, time_axis, data):
+    """
+    This function calculates the residual to be minimized by the least squares means method.
+
+    :param params: lmfit Parameters object containing fitting parameters.
+    :param time_axis: the time axis.
+    :param data: FID to be fitted.
+    :return: residual values of baseline points.
+    """
+    baseline_points = 16
+    # unphase the data to make it pure absorptive
+    unphased_data = phase_fid(data, -params['phase0'], -params['phase1'])
+    real_unphased_data = complex_to_real(unphased_data)
+
+    fitted_data = do_fit(params, time_axis, real_unphased_data)
+    res = fitted_data - real_unphased_data
+
+    return res[baseline_points:-baseline_points]
+
+
+def fit_data(data, initial_params):
+    """
+    This function takes an FID and a set of parameters contained in an lmfit Parameters object,
+    and fits the data using the least squares means method.
+
+    :param data: FID to be fitted.
+    :param initial_params: lmfit Parameters object containing fitting parameters.
+    :return: tuple of weights as a list, data as a list, and result as an lmift MinimizerResult object.
+    """
+    baseline_points = 16
+    fitting_result = lmfit.minimize(residual,
+                                    initial_params,
+                                    args=(data.time_axis(), data),
+                                    xtol=5e-3)
+
+    unphased_data = phase_fid(data,
+                              -fitting_result.params['phase0'],
+                              -fitting_result.params['phase1'])
+    real_unphased_data = complex_to_real(unphased_data)
+    real_fitted_data = do_fit(initial_params, data.time_axis(), real_unphased_data)
+    fitted_data = real_to_complex(real_fitted_data)
+    fitting_basis = make_basis(fitting_result.params, data.time_axis())
+    fitting_weights = scipy.optimize.nnls(fitting_basis[:, baseline_points:-baseline_points].T,
+                                          real_unphased_data[baseline_points:-baseline_points])[0]
+
+    return fitting_weights, fitted_data, fitting_result
