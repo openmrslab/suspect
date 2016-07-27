@@ -88,3 +88,15 @@ def test_lcmodel_write_basis():
 #    assert data.te == 30
 #    assert data.f0 == 127.769903
 #    assert data.shape == (192, 2048)
+
+
+def test_felix_save_mat():
+    data = suspect.MRSData(numpy.zeros((16, 32), dtype='complex'), 1e-3, 123.456)
+    mock = unittest.mock.mock_open()
+    with patch.object(builtins, 'open', mock):
+        suspect.io.felix.save_mat("test.mat", data)
+        print(mock.mock_calls)
+        # handle = mock()
+        # print(handle.write.call_args())
+
+    assert 3 == 4
