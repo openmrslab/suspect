@@ -17,6 +17,8 @@ def save_mat(filename, data):
                                  frame_header,
                                  rest_of_header])
 
+        header_bytes[(4 * 136):(4 * 137)] = struct.pack("<f", 123.0)
+
         fout.write(header_bytes)
 
         # write each fid of the COSY line by line
