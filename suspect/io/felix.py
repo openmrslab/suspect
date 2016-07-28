@@ -25,7 +25,6 @@ def save_mat(filename, data):
                                    *range(173, 192),
                                    b"This is a test description")
 
-
         # byte_code = struct.pack("<BBBB", 1, 2, 3, 4)
         # frame_size = struct.pack("<I", 256)
         # overall_header = struct.pack("<IIIII", 1, 0, 1, 32, 210)
@@ -39,8 +38,6 @@ def save_mat(filename, data):
         #                          words_to_frame_header,
         #                          frame_header,
         #                          rest_of_header])
-
-        header_bytes[(4 * 136):(4 * 137)] = struct.pack("<f", 123.0)
 
         fout.write(header_bytes)
 
