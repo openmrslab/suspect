@@ -3,7 +3,7 @@ import struct
 
 def save_mat(filename, data):
     with open(filename, "wb") as fout:
-        header_bytes = struct.pack("<BBBB6I89I26III11I2f4I2f16I2f12If19I64s48I",
+        header_bytes = struct.pack("<BBBB6I89I26III11I2f4I2f16I2f12If19I64s49I",
                                    1, 2, 3, 4,
                                    256,
                                    1, 0, 1, 32, 210,
@@ -25,8 +25,6 @@ def save_mat(filename, data):
                                    *range(173, 192),
                                    b"This is a test description",
                                    *range(208, 257))
-
-        print(len(header_bytes))
 
         # byte_code = struct.pack("<BBBB", 1, 2, 3, 4)
         # frame_size = struct.pack("<I", 256)
