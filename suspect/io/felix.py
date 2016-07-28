@@ -3,19 +3,42 @@ import struct
 
 def save_mat(filename, data):
     with open(filename, "wb") as fout:
-        byte_code = struct.pack("<BBBB", 1, 2, 3, 4)
-        frame_size = struct.pack("<I", 256)
-        overall_header = struct.pack("<IIIII", 1, 0, 1, 32, 210)
-        words_to_frame_header = struct.pack("<89I", *range(6, 95))
-        frame_header = struct.pack("32I", *range(32))
-        rest_of_header = struct.pack("130I", *range(127, 257))
+        header_bytes = struct.pack("<BBBB6I89I26III11I2f4I2f16I2f12If19I65s",
+                                   1, 2, 3, 4,
+                                   256,
+                                   1, 0, 1, 32, 210,
+                                   *range(6, 95),
+                                   *range(1, 27),
+                                   data.shape[1],
+                                   data.shape[0],
+                                   *range(123, 134),
+                                   data.f0,
+                                   data.f0,
+                                   *range(136, 140),
+                                   data.sw,
+                                   1e3 / 0.8,
+                                   *range(142, 158),
+                                   0,
+                                   0,
+                                   *range(160, 172),
+                                   300,
+                                   *range(173, 192),
+                                   b"This is a test description")
 
-        header_bytes = b"".join([byte_code,
-                                 frame_size,
-                                 overall_header,
-                                 words_to_frame_header,
-                                 frame_header,
-                                 rest_of_header])
+
+        # byte_code = struct.pack("<BBBB", 1, 2, 3, 4)
+        # frame_size = struct.pack("<I", 256)
+        # overall_header = struct.pack("<IIIII", 1, 0, 1, 32, 210)
+        # words_to_frame_header = struct.pack("<89I", *range(6, 95))
+        # frame_header = struct.pack("32I", *range(32))
+        # rest_of_header = struct.pack("130I", *range(127, 257))
+        #
+        # header_bytes = b"".join([byte_code,
+        #                          frame_size,
+        #                          overall_header,
+        #                          words_to_frame_header,
+        #                          frame_header,
+        #                          rest_of_header])
 
         fout.write(header_bytes)
 
