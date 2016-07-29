@@ -66,7 +66,7 @@ def plot(xdata, ydata, plot_type='', plot_params={}, ax=None):
         if params['suppress_fig']:
             # Suppress drawing the figure
             plt.ioff()
-        fig_handle=plt.figure()  
+        fig_handle=plt.figure(figsize=params['figsize'],facecolor='w')  
         ax = fig_handle.add_subplot(1,1,1)
 
     # Set the color order cycle that will be applied to any lines added to the current axis        
@@ -92,7 +92,7 @@ def plot(xdata, ydata, plot_type='', plot_params={}, ax=None):
         if len(ydata.shape)>1:
             ydata_mean = np.average(ydata,axis=1)
             ax.hold('on')
-            ax.plot(xdata, ydata_mean, linewidth=2, color='#424949')
+            ax.plot(xdata, ydata_mean, linewidth=2, color=params['overlay_average_color'])
 
         else:
             print('Ignoring ''overlay_average'', ydata is 1D')
@@ -138,8 +138,8 @@ def apply_plot_params(plot_params,ax):
         
     ax.grid(plot_params['grid'])
     ax.set_title(plot_params['title'],fontsize=plot_params['fontsize'],y=1.02)
-    ax.set_xlabel(plot_params['xlabel'],fontsize=12)
-    ax.set_ylabel(plot_params['ylabel'],fontsize=12)
+    ax.set_xlabel(plot_params['xlabel'],fontsize=plot_params['tick_fontsize'])
+    ax.set_ylabel(plot_params['ylabel'],fontsize=plot_params['tick_fontsize'])
     ax.set_axis_bgcolor(plot_params['axis_bg_color'])
     
     # Apply some properties to the line(s)
@@ -162,6 +162,8 @@ def apply_plot_params(plot_params,ax):
     if plot_params['use_sci_format_xaxis']:
         # Use scientific notation for the x-axis labels
         ax.ticklabel_format(axis='x',style='sci',scilimits=(-2,2))
+    
+    ax.tick_params(labelsize=plot_params['tick_fontsize'])
         
     return ax
 
@@ -220,38 +222,43 @@ def get_default_plot_params(plot_type=''):
     """   
     
     default_plot_params = {
-        'title':'',
-        'xlabel':'',
-        'ylabel':'',
-        'xlim':None,
-        'ylim':None,
-        'grid':'on',
-        'overlay_average':False,
-        'save_fig': False,
-        'output_fig_path':'',
-        'output_fig_type':'png',
-        'autoclose': False,
-        'suppress_fig':False,
-        'interactive': True,
-        'backend':'',
-        'reverse_x': False,
-        'line_color':'default',
-        'line_width': 2.0,
-        'line_style':'-',
-        'marker':None,
-        'axis_bg_color':'w',
-        'use_colormap':False,
-        'colormap':'summer',
-#        'color_order': ['#4c72b0', '#55a868', '#c44e52', '#8172b2', '#ccb974', '#64b5cd'] #Based on a Seaborn 'deep' color palette
-        'color_order': ['#0072b2','#d55e00', '#009e73', '#cc79a7', '#f0e442', '#56b4e9'], #Seaborn 'colorblind'
-#        'color_order': ['#4878cf', '#6acc65', '#d65f5f', '#b47cc7', '#c4ad66', '#77bedb'] #Seaborn 'muted'
-#        'color_order': ['#92c6ff', '#97f0aa', '#ff9f9a', '#d0bbff', '#fffea3', '#b0e0e6'] #Seaborn 'pastel'
-        'fontsize':14,
+    
+        'autoclose': False,  
         'autoscale_y':True,
-        'use_sci_format_yaxis':True,
+        'axis_bg_color':'w',
+        'colormap':'summer',
+        'color_order': ['#0072b2','#d55e00', '#009e73', '#cc79a7', '#f0e442', '#56b4e9'], #Seaborn 'colorblind'
+        'figsize':(8,6), #Inches        
+        'fontsize':14,        
+        'grid':'on',
+        'interactive': True,
+        'line_color':'default',
+        'line_style':'-',
+        'line_width': 2.0,
+        'marker':None,
+        'output_fig_path':'test',
+        'output_fig_type':'png',
+        'overlay_average':False,
+        'overlay_average_color': '#424949',
+        'reverse_x': False,
+        'save_fig': False,    
+        'suppress_fig':False,
+        'tick_fontsize':12,
+        'title':'',
+        'use_colormap':False,
         'use_sci_format_xaxis':False,
+        'use_sci_format_yaxis':True,
+        'xlabel':'',
+        'xlim':None,
+        'ylabel':'',
+        'ylim':None,        
         
         }
+        
+    # Some other good choices for color order!
+    # 'color_order': ['#4c72b0', '#55a868', '#c44e52', '#8172b2', '#ccb974', '#64b5cd'] #Based on a Seaborn 'deep' color palette
+    # 'color_order': ['#4878cf', '#6acc65', '#d65f5f', '#b47cc7', '#c4ad66', '#77bedb'] #Seaborn 'muted'
+    # 'color_order': ['#92c6ff', '#97f0aa', '#ff9f9a', '#d0bbff', '#fffea3', '#b0e0e6'] #Seaborn 'pastel'
     
     # Add more default plot-type specific parameters to the dictionary                  
     if plot_type is 'spectrum': # Best for plotting 1-5 lines on the same axis
