@@ -43,10 +43,7 @@ def plot(xdata, ydata, plot_type='', plot_params={}, ax=None):
     import numpy as np
     from cycler import cycler
     import matplotlib.pyplot as plt
-    
-#    import seaborn
-    # Check to see if the data is an np array. If not, convert it
-    
+   
     
     # Check on the shape of the input data
     if ydata.shape[0] != xdata.shape[0] and ydata.shape[1] != xdata.shape[0]:
