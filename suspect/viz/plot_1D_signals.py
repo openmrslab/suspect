@@ -187,13 +187,15 @@ def suggest_channel(data):
     
     
     """
-    c_idx = 0
-    max_chan_mags = 1
+#    c_idx = 0
+#    max_chan_mags = 1
     
     import numpy as np
     # Determine how many channels there are, based on the shape of the data channel index
     
-    max_chan_mags = np.max(np.average(np.abs(data),axis=0),axis=1)      
+    max_chan_mags = np.max(np.average(np.abs(data),axis=0),axis=1)    
+    idx = np.argsort(max_chan_mags)
+    c_idx = idx[-1]
    
     return c_idx, max_chan_mags
 
