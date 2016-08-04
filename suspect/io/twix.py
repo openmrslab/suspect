@@ -64,6 +64,7 @@ class TwixBuilder(object):
 
 
 def parse_twix_header(header_string):
+    #print(header_string)
     # get the name of the protocol being acquired
     protocol_name_string = re.search(r"<ParamString.\"tProtocolName\">  { \".+\"  }\n", header_string).group()
     protocol_name = protocol_name_string.split("\"")[3]
@@ -73,12 +74,32 @@ def parse_twix_header(header_string):
     patient_name = re.escape(re.search(r"(<ParamString.\"PatientName\">  { \")(.+)(\"  }\n)", header_string).group(2))
     patient_birthday = re.search(r"(<ParamString.\"PatientBirthDay\">  { \")(.+)(\"  }\n)", header_string).group(2)
     # get the scan parameters
-    frequency_string = re.search(r"<ParamLong.\"Frequency\">  { \d*  }", header_string).group()
-    number_string = re.search(r"[0-9]+", frequency_string).group()
-    frequency = int(number_string) * 1e-6
-    frequency_string = re.search(r"<ParamLong.\"DwellTimeSig\">  { \d*  }", header_string).group()
-    number_string = re.search(r"[0-9]+", frequency_string).group()
-    dwell_time = int(number_string) * 1e-9
+    frequency_matches = [
+        r"<ParamLong.\"Frequency\">  { \d*  }",
+        r"<ParamDouble.\"MainFrequency\">  { (.+)}\n"
+    ]
+    for frequency_pattern in frequency_matches:
+        match = re.search(frequency_pattern, header_string)
+        if match:
+            frequency_string = match.group()
+            number_string = re.findall(r"[0-9\.]+", frequency_string)[-1]
+            frequency = float(number_string) * 1e-6
+            break
+    else:
+        raise KeyError("Unable to identify Frequency from header")
+    dwell_time_matches = [
+        r"<ParamLong.\"DwellTimeSig\">  { \d*  }",
+        r"<ParamDouble.\"DwellTime\">  { (.+)}"
+    ]
+    for dwell_time_match in dwell_time_matches:
+        match = re.search(dwell_time_match, header_string)
+        if match:
+            dwell_time_string = match.group()
+            number_string = re.findall(r"[0-9\.]+", dwell_time_string)[-1]
+            dwell_time = float(number_string) * 1e-9
+            break
+    else:
+        raise KeyError("Unable to identify Dwell Time from header")
     return {"protocol_name": protocol_name,
             "patient_name": patient_name,
             "patient_id": patient_id,

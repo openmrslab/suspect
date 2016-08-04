@@ -84,7 +84,7 @@ def load_rda(filename):
     float_iter = iter(data_as_floats)
     complex_iter = (complex(r, i) for r, i in zip(float_iter, float_iter))
     complex_data = numpy.fromiter(complex_iter, "complex64", int(numpy.prod(data_shape)))
-    complex_data = numpy.reshape(complex_data, data_shape)
+    complex_data = numpy.reshape(complex_data, data_shape).squeeze()
 
     # some .rda files have a misnamed field, correct this here
     if "VOIReadoutFOV" not in header_dict:

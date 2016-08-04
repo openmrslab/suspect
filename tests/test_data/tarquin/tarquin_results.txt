@@ -1,0 +1,84 @@
+Signal     Conc (au)       %SD   SD (au)
+----------------------------------------
+-CrCH2         0.000       inf 5.263e-05
+Ala        0.0002145     218.7 0.0004692
+Asp        0.0009071     23.43 0.0002125
+Cr          0.001847     10.09 0.0001865
+GABA       0.0008964     40.74 0.0003652
+GPC        0.0004309     10.84 4.669e-05
+Glc        0.0002822     55.15 0.0001557
+Gln            0.000       inf 5.699e-05
+Glth       0.0009132     12.11 0.0001106
+Glu         0.003548     5.400 0.0001916
+Ins         0.001794     4.346 7.797e-05
+Lac        8.072e-05     208.0 0.0001679
+Lip09      0.0002346     421.7 0.0009891
+Lip13a         0.000       inf  0.005032
+Lip13b         0.000       inf 0.0008985
+Lip20      0.0009211     30.46 0.0002805
+MM09        0.001713     79.00  0.001353
+MM12       0.0005082     1060.  0.005389
+MM14        0.002424     384.2  0.009312
+MM17       0.0008456     591.8  0.005004
+MM20        0.004447     18.64 0.0008290
+NAA         0.002788     5.361 0.0001495
+NAAG       0.0004489     61.68 0.0002769
+PCh        9.525e-05     57.52 5.479e-05
+PCr         0.001023     17.61 0.0001801
+Scyllo         0.000       inf 7.677e-06
+Tau            0.000       inf 6.493e-05
+TNAA        0.003237     3.696 0.0001196
+TCho       0.0005261     3.131 1.647e-05
+TCr         0.002870     2.737 7.857e-05
+Glx         0.003548     5.131 0.0001821
+TLM09       0.001948     13.00 0.0002531
+TLM13       0.002932     38.90  0.001140
+TLM20       0.005368     8.732 0.0004688
+
+Fit quality
+-----------
+Metab FWHM (PPM) : 0.04754
+Metab FWHM (Hz)  : 5.859
+SNR residual     : 36.23
+SNR max          : 146.7
+Q                : 4.048
+
+Fitting parameters
+------------------
+Initial beta : 92.59
+Final beta   : 77.56
+Max iters    : 75
+Start point  : 40
+End point    : 1024
+Ref (ppm)    : 4.668
+
+Concentration scaling
+---------------------
+Water scaling    : false
+Water amp        : 1.000
+Water conc       : 3.588e+04
+Water att        : 0.7000
+Water FWHM (Hz)  : NA
+Water FWHM (PPM) : NA
+Water freq (Hz)  : NA
+
+Data parameters
+---------------
+Fs (Hz) : 4000.
+Ft (Hz) : 1.233e+08
+N       : 2048
+TE (s)  : 0.03000
+Format  : dpt
+
+Optimisation details
+--------------------
+l2 norm of error at initial p  : 0.9411
+l2 norm of error at final p    : 0.4205
+l2 norm of J.'*e at final p    : 15.64
+l2 norm of D*p at final p      : 2.436e-12
+number of iterations           : 17.00
+number of function evaluations : 2.000
+number of Jacobian evaluations : 180.0
+stopped by small D*p
+
+TARQUIN version 4.3.5

@@ -1,5 +1,26 @@
 import numpy
 import os
+import itertools
+import parsley
+
+basis_grammar = r"""
+namelist = '$' name:n pairs:p ws -> (n, dict(p))
+pairs = (pair:first (pair)*:rest -> [first] + rest) | -> []
+pair = ws name:k ws '=' ws valuelist:v ws ','? -> (k.upper(), v)
+valuelist = ws (stringlist|numberlist|truth|falsehood):v -> v
+truth = 'T' -> True
+falsehood = 'F' -> False
+stringlist = (string:first (ws string)+:rest -> [first] + rest) | string
+string = '\'' (~'\'' anything)*:c '\'' -> ''.join(c).strip()
+numberlist = (number:first (ws number)+:rest -> [first] + rest) | number
+number = ('-' | -> ''):sign (digits:ds (floatPart(sign ds) | -> int(sign + ds)))
+digits = <digit+>
+name = <letter (letter | digit | '_')*>
+floatPart :sign :ds = <('.' digits? exponent?) | exponent>:tail -> float(sign + ds + tail)
+exponent = ('e' | 'E') ('+' | '-')? digits
+"""
+
+parser = parsley.makeGrammar(basis_grammar, {})
 
 
 def save_raw(filename, data):
@@ -97,6 +118,12 @@ def write_all_files(filename, data, wref_data=None, params=None):
     elif "LCOORD" in base_params:
         base_params["LCOORD"] = 9
         base_params["FILCOO"] = "'{}'".format(os.path.join(folder, file_root + ".COORD"))
+    if "FILCOR" in base_params:
+        base_params["LCORAW"] = 10
+        base_params["FILCOR"] = "'{}'".format(base_params["FILCOR"])
+    elif "LCORAW" in base_params:
+        base_params["LCORAW"] = 10
+        base_params["FILCOR"] = "'{}'".format(os.path.join(folder, file_root + ".CORAW"))
 
     save_raw(base_params["FILRAW"], data)
     if wref_data is not None:
@@ -226,3 +253,84 @@ def read_coord(filename):
         "baseline": baseline_points,
         "metabolite_spectra": metabolite_spectra
     }
+
+
+def read_basis(filename):
+    with open(filename) as fin:
+        basis_set = {"SPECTRA": {}}
+        data = fin.read().lstrip()
+        # does the data start with a namelist
+        while data.startswith("$"):
+            # where does the namelist end
+            namelist_data, _, data = data.partition("$END")
+            data = data.lstrip()
+            namelist = parser(namelist_data).namelist()
+
+            if namelist[0].upper() == "SEQPAR":
+                basis_set["SEQPAR"] = namelist[1]
+
+            elif namelist[0].upper() == "BASIS1":
+                basis_set["BASIS1"] = namelist[1]
+                # find out the number of points in each spectrum
+                np = namelist[1]["NDATAB"]
+                # 3 complex points per line, how many lines
+                num_lines = ((np - 1) // 3) + 1
+
+            elif namelist[0].upper() == "BASIS":
+                metabolite_name = namelist[1]["METABO"]
+                basis_set["SPECTRA"][metabolite_name] = namelist[1]
+                # after each BASIS namelist come the actual data points
+                points = []
+                for line in itertools.islice(data.splitlines(), num_lines):
+                    points.extend(map(float, line.split()))
+
+                points = iter(points)
+
+                complex_points = (complex(r, i) for r, i in zip(points, points))
+                complex_data = numpy.fromiter(complex_points, "complex64", np)
+                basis_set["SPECTRA"][metabolite_name]["data"] = complex_data
+                # find start of next namelist
+                start = data.find("$")
+                data = data[start:]
+
+        return basis_set
+
+
+def save_basis(filename, basis):
+    # make sure that the basis object has the necessary components
+    if "BASIS1" not in basis:
+        raise ValueError("Basis object {} is missing required component BASIS1".format(basis))
+    if len(basis["SPECTRA"]) == 0:
+        raise ValueError("Basis object {} contains zero spectra".format(basis))
+
+    with open(filename, 'wt') as fout:
+
+        # write SEQPAR if it is in the basis
+        if "SEQPAR" in basis:
+            write_namelist(fout, "SEQPAR", basis["SEQPAR"])
+
+        # write BASIS1
+        write_namelist(fout, "BASIS1", basis["BASIS1"])
+
+        # write the metabolite namelists and data
+        for metabolite, properties in basis["SPECTRA"].items():
+
+            # remove the data object (the spectrum itself)
+            data = properties.pop("data")
+            # write the remainder of the basis namelist to the file
+            write_namelist(fout, "BASIS", properties)
+            for i, point in enumerate(data):
+                fout.write(" {0: 4.5e} {1: 4.5e}".format(point.real, point.imag))
+                if (i + 1) % 3 == 0:
+                    fout.write("\n")
+            if (i+1) % 3 != 0:
+                fout.write("\n")
+
+
+def write_namelist(fout, name, components):
+    fout.write(" ${}\n".format(name))
+    for key, value in components.items():
+        if isinstance(value, str):
+            value = "'{0}'".format(value)
+        fout.write(" {0} = {1},\n".format(key, value))
+    fout.write(" $END\n")
