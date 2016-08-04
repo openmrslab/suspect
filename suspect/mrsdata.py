@@ -38,6 +38,12 @@ class MRSData(numpy.ndarray):
         #self.np = self.shape[-1]
         self.voxel_dimensions = getattr(obj, 'voxel_dimensions', (10, 10, 10))
 
+    def __array_wrap__(self, obj):
+        if len(obj.shape) == 0:
+            return obj[()]
+        else:
+            return numpy.ndarray.__array_wrap__(self, obj)
+
     def inherit(self, new_array):
         """
         Converts a generic numpy ndarray into an MRSData instance by copying

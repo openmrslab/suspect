@@ -25,3 +25,9 @@ def test_average_mrs():
     assert type(averaged_data) == suspect.MRSData
     assert averaged_data.dt == 5e-4
     assert averaged_data.f0 == 123
+
+
+def test_zero_rank_to_scalar():
+    data = suspect.MRSData(numpy.ones(1024, 'complex'), 5e-4, 123)
+    sum = numpy.sum(data)
+    assert numpy.isscalar(sum)
