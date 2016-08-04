@@ -337,15 +337,11 @@ def fit(fid, model):
         check_errors(model)
 
         # Set list of metabolite names.
-        # nonlocal metabolite_name_list
-        # metabolite_name_list = get_metabolites(model)
+        nonlocal metabolite_name_list
+        metabolite_name_list = get_metabolites(model)
 
         # Convert model to lmfit Parameters object.
         parameters = model_to_parameters(model)
-
-        # Set metabolite name list
-        nonlocal metabolite_name_list
-        metabolite_name_list = get_metabolites(model)
 
         # Fit data.
         fitted_weights, fitted_data, fitted_results = fit_data(fid, parameters)
