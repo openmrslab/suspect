@@ -62,9 +62,14 @@ def save(output, fout):
 
 
 # Fit fid
-# Input: fid, model
-# Output: dictionary containing optimized model, fit data, standard errors
 def fit(fid, model):
+    """
+    Fit fid with model parameters.
+
+    :param fid: MRSData object of FID to be fit
+    :param model:  dictionary model of fit parameters
+    :return: ["model": optimized model, "fit": fitting data, "err": dictionary of standard errors]
+    """
     # MODEL
     # Get list of metabolite names
     # def get_metabolites(model_input):
@@ -267,10 +272,9 @@ def fit(fid, model):
 
 
 # Test fit function
-def test_fit(_plot):
+def test_fit(_plot, testfile, modelfile):
     # Test file and model
-    testfile = "test_timecourse.csv"
-    modelfile = "model.json"
+
     model = load(modelfile)
 
     # Calculate references to determine order for Parameters.
@@ -420,24 +424,25 @@ def test_fit(_plot):
     dt = 1.0 / sw
     np = 4096
     f0 = 49.885802
-    fake_fid, noisy_fid = generate_fid(numpy.loadtxt(testfile), 4, parameters)  # using filename, not actual fid
+    fake_fid, noise_fid = generate_fid(numpy.loadtxt(testfile), 4, parameters)  # using filename, not actual fid
 
     # Test fit().
     fit_results = fit(fake_fid, model)
 
-    # Plot fit, noisy_fid, and fake_fid.
+    # Plot fit, noise_fid, and fake_fid.
     if _plot:
         from matplotlib import pyplot
         pyplot.plot(numpy.fft.fftshift(numpy.fft.fft(fit_results["fit"])))
-        pyplot.plot(numpy.fft.fftshift(numpy.fft.fft(noisy_fid)))
+        pyplot.plot(numpy.fft.fftshift(numpy.fft.fft(noise_fid)))
         pyplot.plot(numpy.fft.fftshift(numpy.fft.fft(fake_fid)))
         pyplot.show()
 
 
 test = False
-plot = True
+plot = False
 if test:
     print("Running test.")
-    test_fit(plot)
+    test_file = "/home/sam/Desktop/amares/test_timecourse.csv"
+    test_model = "/home/sam/Desktop/amares/model.json"
+    test_fit(plot, test_file, test_model)
     print("Test complete.")
-
