@@ -44,10 +44,13 @@ def read_output(filename):
         }
 
 
-def process(data):
+def process(data, options={}):
     save_dpt("/tmp/temp.dpt", data)
-    subprocess.run("tarquin --input {} --format dpt --output_txt {}".format(
-        "/tmp/temp.dpt", "/tmp/output.txt"
+    option_string = ""
+    for key, value in options.items():
+        option_string += " --{} {}".format(key, value)
+    subprocess.run("tarquin --input {} --format dpt --output_txt {}{}".format(
+        "/tmp/temp.dpt", "/tmp/output.txt", option_string
     ), shell=True)
     #with open("/tmp/output.txt") as fin:
     #    result = fin.read()
