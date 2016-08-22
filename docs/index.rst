@@ -16,7 +16,7 @@ Overview
    :maxdepth: 1
    :glob:
 
-   notebooks/lot_1D_signals_tutorial.ipynb
+   notebooks/plot_1D_signals_tutorial.ipynb
 
 
 

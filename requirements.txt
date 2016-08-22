@@ -1,3 +1,4 @@
+pkg_resources
 setuptools>=20.0
 sphinx>=1.4
 nbsphinx
