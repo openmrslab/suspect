@@ -18,7 +18,7 @@ Overview
 
    notebooks/plot_1D_signals_tutorial.ipynb
 
-.. autoclass:: suspect.MRSData
+.. tautoclass:: suspect.MRSData
    :members:
 
 
