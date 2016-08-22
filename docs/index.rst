@@ -13,7 +13,10 @@ Parts of the documentation:
 Overview
 
 .. toctree::
-   :maxdepth: 2
+   :maxdepth: 1
+   :glob:
+
+   notebooks/plot_1D_signals_tutorial.ipynb
 
 .. autoclass:: suspect.MRSData
    :members:
