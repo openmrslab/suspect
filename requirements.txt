@@ -1,3 +1,4 @@
+setuptools>=18.5
 sphinx>=1.4
 nbsphinx
 ipykernel
