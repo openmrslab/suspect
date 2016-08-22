@@ -18,9 +18,6 @@ Overview
 
    notebooks/plot_1D_signals_tutorial.ipynb
 
-.. tautoclass:: suspect.MRSData
-   :members:
-
 
 
 Indices and tables
