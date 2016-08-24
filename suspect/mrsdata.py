@@ -30,12 +30,16 @@ class MRSData(numpy.ndarray):
         self.f0 = getattr(obj, 'f0', None)
         self.te = getattr(obj, 'te', 30)
         self.ppm0 = getattr(obj, 'ppm0', None)
-        self.np = getattr(obj, 'np', None)
-        self.df = 1.0 / self.dt / self.np
-        self.sw = 1.0 / self.dt
+        self.np = self.shape[-1]
+
+        # can only calculate these parameters if we have self.dt
+        # if we don't have self.dt, this means this array is being created
+        # with new and these will be calculated later
+        if self.dt:
+            self.df = 1.0 / self.dt / self.np
+            self.sw = 1.0 / self.dt
         self.transform = getattr(obj, 'transform', None)
         self.metadata = getattr(obj, 'metadata', None)
-        #self.np = self.shape[-1]
         self.voxel_dimensions = getattr(obj, 'voxel_dimensions', (10, 10, 10))
 
     def __array_wrap__(self, obj):

@@ -17,10 +17,6 @@ def test_veriofile():
     numpy.testing.assert_almost_equal(data.f0, 123.261716)
 
 
-def test_megapress():
-    data = suspect.io.load_twix("/Volumes/data/Study_SZ_McCarley/260_20160624/twix/meas_MID06002_FID147115_svs_edit_859A_RSTG.dat")
-
-
 #def test_skyra():
 #    data = suspect.io.load_twix("tests/test_data/twix_vd_csi.dat")
 #    assert data.np == 2048
