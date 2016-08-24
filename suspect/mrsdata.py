@@ -44,6 +44,9 @@ class MRSData(numpy.ndarray):
         else:
             return numpy.ndarray.__array_wrap__(self, obj)
 
+    def __str__(self):
+        return "<MRSData instance f0={0}MHz TE={1}ms>".format(self.f0, self.dt)
+
     def inherit(self, new_array):
         """
         Converts a generic numpy ndarray into an MRSData instance by copying
