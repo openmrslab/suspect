@@ -30,9 +30,9 @@ class MRSData(numpy.ndarray):
         self.f0 = getattr(obj, 'f0', None)
         self.te = getattr(obj, 'te', 30)
         self.ppm0 = getattr(obj, 'ppm0', None)
-        self.df = getattr(obj, 'df', None)
         self.np = getattr(obj, 'np', None)
-        self.sw = getattr(obj, 'sw', None)
+        self.df = 1.0 / self.dt / self.np
+        self.sw = 1.0 / self.dt
         self.transform = getattr(obj, 'transform', None)
         self.metadata = getattr(obj, 'metadata', None)
         #self.np = self.shape[-1]

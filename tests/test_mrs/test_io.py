@@ -95,8 +95,6 @@ def test_felix_save_mat():
     mock = unittest.mock.mock_open()
     with patch.object(builtins, 'open', mock):
         suspect.io.felix.save_mat("test.mat", data)
-        print(mock.mock_calls)
+        #print(mock.mock_calls)
         # handle = mock()
         # print(handle.write.call_args())
-
-    assert 3 == 4
