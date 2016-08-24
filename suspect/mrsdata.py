@@ -49,7 +49,7 @@ class MRSData(numpy.ndarray):
             return numpy.ndarray.__array_wrap__(self, obj)
 
     def __str__(self):
-        return "<MRSData instance f0={0}MHz TE={1}ms dt={2}s>".format(self.f0, self.te, self.dt * 1e6)
+        return "<MRSData instance f0={0}MHz TE={1}ms dt={2}ms>".format(self.f0, self.te, self.dt * 1e3)
 
     def inherit(self, new_array):
         """
