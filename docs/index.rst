@@ -16,7 +16,9 @@ Overview
    :maxdepth: 1
    :glob:
 
-   notebooks/plot_1D_signals_tutorial.ipynb
+   notebooks/tut1_intro.ipynb
+
+   mrs_data_api.rst
 
 
 
