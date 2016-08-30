@@ -12,13 +12,10 @@ class MRSData(numpy.ndarray):
         # We first cast to be our class type
         obj = numpy.asarray(input_array).view(cls)
         # add the new attributes to the created instance
-        obj.dt = dt
-        obj.f0 = f0
-        obj.te = te
+        obj._dt = dt
+        obj._f0 = f0
+        obj._te = te
         obj.ppm0 = ppm0
-        obj.np = obj.shape[-1]
-        obj.df = 1.0 / dt / obj.np
-        obj.sw = 1.0 / dt
         obj.voxel_dimensions = voxel_dimensions
         obj.transform = transform
         obj.metadata = metadata
@@ -26,18 +23,10 @@ class MRSData(numpy.ndarray):
 
     def __array_finalize__(self, obj):
         # if this instance is being created by slicing from another MRSData, copy the parameters across
-        self.dt = getattr(obj, 'dt', None)
-        self.f0 = getattr(obj, 'f0', None)
-        self.te = getattr(obj, 'te', 30)
+        self._dt = getattr(obj, 'dt', None)
+        self._f0 = getattr(obj, 'f0', None)
+        self._te = getattr(obj, 'te', 30)
         self.ppm0 = getattr(obj, 'ppm0', None)
-        self.np = self.shape[-1]
-
-        # can only calculate these parameters if we have self.dt
-        # if we don't have self.dt, this means this array is being created
-        # with new and these will be calculated later
-        if self.dt:
-            self.df = 1.0 / self.dt / self.np
-            self.sw = 1.0 / self.dt
         self.transform = getattr(obj, 'transform', None)
         self.metadata = getattr(obj, 'metadata', None)
         self.voxel_dimensions = getattr(obj, 'voxel_dimensions', (10, 10, 10))
@@ -61,17 +50,69 @@ class MRSData(numpy.ndarray):
         :return: a new MRSData instance with data from new_array and parameters from self.
         """
         cast_array = new_array.view(MRSData)
-        cast_array.dt = self.dt
-        cast_array.f0 = self.f0
-        cast_array.np = self.np
-        cast_array.df = self.df
-        cast_array.te = self.te
+        cast_array._dt = self.dt
+        cast_array._f0 = self.f0
+        cast_array._te = self.te
         cast_array.ppm0 = self.ppm0
-        cast_array.sw = self.sw
         cast_array.voxel_dimensions = self.voxel_dimensions
         cast_array.transform = self.transform
         cast_array.metadata = self.metadata
         return cast_array
+
+    @property
+    def dt(self):
+        """
+        The dwell time for the acquisition.
+
+        :return: the dwell time in s
+        """
+        return self._dt
+
+    @property
+    def np(self):
+        """
+        The number of points in the FID.
+
+        :return:
+        """
+        return self.shape[-1]
+
+    @property
+    def sw(self):
+        """
+        The spectral width of the data in Hz. Calculated as 1 / dt.
+
+        :return:
+        """
+        return 1.0 / self.dt
+
+    @property
+    def df(self):
+        """
+        The frequency delta in Hz between neighbouring points in the spectrum.
+        Calculated as the spectral width divided by the number of points.
+
+        :return:
+        """
+        return self.sw / self.np
+
+    @property
+    def te(self):
+        """
+        The echo time of the sequence in ms.
+
+        :return:
+        """
+        return self._te
+
+    @property
+    def f0(self):
+        """
+        The scanner frequency in MHz. Also referred to by LCModel as Hz per PPM.
+
+        :return:
+        """
+        return self._f0
 
     def spectrum(self):
         """
@@ -124,8 +165,8 @@ class MRSData(numpy.ndarray):
         :return:
         """
         return numpy.linspace(self.hertz_to_ppm(-self.sw / 2.0),
-                       self.hertz_to_ppm(self.sw / 2.0),
-                       self.np, endpoint=False)
+                              self.hertz_to_ppm(self.sw / 2.0),
+                              self.np, endpoint=False)
 
     def voxel_size(self):
         """
