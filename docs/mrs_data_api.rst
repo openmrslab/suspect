@@ -1,5 +1,5 @@
-MRSData API Reference
-=====================
+MRSData Reference
+=================
 
 .. automodule:: suspect
 

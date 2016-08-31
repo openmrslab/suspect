@@ -3,29 +3,26 @@
    You can adapt this file completely to your liking, but it should at least
    contain the root `toctree` directive.
 
-Suspect 0.0.6 documentation!
-============================
+Suspect documentation!
+======================
 
-Welcome! This is the documentation for Suspect 0.0.6, last updated June 24th, 2016
+Welcome! This is the documentation for Suspect |release|, last updated |today|
 
 Parts of the documentation:
 
-Overview
+Getting started
 
 .. toctree::
    :maxdepth: 1
    :glob:
 
    notebooks/tut1_intro.ipynb
+   notebooks/tut02_channels.ipynb
+
+API Reference
+
+.. toctree::
+   :maxdepth: 1
+   :glob:
 
    mrs_data_api.rst
-
-
-
-Indices and tables
-==================
-
-* :ref:`genindex`
-* :ref:`modindex`
-* :ref:`search`
-

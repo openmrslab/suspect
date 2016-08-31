@@ -3,7 +3,7 @@ from setuptools import setup, find_packages
 
 setup(
         name='suspect',
-        version='0.0.6',
+        version='0.1.0',
         packages=find_packages(),
         url='https://github.com/bennyrowland/suspect.git',
         license='MIT',
