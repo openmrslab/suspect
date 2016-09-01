@@ -18,6 +18,7 @@ Getting started
 
    notebooks/tut1_intro.ipynb
    notebooks/tut02_channels.ipynb
+   notebooks/tut04_quant.ipynb
 
 API Reference
 
