@@ -3,7 +3,7 @@ import numpy
 import scipy.optimize
 import numbers
 
-import suspect
+import suspect.basis
 
 
 def complex_to_real(complex_fid):
@@ -43,12 +43,13 @@ def real_to_complex(real_fid):
     return complex_fid
 
 
-def fit(fid, model):
+def fit(fid, model, baseline_points=16):
     """
     Fit fid with model parameters.
 
     :param fid: MRSData object of FID to be fit
     :param model:  dictionary model of fit parameters
+    :param baseline_points: the number of points at the start of the FID to ignore
     :return: ["model": optimized model, "fit": fitting data, "err": dictionary of standard errors]
     """
 
@@ -117,16 +118,15 @@ def fit(fid, model):
         :param params: lmfit Parameters object containing fitting parameters.
         :param time_axis: the time axis.
         :param real_unphased_data:
-        :return: List of fitted data points.
+        :return: List of fitted data points and amplitudes of each singlet.
         """
-        baseline_points = 16
         basis = make_basis(params, time_axis)
 
         weights = scipy.optimize.nnls(basis[:, baseline_points:-baseline_points].T,
                                       real_unphased_data[baseline_points:-baseline_points])[0]
 
         fitted_data = numpy.array(numpy.dot(weights, basis)).squeeze()
-        return fitted_data
+        return fitted_data, weights
 
     def residual(params, time_axis, data):
         """
@@ -137,12 +137,11 @@ def fit(fid, model):
         :param data: FID to be fitted.
         :return: residual values of baseline points.
         """
-        baseline_points = 16
         # unphase the data to make it pure absorptive
         unphased_data = phase_fid(data, -params['phase0'], -params['phase1'])
         real_unphased_data = complex_to_real(unphased_data)
 
-        fitted_data = do_fit(params, time_axis, real_unphased_data)
+        fitted_data, _ = do_fit(params, time_axis, real_unphased_data)
         res = fitted_data - real_unphased_data
 
         return res[baseline_points:-baseline_points]
@@ -156,7 +155,6 @@ def fit(fid, model):
         :param initial_params: lmfit Parameters object containing fitting parameters.
         :return: tuple of weights as a list, data as a list, and result as an lmift MinimizerResult object.
         """
-        baseline_points = 16
         fitting_result = lmfit.minimize(residual,
                                         initial_params,
                                         args=(data.time_axis(), data),
@@ -166,11 +164,8 @@ def fit(fid, model):
                                   -fitting_result.params['phase0'],
                                   -fitting_result.params['phase1'])
         real_unphased_data = complex_to_real(unphased_data)
-        real_fitted_data = do_fit(initial_params, data.time_axis(), real_unphased_data)
+        real_fitted_data, fitting_weights = do_fit(fitting_result.params, data.time_axis(), real_unphased_data)
         fitted_data = real_to_complex(real_fitted_data)
-        fitting_basis = make_basis(fitting_result.params, data.time_axis())
-        fitting_weights = scipy.optimize.nnls(fitting_basis[:, baseline_points:-baseline_points].T,
-                                              real_unphased_data[baseline_points:-baseline_points])[0]
 
         return fitting_weights, fitted_data, fitting_result
 
@@ -222,7 +217,7 @@ def fit(fid, model):
                     # Initialize lmfit parameter arguments.
                     name = "{}_{}".format(name1, name2)
                     value = None
-                    vary = None
+                    vary = True
                     lmfit_min = None
                     lmfit_max = None
                     expr = None
