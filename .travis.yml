@@ -4,6 +4,8 @@ python:
   - "3.5"
 # command to install dependencies
 install:
+  - pip install setuptools>=26.0
+  - pip install scipy  # usual install of scipy fails on 3.4 for some unknown reason
   - pip install https://github.com/darcymason/pydicom/archive/master.zip
   - pip install .
 #  - pip install -r requirements.txt
