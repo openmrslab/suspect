@@ -1,6 +1,11 @@
 suspect
 -------
 
+Travis CI:
+
+.. image:: https://travis-ci.org/openmrslab/suspect.svg?branch=master
+    :target: https://travis-ci.org/openmrslab/suspect
+
 Suspect is a Python package for processing MR spectroscopy data. It supports reading data from most common formats (with more on the way) and many different algorithms for core processing steps. Suspect allows researchers to build custom data processing scripts from reliable, modular building blocks and easily share their techniques with other labs around the world.
 
 Installation
