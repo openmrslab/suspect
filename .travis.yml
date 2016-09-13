@@ -4,7 +4,7 @@ python:
 # command to install dependencies
 install:
   - pip install setuptools>=26.0
-  - pip install coveralls
+  - pip install coveralls pytest-cov
   - pip install https://github.com/darcymason/pydicom/archive/master.zip
   - pip install .
 #  - pip install -r requirements.txt
