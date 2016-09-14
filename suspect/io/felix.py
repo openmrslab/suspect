@@ -8,7 +8,7 @@ def save_mat(filename, data):
                                    256,
                                    1, 0, 1, 32, 210,
                                    *range(6, 95),
-                                   *range(1, 28),
+                                   1, 1, *range(1, 26),
                                    data.shape[1],
                                    data.shape[0],
                                    *range(124, 134),
