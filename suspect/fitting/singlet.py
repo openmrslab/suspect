@@ -5,7 +5,6 @@ import numbers
 
 import suspect.basis
 
-
 def complex_to_real(complex_fid):
     """
     Standard optimization routines as used in lmfit require real data. This
@@ -50,11 +49,8 @@ def fit(fid, model, baseline_points=16):
     :param fid: MRSData object of FID to be fit
     :param model:  dictionary model of fit parameters
     :param baseline_points: the number of points at the start of the FID to ignore
-    :return: ["model": optimized model, "fit": fitting data, "err": dictionary of standard errors]
+    :return: Dictionary containing ["model": optimized model, "fit": fitting data, "err": dictionary of standard errors]
     """
-
-    # List of metabolite names
-    metabolite_name_list = []
 
     # Get list of metabolite names.
     def get_metabolites(model_input):
@@ -78,7 +74,7 @@ def fit(fid, model, baseline_points=16):
         :param fid_in: FID to be fitted.
         :param phase1: phase1 value.
         :param phase0: phase0 value.
-        :return:
+        :return: FID that has been shifted into phase by FFT
         """
         spectrum = numpy.fft.fftshift(numpy.fft.fft(fid_in))
         np = fid_in.np
@@ -111,6 +107,13 @@ def fit(fid, model, baseline_points=16):
             basis_matrix[i, :] = real_gaussian
         return basis_matrix
 
+    def unphase(data, params):
+
+        unphased_data = phase_fid(data, -params['phase0'], -params['phase1'])
+        real_unphased_data = complex_to_real(unphased_data)
+
+        return real_unphased_data
+
     def do_fit(params, time_axis, real_unphased_data):
         """
         This function performs the fitting.
@@ -137,11 +140,9 @@ def fit(fid, model, baseline_points=16):
         :param data: FID to be fitted.
         :return: residual values of baseline points.
         """
-        # unphase the data to make it pure absorptive
-        unphased_data = phase_fid(data, -params['phase0'], -params['phase1'])
-        real_unphased_data = complex_to_real(unphased_data)
 
-        fitted_data, _ = do_fit(params, time_axis, real_unphased_data)
+        real_unphased_data = unphase(data, params)
+        fitted_data, weights = do_fit(params, time_axis, real_unphased_data)
         res = fitted_data - real_unphased_data
 
         return res[baseline_points:-baseline_points]
@@ -160,11 +161,7 @@ def fit(fid, model, baseline_points=16):
                                         args=(data.time_axis(), data),
                                         xtol=5e-3)
 
-        unphased_data = phase_fid(data,
-                                  -fitting_result.params['phase0'],
-                                  -fitting_result.params['phase1'])
-        real_unphased_data = complex_to_real(unphased_data)
-        real_fitted_data, fitting_weights = do_fit(fitting_result.params, data.time_axis(), real_unphased_data)
+        real_fitted_data, fitting_weights = do_fit(fitting_result.params, data.time_axis(), unphase(data, fitting_result.params))
         fitted_data = real_to_complex(real_fitted_data)
 
         return fitting_weights, fitted_data, fitting_result
@@ -191,7 +188,6 @@ def fit(fid, model, baseline_points=16):
                 else:
                     new_model[name1][name2] = param.value
 
-        nonlocal metabolite_name_list
         for i, metabolite_name in enumerate(metabolite_name_list):
             new_model[metabolite_name]["amplitude"] = param_weights[i]
 
@@ -207,7 +203,7 @@ def fit(fid, model, baseline_points=16):
 
         # Construct lmfit Parameter input for each parameter.
         for name1, value1 in model_dict.items():
-            if type(value1) is int:  # (e.g. phase0)
+            if isinstance(value1, numbers.Number):  # (e.g. phase0)
                 params.append((name1, value1))
             if type(value1) is dict:
                 # Fix phase value to 0 by default.
@@ -221,15 +217,13 @@ def fit(fid, model, baseline_points=16):
                     lmfit_min = None
                     lmfit_max = None
                     expr = None
-                    if type(value2) is int:
+                    if isinstance(value2, numbers.Number):
                         value = value2
-                    elif type(value2) is str:
+                    elif isinstance(value2, str):
                         expr = value2
-                    if type(value2) is dict:
+                    elif isinstance(value2, dict):
                         if "value" in value2:
                             value = value2["value"]
-                        # if "vary" in value2:
-                        #     vary = value2["vary"]
                         if "min" in value2:
                             lmfit_min = value2["min"]
                         if "max" in value2:
@@ -267,20 +261,16 @@ def fit(fid, model, baseline_points=16):
 
     # Check if all model input types are correct.
     def check_errors(check_model):
-        # Allowed names and keys in the model.
-        allowed_names = ["pcr", "atpc", "atpb", "atpa", "pi", "pme", "pde", "phase0", "phase1"]
+        # Allowed keys in the model.
         allowed_keys = ["min", "max", "value", "phase", "amplitude"]
 
         # Scan model.
         for name1, value1 in check_model.items():
-            if type(value1) is not int and type(value1) is not float and type(value1) is not dict:
+            if not isinstance(value1, (numbers.Number, dict)):
                 raise TypeError("Value of {} must be a number (for phases), or a dictionary.".format(name1))
-            elif name1 not in allowed_names:
-                raise NameError("{} is not an allowed name.".format(name1))
             elif type(value1) is dict:  # i.e. type(value) is not int
                 for name2, value2 in value1.items():
-                    if type(value2) is not int and type(value2) is not float and type(value2) is not dict and \
-                                    type(value2) is not str:
+                    if not isinstance(value2,(numbers.Number,dict,str)):
                         raise TypeError("Value of {}_{} must be a value, an expression, or a dictionary."
                                         .format(name1, name2))
                     if type(value2) is dict:
@@ -292,21 +282,18 @@ def fit(fid, model, baseline_points=16):
                             if key not in allowed_keys:
                                 raise KeyError("In {}_{}, '{}' is not an allowed key.".format(name1, name2, key))
 
-        return
-
     # Calculate references to determine order for Parameters.
     def calculate_dependencies(unordered_model):
         dependencies = {}  # (name, [dependencies])
 
-        # Compile dictionary of effective names.
         for name1, value1 in unordered_model.items():
             if type(value1) is dict:  # i.e. not phase
+
+                # Compile dictionary of effective names.
                 for name2 in value1:
                     dependencies["{}_{}".format(name1, name2)] = None
 
-        # Find dependencies for each effective name.
-        for name1, value1 in unordered_model.items():
-            if type(value1) is dict:  # i.e. not phase
+                # Find dependencies for each effective name.
                 for name2, value2 in value1.items():
                     if type(value2) is str:
                         lmfit_name = "{}_{}".format(name1, name2)
@@ -326,28 +313,20 @@ def fit(fid, model, baseline_points=16):
         return dependencies
 
     # Do singlet fitting
-    def main():
-        # Minimize and fit 31P data.
-        # Check for errors in model formatting.
-        check_errors(model)
+    # Minimize and fit 31P data.
 
-        # Set list of metabolite names.
-        nonlocal metabolite_name_list
-        metabolite_name_list = get_metabolites(model)
+    check_errors(model) # Check for errors in model formatting.
 
-        # Convert model to lmfit Parameters object.
-        parameters = model_to_parameters(model)
+    metabolite_name_list = get_metabolites(model) # Set list of metabolite names.
 
-        # Fit data.
-        fitted_weights, fitted_data, fitted_results = fit_data(fid, parameters)
+    parameters = model_to_parameters(model) # Convert model to lmfit Parameters object.
 
-        # Convert fit parameters to model format.
-        final_model = parameters_to_model(fitted_results.params, fitted_weights)
-        # Get stderr values for each parameter.
-        stderr = get_errors(fitted_results)
+    fitted_weights, fitted_data, fitted_results = fit_data(fid, parameters) # Fit data.
 
-        # Compile output into a dictionary.
-        return_dict = {"model": final_model, "fit": fitted_data, "errors": stderr}
-        return return_dict
+    final_model = parameters_to_model(fitted_results.params, fitted_weights) # Convert fit parameters to model format.
 
-    return main()
+    stderr = get_errors(fitted_results) # Get stderr values for each parameter.
+
+    return_dict = {"model": final_model, "fit": fitted_data, "errors": stderr}  # Compile output into a dictionary.
+    return return_dict
+
