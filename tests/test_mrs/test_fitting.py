@@ -24,7 +24,7 @@ def test_gaussian():
     }
     fitting_result = singlet.fit(data, model)
 
-    numpy.testing.assert_allclose(fitting_result["model"]["pcr"]["width"], 50.0, rtol=1e-2)
+    numpy.testing.assert_allclose(fitting_result["model"]["pcr"]["width"], 50.0, rtol=5e-2)
     numpy.testing.assert_allclose(fitting_result["model"]["pcr"]["amplitude"], 1.0, rtol=2e-2)
     numpy.testing.assert_allclose(fitting_result["model"]["pcr"]["frequency"], 0.0, atol=1e-2)
 
