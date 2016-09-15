@@ -208,10 +208,10 @@ def fit(fid, model, baseline_points=16):
             if type(value1) is dict:
                 # Fix phase value to 0 by default.
                 if "phase" not in value1:
-                    params.append(("{}_{}".format(name1, "phase"), None, None, None, None, "0"))
+                    params.append(("{0}_{1}".format(name1, "phase"), None, None, None, None, "0"))
                 for name2, value2 in value1.items():
                     # Initialize lmfit parameter arguments.
-                    name = "{}_{}".format(name1, name2)
+                    name = "{0}_{1}".format(name1, name2)
                     value = None
                     vary = True
                     lmfit_min = None
@@ -267,65 +267,68 @@ def fit(fid, model, baseline_points=16):
         # Scan model.
         for name1, value1 in check_model.items():
             if not isinstance(value1, (numbers.Number, dict)):
-                raise TypeError("Value of {} must be a number (for phases), or a dictionary.".format(name1))
+                raise TypeError("Value of {0} must be a number (for phases), or a dictionary.".format(name1))
             elif type(value1) is dict:  # i.e. type(value) is not int
                 for name2, value2 in value1.items():
                     if not isinstance(value2,(numbers.Number,dict,str)):
-                        raise TypeError("Value of {}_{} must be a value, an expression, or a dictionary."
+                        raise TypeError("Value of {0}_{1} must be a value, an expression, or a dictionary."
                                         .format(name1, name2))
                     if type(value2) is dict:
                         for key in value2:
                             # Dictionary must have 'value' key.
                             if "value" not in value2:
-                                raise KeyError("Dictionary {}_{} is missing 'value' key.".format(name1, name2))
+                                raise KeyError("Dictionary {0}_{1} is missing 'value' key.".format(name1, name2))
                             # Dictionary can only have 'min,' 'max,' and 'value'.
                             if key not in allowed_keys:
-                                raise KeyError("In {}_{}, '{}' is not an allowed key.".format(name1, name2, key))
+                                raise KeyError("In {0}_{1}, '{2}' is not an allowed key.".format(name1, name2, key))
 
     # Calculate references to determine order for Parameters.
     def calculate_dependencies(unordered_model):
         dependencies = {}  # (name, [dependencies])
 
+        # Compile dictionary of effective names.
         for name1, value1 in unordered_model.items():
             if type(value1) is dict:  # i.e. not phase
-
-                # Compile dictionary of effective names.
                 for name2 in value1:
-                    dependencies["{}_{}".format(name1, name2)] = None
+                    dependencies["{0}_{1}".format(name1, name2)] = None
 
-                # Find dependencies for each effective name.
+        # Find dependencies for each effective name.
+        for name1, value1 in unordered_model.items():
+            if type(value1) is dict:  # i.e. not phase
                 for name2, value2 in value1.items():
                     if type(value2) is str:
-                        lmfit_name = "{}_{}".format(name1, name2)
+                        lmfit_name = "{0}_{1}".format(name1, name2)
                         dependencies[lmfit_name] = []
                         for depend in dependencies:
                             if depend in value2:
                                 dependencies[lmfit_name].append(depend)
+        print(dependencies)
 
         # Check for circular dependencies.
         for name, dependents in dependencies.items():
             if type(dependents) is list:
                 for dependent in dependents:
-                    if name in dependencies[dependent]:
-                        raise ReferenceError("{} and {} reference each other, creating a circular reference."
+                    #print(dependent)
+                    #print(dependencies)
+                    if dependencies[dependent] is not None and name in dependencies[dependent]:
+                        raise ReferenceError("{0} and {1} reference each other, creating a circular reference."
                                              .format(name, dependent))
-
         return dependencies
 
     # Do singlet fitting
     # Minimize and fit 31P data.
 
-    check_errors(model) # Check for errors in model formatting.
+    check_errors(model)  # Check for errors in model formatting.
 
-    metabolite_name_list = get_metabolites(model) # Set list of metabolite names.
+    metabolite_name_list = get_metabolites(model)  # Set list of metabolite names.
 
-    parameters = model_to_parameters(model) # Convert model to lmfit Parameters object.
+    parameters = model_to_parameters(model)  # Convert model to lmfit Parameters object.
 
-    fitted_weights, fitted_data, fitted_results = fit_data(fid, parameters) # Fit data.
+    fitted_weights, fitted_data, fitted_results = fit_data(fid, parameters)  # Fit data.
 
-    final_model = parameters_to_model(fitted_results.params, fitted_weights) # Convert fit parameters to model format.
+    final_model = parameters_to_model(fitted_results.params, fitted_weights)  # Convert fit parameters to model format.
 
-    stderr = get_errors(fitted_results) # Get stderr values for each parameter.
+    stderr = get_errors(fitted_results)  # Get stderr values for each parameter.
 
     return_dict = {"model": final_model, "fit": fitted_data, "errors": stderr}  # Compile output into a dictionary.
     return return_dict
