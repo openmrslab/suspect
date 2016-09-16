@@ -195,13 +195,13 @@ def fit(fid, model, baseline_points=16):
         params.append(("phase1", model_dict_copy.pop("phase1")))
 
         # Construct lmfit Parameter input for each parameter.
-        for peak_dictionary, peak_property in model_dict_copy.items():
+        for peak_name, peak_properties in model_dict_copy.items():
                 # Fix phase value to 0 by default.
-                if "phase" not in peak_property:
-                    params.append(("{0}_{1}".format(peak_dictionary, "phase"), None, None, None, None, "0"))
-                for property_name, property_value in peak_property.items():
+                if "phase" not in peak_properties:
+                    params.append(("{0}_{1}".format(peak_name, "phase"), None, None, None, None, "0"))
+                for property_name, property_value in peak_properties.items():
                     # Initialize lmfit parameter arguments.
-                    name = "{0}_{1}".format(peak_dictionary, property_name)
+                    name = "{0}_{1}".format(peak_name, property_name)
                     value = None
                     vary = True
                     lmfit_min = None
