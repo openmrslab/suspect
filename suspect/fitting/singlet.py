@@ -2,8 +2,10 @@ import lmfit
 import numpy
 import scipy.optimize
 import numbers
+import copy
 
 import suspect.basis
+
 
 def complex_to_real(complex_fid):
     """
@@ -55,9 +57,9 @@ def fit(fid, model, baseline_points=16):
     # Get list of metabolite names.
     def get_metabolites(model_input):
         metabolites = []
-        for name, value in model_input.items():
-            if type(value) is dict:
-                metabolites.append(name)
+        for fid_property_name, fid_property_value in model_input.items():
+            if type(fid_property_value) is dict:
+                metabolites.append(fid_property_name)
         return metabolites
 
     # Get standard errors from lmfit MinimizerResult object.
@@ -90,12 +92,6 @@ def fit(fid, model, baseline_points=16):
         :param time_axis: the time axis.
         :return: a matrix containing the generated basis set.
         """
-        # metabolite_name_list = []
-        # for param in params.keys():
-        #     split = param.split('_')
-        #     if len(split) == 2:
-        #         if split[0] not in metabolite_name_list:
-        #             metabolite_name_list.append(split[0])
 
         basis_matrix = numpy.matrix(numpy.zeros((len(metabolite_name_list), len(time_axis) * 2)))
         for i, metabolite_name in enumerate(metabolite_name_list):
@@ -168,13 +164,6 @@ def fit(fid, model, baseline_points=16):
 
     # Convert lmfit parameters to model format
     def parameters_to_model(parameters_obj, param_weights):
-        # metabolite_name_list = []
-        # for param in parameters_obj.keys():
-        #     split = param.split('_')
-        #     if len(split) == 2:
-        #         if split[0] not in metabolite_name_list:
-        #             metabolite_name_list.append(split[0])
-        # Create dictionary for new model.
         new_model = {}
         for param_name, param in parameters_obj.items():
             name = param_name.split("_")
@@ -201,33 +190,34 @@ def fit(fid, model, baseline_points=16):
         # Calculate dependencies/references for each parameter.
         depend_dict = calculate_dependencies(model_dict)
 
+        model_dict_copy = copy.deepcopy(model_dict)
+        params.append(("phase0", model_dict_copy.pop("phase0")))
+        params.append(("phase1", model_dict_copy.pop("phase1")))
+
         # Construct lmfit Parameter input for each parameter.
-        for name1, value1 in model_dict.items():
-            if isinstance(value1, numbers.Number):  # (e.g. phase0)
-                params.append((name1, value1))
-            if type(value1) is dict:
+        for peak_dictionary, peak_property in model_dict_copy.items():
                 # Fix phase value to 0 by default.
-                if "phase" not in value1:
-                    params.append(("{0}_{1}".format(name1, "phase"), None, None, None, None, "0"))
-                for name2, value2 in value1.items():
+                if "phase" not in peak_property:
+                    params.append(("{0}_{1}".format(peak_dictionary, "phase"), None, None, None, None, "0"))
+                for property_name, property_value in peak_property.items():
                     # Initialize lmfit parameter arguments.
-                    name = "{0}_{1}".format(name1, name2)
+                    name = "{0}_{1}".format(peak_dictionary, property_name)
                     value = None
                     vary = True
                     lmfit_min = None
                     lmfit_max = None
                     expr = None
-                    if isinstance(value2, numbers.Number):
-                        value = value2
-                    elif isinstance(value2, str):
-                        expr = value2
-                    elif isinstance(value2, dict):
-                        if "value" in value2:
-                            value = value2["value"]
-                        if "min" in value2:
-                            lmfit_min = value2["min"]
-                        if "max" in value2:
-                            lmfit_max = value2["max"]
+                    if isinstance(property_value, numbers.Number):
+                        value = property_value
+                    elif isinstance(property_value, str):
+                        expr = property_value
+                    elif isinstance(property_value, dict):
+                        if "value" in property_value:
+                            value = property_value["value"]
+                        if "min" in property_value:
+                            lmfit_min = property_value["min"]
+                        if "max" in property_value:
+                            lmfit_max = property_value["max"]
                     # Add parameter object with defined parameters.
                     params.append((name, value, vary, lmfit_min, lmfit_max, expr))  # (lmfit Parameter input format)
 
@@ -265,51 +255,50 @@ def fit(fid, model, baseline_points=16):
         allowed_keys = ["min", "max", "value", "phase", "amplitude"]
 
         # Scan model.
-        for name1, value1 in check_model.items():
-            if not isinstance(value1, (numbers.Number, dict)):
-                raise TypeError("Value of {0} must be a number (for phases), or a dictionary.".format(name1))
-            elif type(value1) is dict:  # i.e. type(value) is not int
-                for name2, value2 in value1.items():
-                    if not isinstance(value2,(numbers.Number,dict,str)):
+        for model_property, model_values in check_model.items():
+            if not isinstance(model_values, (numbers.Number, dict)):
+                raise TypeError("Value of {0} must be a number (for phases), or a dictionary.".format(model_property))
+            elif type(model_values) is dict:  # i.e. type(value) is not int
+                for peak_property, peak_value in model_values.items():
+                    if not isinstance(peak_value,(numbers.Number,dict,str)):
                         raise TypeError("Value of {0}_{1} must be a value, an expression, or a dictionary."
-                                        .format(name1, name2))
-                    if type(value2) is dict:
-                        for key in value2:
+                                        .format(model_property, peak_property))
+                    if type(peak_value) is dict:
+                        for width_param in peak_value:
                             # Dictionary must have 'value' key.
-                            if "value" not in value2:
-                                raise KeyError("Dictionary {0}_{1} is missing 'value' key.".format(name1, name2))
+                            if "value" not in peak_value:
+                                raise KeyError("Dictionary {0}_{1} is missing 'value' key."
+                                               .format(model_property, peak_property))
                             # Dictionary can only have 'min,' 'max,' and 'value'.
-                            if key not in allowed_keys:
-                                raise KeyError("In {0}_{1}, '{2}' is not an allowed key.".format(name1, name2, key))
+                            if width_param not in allowed_keys:
+                                raise KeyError("In {0}_{1}, '{2}' is not an allowed key."
+                                               .format(model_property, peak_property, width_param))
 
     # Calculate references to determine order for Parameters.
     def calculate_dependencies(unordered_model):
         dependencies = {}  # (name, [dependencies])
 
         # Compile dictionary of effective names.
-        for name1, value1 in unordered_model.items():
-            if type(value1) is dict:  # i.e. not phase
-                for name2 in value1:
-                    dependencies["{0}_{1}".format(name1, name2)] = None
+        for model_property, model_values in unordered_model.items():
+            if type(model_values) is dict:  # i.e. pcr, not phase
+                for peak_property in model_values:
+                    dependencies["{0}_{1}".format(model_property, peak_property)] = None
 
         # Find dependencies for each effective name.
-        for name1, value1 in unordered_model.items():
-            if type(value1) is dict:  # i.e. not phase
-                for name2, value2 in value1.items():
-                    if type(value2) is str:
-                        lmfit_name = "{0}_{1}".format(name1, name2)
+        for model_property, model_values in unordered_model.items():
+            if type(model_values) is dict:  # i.e. not phase
+                for peak_property, peak_value in model_values.items():
+                    if type(peak_value) is str:
+                        lmfit_name = "{0}_{1}".format(model_property, peak_property)
                         dependencies[lmfit_name] = []
                         for depend in dependencies:
-                            if depend in value2:
+                            if depend in peak_value:
                                 dependencies[lmfit_name].append(depend)
-        print(dependencies)
 
         # Check for circular dependencies.
         for name, dependents in dependencies.items():
             if type(dependents) is list:
                 for dependent in dependents:
-                    #print(dependent)
-                    #print(dependencies)
                     if dependencies[dependent] is not None and name in dependencies[dependent]:
                         raise ReferenceError("{0} and {1} reference each other, creating a circular reference."
                                              .format(name, dependent))
