@@ -75,12 +75,6 @@ def test_gaussian_2(fixed_fid):
     with pytest.raises(KeyError):
         fitting_result = singlet.fit(data, model)
 
-        numpy.testing.assert_allclose(fitting_result["model"]["pcr"]["width"], 50.0, rtol=1e-2)
-        numpy.testing.assert_allclose(fitting_result["model"]["pcr"]["amplitude"], 1.0, rtol=2e-2)
-        numpy.testing.assert_allclose(fitting_result["model"]["pcr"]["frequency"], 0.0, atol=5e-2)
-
-        numpy.testing.assert_allclose(fitting_result["fit"], fixed_fid, atol=0.001)
-
 
 def test_gaussian_3(fixed_fid):
 
@@ -105,11 +99,6 @@ def test_gaussian_3(fixed_fid):
     with pytest.raises(KeyError):
         fitting_result = singlet.fit(data, model)
 
-        numpy.testing.assert_allclose(fitting_result["model"]["pcr"]["width"], 50.0, rtol=1e-2)
-        numpy.testing.assert_allclose(fitting_result["model"]["pcr"]["amplitude"], 1.0, rtol=2e-2)
-        numpy.testing.assert_allclose(fitting_result["model"]["pcr"]["frequency"], 0.0, atol=5e-2)
-
-        numpy.testing.assert_allclose(fitting_result["fit"], fixed_fid, atol=0.001)
 
 def test_gaussian_4(fixed_fid):
 
@@ -162,12 +151,6 @@ def test_gaussian_5(fixed_fid):
     with pytest.raises(TypeError):
         fitting_result = singlet.fit(data, model)
 
-        numpy.testing.assert_allclose(fitting_result["model"]["pcr"]["width"], 50.0, rtol=1e-2)
-        numpy.testing.assert_allclose(fitting_result["model"]["pcr"]["amplitude"], 1.0, rtol=2e-2)
-        numpy.testing.assert_allclose(fitting_result["model"]["pcr"]["frequency"], 0.0, atol=5e-2)
-
-        numpy.testing.assert_allclose(fitting_result["fit"], fixed_fid, atol=0.001)
-
 
 def test_gaussian_6(fixed_fid):
 
@@ -191,12 +174,6 @@ def test_gaussian_6(fixed_fid):
 
     with pytest.raises(TypeError):
         fitting_result = singlet.fit(data, model)
-
-        numpy.testing.assert_allclose(fitting_result["model"]["pcr"]["width"], 50.0, rtol=1e-2)
-        numpy.testing.assert_allclose(fitting_result["model"]["pcr"]["amplitude"], 1.0, rtol=2e-2)
-        numpy.testing.assert_allclose(fitting_result["model"]["pcr"]["frequency"], 0.0, atol=5e-2)
-
-        numpy.testing.assert_allclose(fitting_result["fit"], fixed_fid, atol=0.001)
 
 
 def test_gaussian_dependencies(fixed_fid):
@@ -230,12 +207,6 @@ def test_gaussian_dependencies(fixed_fid):
 
     with pytest.raises(ReferenceError):
         fitting_result = singlet.fit(data, model)
-
-        numpy.testing.assert_allclose(fitting_result["model"]["pcr"]["width"], 50.0, rtol=1e-2)
-        numpy.testing.assert_allclose(fitting_result["model"]["pcr"]["amplitude"], 1.0, rtol=2e-2)
-        numpy.testing.assert_allclose(fitting_result["model"]["pcr"]["frequency"], 0.0, atol=5e-2)
-
-        numpy.testing.assert_allclose(fitting_result["fit"], fixed_fid, atol=0.001)
 
 
 def test_gaussian_dependencies2(fixed_fid_sum):
@@ -309,9 +280,3 @@ def test_gaussian_dependencies3(fixed_fid_sum):
     }
 
     fitting_result = singlet.fit(data, model)
-
-    numpy.testing.assert_allclose(fitting_result["model"]["pcr"]["width"], 50.0, rtol=1e-2)
-    numpy.testing.assert_allclose(fitting_result["model"]["pcr"]["amplitude"], 1.0, rtol=2e-2)
-    numpy.testing.assert_allclose(fitting_result["model"]["pcr"]["frequency"], 0.0, atol=5e-2)
-
-    numpy.testing.assert_allclose(fitting_result["fit"], fixed_fid_sum, atol=0.001)
