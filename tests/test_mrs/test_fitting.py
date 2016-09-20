@@ -247,6 +247,44 @@ def test_gaussian_dependencies2(fixed_fid_sum):
     numpy.testing.assert_allclose(fitting_result["fit"], fixed_fid_sum, atol=0.001)
 
 
+def test_reordered_dependencies2(fixed_fid_sum):
+
+    data = MRSData(fixed_fid_sum, 5e-4, 123)
+
+    model = {
+        "phase0": 0.0,
+        "phase1": 0.0,
+        "pcr": {
+            "amplitude": 1.0,
+            "width": {
+                "value": 45.0,
+                "min": 42.0,
+                "max": 55.0,
+            },
+            "phase": "0",
+            "frequency": "pcr2_frequency+200"
+        },
+        "pcr2": {
+            "amplitude": 1.0,
+            "width": {
+                "value": 45.0,
+                "min": 42.0,
+                "max": 55.0,
+            },
+            "phase": "0",
+            "frequency": 0
+        }
+    }
+
+    fitting_result = singlet.fit(data, model)
+
+    numpy.testing.assert_allclose(fitting_result["model"]["pcr"]["width"], 50.0, rtol=1e-2)
+    numpy.testing.assert_allclose(fitting_result["model"]["pcr"]["amplitude"], 1.0, rtol=2e-2)
+    numpy.testing.assert_allclose(fitting_result["model"]["pcr"]["frequency"], 200.0, atol=1e-1)
+
+    numpy.testing.assert_allclose(fitting_result["fit"], fixed_fid_sum, atol=0.001)
+
+
 def test_gaussian_dependencies3(fixed_fid_sum):
 
     data = MRSData(fixed_fid_sum, 5e-4, 123)
@@ -279,4 +317,5 @@ def test_gaussian_dependencies3(fixed_fid_sum):
         }
     }
 
-    fitting_result = singlet.fit(data, model)
+    with pytest.raises(NameError):
+        fitting_result = singlet.fit(data, model)
