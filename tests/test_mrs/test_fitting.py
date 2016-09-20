@@ -274,3 +274,44 @@ def test_gaussian_dependencies2(fixed_fid_sum):
     numpy.testing.assert_allclose(fitting_result["model"]["pcr"]["frequency"], 0.0, atol=5e-2)
 
     numpy.testing.assert_allclose(fitting_result["fit"], fixed_fid_sum, atol=0.001)
+
+
+def test_gaussian_dependencies3(fixed_fid_sum):
+
+    data = MRSData(fixed_fid_sum, 5e-4, 123)
+
+    model = {
+        "phase0": 0.0,
+        "phase1": 0.0,
+
+        "pcr2": {
+
+            "amplitude": 1.0,
+            "frequency": "pcr3_frequency+200",
+            "width": {
+                "value": 45.0,
+                "min": 42.0,
+                "max": 55.0,
+            },
+            "phase": "0",
+
+        },
+        "pcr": {
+            "amplitude": 1.0,
+            "width": {
+                "value": 45.0,
+                "min": 42.0,
+                "max": 55.0,
+            },
+            "phase": "0",
+            "frequency": 0
+        }
+    }
+
+    fitting_result = singlet.fit(data, model)
+
+    numpy.testing.assert_allclose(fitting_result["model"]["pcr"]["width"], 50.0, rtol=1e-2)
+    numpy.testing.assert_allclose(fitting_result["model"]["pcr"]["amplitude"], 1.0, rtol=2e-2)
+    numpy.testing.assert_allclose(fitting_result["model"]["pcr"]["frequency"], 0.0, atol=5e-2)
+
+    numpy.testing.assert_allclose(fitting_result["fit"], fixed_fid_sum, atol=0.001)
