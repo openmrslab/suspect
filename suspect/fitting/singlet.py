@@ -98,7 +98,7 @@ def fit(fid, model, baseline_points=16):
             gaussian = suspect.basis.gaussian(time_axis,
                                               params["{}_frequency".format(metabolite_name)],
                                               params["{}_phase".format(metabolite_name)].value,
-                                              params["{}_width".format(metabolite_name)])
+                                              params["{}_fwhm".format(metabolite_name)])
             real_gaussian = complex_to_real(gaussian)
             basis_matrix[i, :] = real_gaussian
         return basis_matrix

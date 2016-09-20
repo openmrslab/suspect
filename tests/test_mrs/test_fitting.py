@@ -34,7 +34,7 @@ def test_gaussian(fixed_fid):
         "phase1": 0,
         "pcr": {
             "amplitude": 1,
-            "width": {
+            "fwhm": {
                 "value": 45,
                 "min": 42.0,
                 "max": 55
@@ -45,7 +45,7 @@ def test_gaussian(fixed_fid):
     }
     fitting_result = singlet.fit(data, model)
 
-    numpy.testing.assert_allclose(fitting_result["model"]["pcr"]["width"], 50.0, rtol=1e-2)
+    numpy.testing.assert_allclose(fitting_result["model"]["pcr"]["fwhm"], 50.0, rtol=1e-2)
     numpy.testing.assert_allclose(fitting_result["model"]["pcr"]["amplitude"], 1.0, rtol=2e-2)
     numpy.testing.assert_allclose(fitting_result["model"]["pcr"]["frequency"], 0.0, atol=5e-2)
 
@@ -62,7 +62,7 @@ def test_bad_param(fixed_fid):
         "phase1": 0.0,
         "pcr": {
             "amplitude": 1.0,
-            "width": {
+            "fwhm": {
                 "value": 45.0,
                 "min": 42.0,
                 "max": 55.0,
@@ -86,7 +86,7 @@ def test_missing_param(fixed_fid):
         "phase1": 0,
         "pcr": {
             "amplitude": 1,
-            "width": {
+            "fwhm": {
                 # "value": 45,
                 "min": 42,
                 "max": 55,
@@ -109,7 +109,7 @@ def test_missing_peak_phase(fixed_fid):
         "phase1": 0,
         "pcr": {
             "amplitude": 1,
-            "width": {
+            "fwhm": {
                 "value": 45,
                 "min": 42,
                 "max": 55,
@@ -121,7 +121,7 @@ def test_missing_peak_phase(fixed_fid):
 
     fitting_result = singlet.fit(data, model)
 
-    numpy.testing.assert_allclose(fitting_result["model"]["pcr"]["width"], 50.0, rtol=5e-2)
+    numpy.testing.assert_allclose(fitting_result["model"]["pcr"]["fwhm"], 50.0, rtol=5e-2)
     numpy.testing.assert_allclose(fitting_result["model"]["pcr"]["amplitude"], 1.0, rtol=5e-2)
     numpy.testing.assert_allclose(fitting_result["model"]["pcr"]["frequency"], 0.0, atol=5e-2)
 
@@ -138,7 +138,7 @@ def test_missing_global_phase(fixed_fid):
         "phase1": None,
         "pcr": {
             "amplitude": 1.0,
-            "width": {
+            "fwhm": {
                 "value": 45.0,
                 "min": 42.0,
                 "max": 55.0,
@@ -161,7 +161,7 @@ def test_bad_param_value(fixed_fid):
         "phase1": 0.0,
         "pcr": {
             "amplitude": None,
-            "width": {
+            "fwhm": {
                 "value": 45.0,
                 "min": 42.0,
                 "max": 55.0,
@@ -184,7 +184,7 @@ def test_circular_dependencies(fixed_fid):
         "phase1": 0.0,
         "pcr": {
             "amplitude": 1.0,
-            "width": {
+            "fwhm": {
                 "value": 45.0,
                 "min": 42.0,
                 "max": 55.0,
@@ -194,7 +194,7 @@ def test_circular_dependencies(fixed_fid):
         },
         "pcr2": {
             "amplitude": 1.0,
-            "width": {
+            "fwhm": {
                 "value": 45.0,
                 "min": 42.0,
                 "max": 55.0,
@@ -217,7 +217,7 @@ def test_dependencies(fixed_fid_sum):
         "phase1": 0.0,
         "pcr": {
             "amplitude": 1.0,
-            "width": {
+            "fwhm": {
                 "value": 45.0,
                 "min": 42.0,
                 "max": 55.0,
@@ -227,7 +227,7 @@ def test_dependencies(fixed_fid_sum):
         },
         "pcr2": {
             "amplitude": 1.0,
-            "width": {
+            "fwhm": {
                 "value": 45.0,
                 "min": 42.0,
                 "max": 55.0,
@@ -239,7 +239,7 @@ def test_dependencies(fixed_fid_sum):
 
     fitting_result = singlet.fit(data, model)
 
-    numpy.testing.assert_allclose(fitting_result["model"]["pcr"]["width"], 50.0, rtol=1e-2)
+    numpy.testing.assert_allclose(fitting_result["model"]["pcr"]["fwhm"], 50.0, rtol=1e-2)
     numpy.testing.assert_allclose(fitting_result["model"]["pcr"]["amplitude"], 1.0, rtol=2e-2)
     numpy.testing.assert_allclose(fitting_result["model"]["pcr"]["frequency"], 0.0, atol=5e-2)
 
@@ -255,7 +255,7 @@ def test_reordered_dependencies(fixed_fid_sum):
         "phase1": 0.0,
         "pcr": {
             "amplitude": 1.0,
-            "width": {
+            "fwhm": {
                 "value": 45.0,
                 "min": 42.0,
                 "max": 55.0,
@@ -265,7 +265,7 @@ def test_reordered_dependencies(fixed_fid_sum):
         },
         "pcr2": {
             "amplitude": 1.0,
-            "width": {
+            "fwhm": {
                 "value": 45.0,
                 "min": 42.0,
                 "max": 55.0,
@@ -277,7 +277,7 @@ def test_reordered_dependencies(fixed_fid_sum):
 
     fitting_result = singlet.fit(data, model)
 
-    numpy.testing.assert_allclose(fitting_result["model"]["pcr"]["width"], 50.0, rtol=1e-2)
+    numpy.testing.assert_allclose(fitting_result["model"]["pcr"]["fwhm"], 50.0, rtol=1e-2)
     numpy.testing.assert_allclose(fitting_result["model"]["pcr"]["amplitude"], 1.0, rtol=2e-2)
     numpy.testing.assert_allclose(fitting_result["model"]["pcr"]["frequency"], 200.0, atol=1e-1)
 
@@ -295,7 +295,7 @@ def test_missing_dependencies(fixed_fid_sum):
 
             "amplitude": 1.0,
             "frequency": "pcr3_frequency+200",
-            "width": {
+            "fwhm": {
                 "value": 45.0,
                 "min": 42.0,
                 "max": 55.0,
@@ -304,7 +304,7 @@ def test_missing_dependencies(fixed_fid_sum):
         },
         "pcr": {
             "amplitude": 1.0,
-            "width": {
+            "fwhm": {
                 "value": 45.0,
                 "min": 42.0,
                 "max": 55.0,
