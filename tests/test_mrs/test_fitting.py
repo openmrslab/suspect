@@ -36,11 +36,11 @@ def test_gaussian(fixed_fid):
             "amplitude": 1,
             "width": {
                 "value": 45,
-                "min": 42,
+                "min": 42.0,
                 "max": 55
             },
             "phase": "0",
-            "frequency": 0
+            "frequency": 0.0
         }
     }
     fitting_result = singlet.fit(data, model)
@@ -52,11 +52,11 @@ def test_gaussian(fixed_fid):
     numpy.testing.assert_allclose(fitting_result["fit"], fixed_fid, atol=0.001)
 
 
-def test_gaussian_2(fixed_fid):
+def test_bad_param(fixed_fid):
 
     data = MRSData(fixed_fid, 5e-4, 123)
 
-    # Floating point values; invalid key added to width dict, to test whether KeyError is raised
+    # invalid key added to width dict, to test whether KeyError is raised
     model = {
         "phase0": 0.0,
         "phase1": 0.0,
@@ -66,7 +66,7 @@ def test_gaussian_2(fixed_fid):
                 "value": 45.0,
                 "min": 42.0,
                 "max": 55.0,
-                "avg": 47
+                "avg": 47  # this is the bad key
             },
             "phase": "0",
             "frequency": 0.0
@@ -76,7 +76,7 @@ def test_gaussian_2(fixed_fid):
         fitting_result = singlet.fit(data, model)
 
 
-def test_gaussian_3(fixed_fid):
+def test_missing_param(fixed_fid):
 
     data = MRSData(fixed_fid, 5e-4, 123)
 
@@ -90,7 +90,6 @@ def test_gaussian_3(fixed_fid):
                 # "value": 45,
                 "min": 42,
                 "max": 55,
-
             },
             "phase": "0",
             "frequency": 0
@@ -100,7 +99,7 @@ def test_gaussian_3(fixed_fid):
         fitting_result = singlet.fit(data, model)
 
 
-def test_gaussian_4(fixed_fid):
+def test_missing_peak_phase(fixed_fid):
 
     data = MRSData(fixed_fid, 5e-4, 123)
 
@@ -129,7 +128,7 @@ def test_gaussian_4(fixed_fid):
     numpy.testing.assert_allclose(fitting_result["fit"], fixed_fid, atol=0.001)
 
 
-def test_gaussian_5(fixed_fid):
+def test_missing_global_phase(fixed_fid):
 
     data = MRSData(fixed_fid, 5e-4, 123)
 
@@ -152,7 +151,7 @@ def test_gaussian_5(fixed_fid):
         fitting_result = singlet.fit(data, model)
 
 
-def test_gaussian_6(fixed_fid):
+def test_bad_param_value(fixed_fid):
 
     data = MRSData(fixed_fid, 5e-4, 123)
 
@@ -176,7 +175,7 @@ def test_gaussian_6(fixed_fid):
         fitting_result = singlet.fit(data, model)
 
 
-def test_gaussian_dependencies(fixed_fid):
+def test_circular_dependencies(fixed_fid):
 
     data = MRSData(fixed_fid, 5e-4, 123)
 
@@ -209,7 +208,7 @@ def test_gaussian_dependencies(fixed_fid):
         fitting_result = singlet.fit(data, model)
 
 
-def test_gaussian_dependencies2(fixed_fid_sum):
+def test_dependencies(fixed_fid_sum):
 
     data = MRSData(fixed_fid_sum, 5e-4, 123)
 
@@ -247,7 +246,7 @@ def test_gaussian_dependencies2(fixed_fid_sum):
     numpy.testing.assert_allclose(fitting_result["fit"], fixed_fid_sum, atol=0.001)
 
 
-def test_reordered_dependencies2(fixed_fid_sum):
+def test_reordered_dependencies(fixed_fid_sum):
 
     data = MRSData(fixed_fid_sum, 5e-4, 123)
 
@@ -285,14 +284,13 @@ def test_reordered_dependencies2(fixed_fid_sum):
     numpy.testing.assert_allclose(fitting_result["fit"], fixed_fid_sum, atol=0.001)
 
 
-def test_gaussian_dependencies3(fixed_fid_sum):
+def test_missing_dependencies(fixed_fid_sum):
 
     data = MRSData(fixed_fid_sum, 5e-4, 123)
 
     model = {
         "phase0": 0.0,
         "phase1": 0.0,
-
         "pcr2": {
 
             "amplitude": 1.0,
@@ -303,7 +301,6 @@ def test_gaussian_dependencies3(fixed_fid_sum):
                 "max": 55.0,
             },
             "phase": "0",
-
         },
         "pcr": {
             "amplitude": 1.0,
