@@ -1,5 +1,35 @@
 import struct
 
+# this is what we have been able to deduce about the Felix file header
+# word -1: byte key
+# word 0: 256 (size of header)
+# word 1: 1 (number of frames)
+# word 2: 0 (not sure, possibly data type)
+# word 3: 1 (not sure, possibly an unused parameter)
+# word 4: 32 (size of frame header)
+# word 5: 210 (Felix version number)
+# word 6-94: digits 6 - 94 (not used for anything)
+# word 95-121: digits 1-27 (not used for anything)
+# word 122: FID length
+# word 123: number of increments
+# word 124-133: digits 124-133 (not used for anything)
+# word 134: FID f0
+# word 135: increment f0
+# word 136-139: digits 136-139 (not used for anything)
+# word 140: FID sw
+# word 141: increment sw
+# word 142-157: digits 142-157 (not used for anything)
+# word 146: d1
+# word 158: zero order phase
+# word 159: first order phase
+# word 160: zero order phase d2
+# word 161: first order phase d2
+# word 162-171: digits 162-171 (not used for anything)
+# word 172: temperature
+# word 173-191: digits 173-191 (not used for anything)
+# word 192-207: description string
+# word 208-256: digits 208-256 (not used for anything)
+
 
 def save_mat(filename, data):
     with open(filename, "wb") as fout:
