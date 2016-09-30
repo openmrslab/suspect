@@ -98,4 +98,4 @@ def construct_fid(components, time_axis):
                                               components[i]["phase"],
                                               components[i]["fwhm"])
         fid += components[i]["amplitude"] * lorentzian * len(time_axis)
-        return fid
+    return fid
