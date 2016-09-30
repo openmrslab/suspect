@@ -91,9 +91,13 @@ def read_csa_header(csa_header_bytes):
 
 
 def load_siemens_dicom(filename):
-    """
-    Imports a file in the Siemens .IMA format.
-    :param filename: The filename of the file to import
+    """Imports a file in the Siemens .IMA format.
+
+    Parameters
+    ----------
+    filename : str
+        The name of the file to import
+
     """
     # the .IMA format is a DICOM standard, unfortunately most of the information is contained inside a private and very
     # complicated header with its own data storage format, we have to get that information out along with the data
@@ -113,7 +117,7 @@ def load_siemens_dicom(filename):
     # now we know which tag contains the CSA image header info: (0029, xx10)
     csa_header_bytes = dataset[0x0029, 0x0100 * header_index + 0x0010].value
     csa_header = read_csa_header(csa_header_bytes)
-    #for key, value in csa_header.items():
+    # for key, value in csa_header.items():
     #    print("%s : %s" % (str(key), str(value)))
     # we can also get the series header info: (0029, xx20), but this seems to be mostly pretty boring
 

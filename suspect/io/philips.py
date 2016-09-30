@@ -69,11 +69,13 @@ def load_sdat(sdat_filename, spar_filename=None):
 def _vax_to_ieee_single_float(data):
     """Converts a float in Vax format to IEEE format.
 
-    data should be a single string of chars that have been read in from
+    Data should be a single string of chars that have been read in from
     a binary file. These will be processed 4 at a time into float values.
     Thus the total number of byte/chars in the string should be divisible
     by 4.
 
+    Notes
+    -----
     Based on VAX data organization in a byte file, we need to do a bunch of
     bitwise operations to separate out the numbers that correspond to the
     sign, the exponent and the fraction portions of this floating point
@@ -82,6 +84,11 @@ def _vax_to_ieee_single_float(data):
     role :      S        EEEEEEEE      FFFFFFF      FFFFFFFF      FFFFFFFF
     bits :      1        2      9      10                               32
     bytes :     byte2           byte1               byte4         byte3
+
+    Returns
+    -------
+    f : array
+        Contains floats in IEEE format
 
     """
     f = []

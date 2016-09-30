@@ -2,16 +2,24 @@ import numpy
 
 
 def _pad(input_signal, length, average=10):
-    """
-    Helper function which increases the length of an input signal. The original
-    is inserted at the centre of the new signal and the extra values are set to
+    """Helper function which increases the length of an input signal.
+
+    The original is inserted at the centre of the new signal and the extra values are set to
     the average of the first and last parts of the original, respectively.
 
-    :param input_signal: the signal to be padded
-    :param length: the length of the padded signal
-    :param average: the number of points at the beginning/end of the signal
-    which are averaged to calculate the padded value
-    :return:
+    Parameters
+    ----------
+    input_signal:
+        the signal to be padded
+    length: int
+        the length of the padded signal
+    average: int
+        the number of points at the beginning/end of the signal that are averaged to calculate the padded value
+
+    Returns
+    -------
+    padded_input_signal : ndarray
+
     """
     padded_input_signal = numpy.zeros(length, input_signal.dtype)
     start_offset = int((len(padded_input_signal) - len(input_signal)) / 2)

@@ -45,11 +45,17 @@ def write_all_files(filename, data, wref_data=None, params=None):
     optional water reference data, updating the default parameters with any
     values supplied through params.
 
-    :param filename: the location where the control file should be saved.
-    :param data: MRSData to be processed.
-    :param wref_data: Optional MRSData containing water reference.
-    :param params: Optional dictionary containing non-default parameter values.
-    :return:
+    Parameters
+    ----------
+    filename :  directory location
+        the location where the control file should be saved.
+    data : MRSData instance
+        MRSData to be processed.
+    wref_data : MRSData instance
+        Optional MRSData containing water reference.
+    params : dict
+        Optional dictionary containing non-default parameter values.
+
     """
 
     # we assume that the data has one spectral dimension, any others must be

@@ -8,15 +8,23 @@ import suspect.basis
 
 
 def complex_to_real(complex_fid):
-    """
-    Standard optimization routines as used in lmfit require real data. This
-    function takes a complex FID and constructs a real version by concatenating
-    the imaginary part to the complex part. The imaginary part is also reversed
-    to keep the maxima at each end of the FID and avoid discontinuities in the
-    center.
+    """This function takes a complex FID and constructs a real version.
 
-    :param complex_fid: the complex FID to be converted to real.
-    :return: the real FID, which has twice as many points as the input.
+    Standard optimization routines as used in lmfit require real data.
+    Concatenates the imaginary part to the complex part.
+    The imaginary part is also reversed to keep the maxima at each end of the FID
+    and avoid discontinuities in the center.
+
+    Parameters
+    ----------
+    complex_fid : MRSData instance
+        The complex FID to be converted to real.
+
+    Returns
+    -------
+    real_fid : MRSData instance
+        The real FID, which has twice as many points as the input.
+
     """
     np = complex_fid.shape[0]
     real_fid = numpy.zeros(np * 2)
@@ -26,13 +34,20 @@ def complex_to_real(complex_fid):
 
 
 def real_to_complex(real_fid):
-    """
-    Standard optimization routines as used in lmfit require real data. This
-    function takes a real FID generated from the optimization routine and
-    converts it back into a true complex form.
+    """This function takes a real FID and converts it back into a true complex form.
 
-    :param real_fid: the real FID to be converted to complex.
-    :return: the complex version of the FID
+    Standard optimization routines as used in lmfit require real data.
+
+    Parameters
+    ----------
+    real_fid : MRSData instance
+        The real FID to be converted to complex, generated from the optimization routine.
+
+    Returns
+    -------
+    complex_fid : MRSData instance
+        The complex version of the FID.
+
     """
     np = int(real_fid.shape[0] / 2)
     complex_fid = numpy.zeros(np, 'complex')
@@ -45,15 +60,23 @@ def real_to_complex(real_fid):
 
 
 def fit(fid, model, baseline_points=16):
-    """
-    Fit fid with model parameters.
+    """Fit fid with model parameters.
 
-    :param fid: MRSData object of FID to be fit
-    :param model:  dictionary model of fit parameters
-    :param baseline_points: the number of points at the start of the FID to ignore
-    :return: Dictionary containing ["model": optimized model, "fit": fitting data, "err": dictionary of standard errors]
-    """
+    Parameters
+    ----------
+    fid : MRSData instance
+        FID to be fit
+    model : dict
+        Dictionary of model fit parameters
+    baseline_points : int
+        The number of points at the start of the FID to ignore
 
+    Returns
+    -------
+    dict
+        Dictionary containing ["model": optimized model, "fit": fitting data, "err": dictionary of standard errors]
+
+    """
     # Get list of metabolite names.
     def get_metabolites(model_input):
         metabolites = []
@@ -70,13 +93,22 @@ def fit(fid, model, baseline_points=16):
         return errors
 
     def phase_fid(fid_in, phase0, phase1):
-        """
-        This function performs a Fourier Transform on the FID to shift it into phase.
+        """This function performs a Fourier Transform on the FID to shift it into phase.
 
-        :param fid_in: FID to be fitted.
-        :param phase1: phase1 value.
-        :param phase0: phase0 value.
-        :return: FID that has been shifted into phase by FFT
+        Parameters
+        ----------
+        fid_in : MRSData instance
+            FID to be fitted.
+        phase1 : Number
+            phase1 value.
+        phase0 : Number
+            phase0 value.
+
+        Returns
+        -------
+        MRSData instance
+            FID that has been shifted into phase by FFT
+
         """
         spectrum = numpy.fft.fftshift(numpy.fft.fft(fid_in))
         np = fid_in.np
@@ -85,14 +117,21 @@ def fit(fid, model, baseline_points=16):
         return fid_in.inherit(numpy.fft.ifft(numpy.fft.ifftshift(phased_spectrum)))
 
     def make_basis(params, time_axis):
-        """
-        This function generates a basis set.
+        """This function generates a basis set.
 
-        :param params: lmfit Parameters object containing fitting parameters.
-        :param time_axis: the time axis.
-        :return: a matrix containing the generated basis set.
-        """
+        Parameters
+        ----------
+        params: lmfit Parameters object
+             Contains fitting parameters
+        time_axis : arange ndarray
+            The time axis in ms
 
+        Returns
+        -------
+        basis_matrix : matrix
+            A 2D array containing the generated basis set.
+
+        """
         basis_matrix = numpy.matrix(numpy.zeros((len(metabolite_name_list), len(time_axis) * 2)))
         for i, metabolite_name in enumerate(metabolite_name_list):
             gaussian = suspect.basis.gaussian(time_axis,
@@ -103,6 +142,7 @@ def fit(fid, model, baseline_points=16):
             basis_matrix[i, :] = real_gaussian
         return basis_matrix
 
+    #unphase the FID to make it pure absorptive
     def unphase(data, params):
 
         unphased_data = phase_fid(data, -params['phase0'], -params['phase1'])
@@ -111,13 +151,22 @@ def fit(fid, model, baseline_points=16):
         return real_unphased_data
 
     def do_fit(params, time_axis, real_unphased_data):
-        """
-        This function performs the fitting.
+        """This function performs the fitting.
 
-        :param params: lmfit Parameters object containing fitting parameters.
-        :param time_axis: the time axis.
-        :param real_unphased_data:
-        :return: List of fitted data points and amplitudes of each singlet.
+        Parameters
+        ----------
+        params: lmfit Parameters object
+            Contains fitting parameters.
+        time_axis : arange ndarray
+            The time axis in ms
+        real_unphased_data : MRSData instance
+            Unphased FID
+
+        Returns
+        -------
+        list
+            Contains fitted data points and amplitudes of each singlet.
+
         """
         basis = make_basis(params, time_axis)
 
@@ -128,15 +177,23 @@ def fit(fid, model, baseline_points=16):
         return fitted_data, weights
 
     def residual(params, time_axis, data):
-        """
-        This function calculates the residual to be minimized by the least squares means method.
+        """Calculates the residual to be minimized by the least squares means method.
 
-        :param params: lmfit Parameters object containing fitting parameters.
-        :param time_axis: the time axis.
-        :param data: FID to be fitted.
-        :return: residual values of baseline points.
-        """
+        Parameters
+        ----------
+        params : lmfit Parameters object
+            Contains fitting parameters
+        time_axis : array
+            The time axis in ms
+        data : MRSData instance
+            FID to be fitted
 
+        Returns
+        -------
+        array
+            Residual values
+
+        """
         real_unphased_data = unphase(data, params)
         fitted_data, weights = do_fit(params, time_axis, real_unphased_data)
         res = fitted_data - real_unphased_data
@@ -148,9 +205,21 @@ def fit(fid, model, baseline_points=16):
         This function takes an FID and a set of parameters contained in an lmfit Parameters object,
         and fits the data using the least squares means method.
 
-        :param data: FID to be fitted.
-        :param initial_params: lmfit Parameters object containing fitting parameters.
-        :return: tuple of weights as a list, data as a list, and result as an lmift MinimizerResult object.
+        Parameters
+        ----------
+        data : MRSData instance
+            FID to be fitted.
+        initial_params : lmfit Parameters object
+            Contains initial fitting parameters.
+
+        Returns
+        -------
+        fitting_weights : list
+            Tuple of weights
+        fitted_data : list
+            Fitted data
+        fitting_result : lmfit MinimizerResult instance
+
         """
         fitting_result = lmfit.minimize(residual,
                                         initial_params,
@@ -260,7 +329,7 @@ def fit(fid, model, baseline_points=16):
                 raise TypeError("Value of {0} must be a number (for phases), or a dictionary.".format(model_property))
             elif type(model_values) is dict:  # i.e. type(value) is not int
                 for peak_property, peak_value in model_values.items():
-                    if not isinstance(peak_value,(numbers.Number,dict,str)):
+                    if not isinstance(peak_value,(numbers.Number, dict, str)):
                         raise TypeError("Value of {0}_{1} must be a value, an expression, or a dictionary."
                                         .format(model_property, peak_property))
                     if type(peak_value) is dict:

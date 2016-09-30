@@ -7,9 +7,16 @@ def gaussian_window(t, params):
     """
     Calculates a Gaussian window function in the time domain which will broaden
     peaks in the frequency domain by params["line_broadening"] Hertz.
-    :param t:
-    :param params:
-    :return:
+
+    Parameters
+    ----------
+    t : arange ndarray
+        time axis
+    params :
+
+    Returns
+    -------
+
     """
     window = suspect.basis.gaussian(t, 0, 0, params["line_broadening"])
 

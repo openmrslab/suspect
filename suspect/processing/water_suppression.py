@@ -4,6 +4,20 @@ import suspect.basis
 
 
 def hsvd(data, rank, L=None):
+    """
+    Parameters
+    ----------
+    data :
+    rank :
+    L :
+
+    Returns
+    -------
+
+    Todo
+    ----
+
+    """
     if L is None:
         L = data.np // 2
     # start by building the Hankel matrix
@@ -77,11 +91,11 @@ def hsvd(data, rank, L=None):
 
 
 def construct_fid(components, time_axis):
-     fid = numpy.zeros_like(time_axis, 'complex')
-     for i in range(len(components)):
-         lorentzian = suspect.basis.lorentzian(time_axis,
-                                               components[i]["frequency"],
-                                               components[i]["phase"],
-                                               components[i]["fwhm"])
-         fid += components[i]["amplitude"] * lorentzian * len(time_axis)
-     return fid
+    fid = numpy.zeros_like(time_axis, 'complex')
+    for i in range(len(components)):
+        lorentzian = suspect.basis.lorentzian(time_axis,
+                                              components[i]["frequency"],
+                                              components[i]["phase"],
+                                              components[i]["fwhm"])
+        fid += components[i]["amplitude"] * lorentzian * len(time_axis)
+        return fid

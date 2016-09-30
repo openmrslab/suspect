@@ -27,11 +27,16 @@ def spectral_registration(data, target, initial_guess=(0.0, 0.0), frequency_rang
     frequency range over which the two spectra are compared can be specified to
     exclude regions where the spectra differ.
 
-    :param data:
-    :param target:
-    :param initial_guess:
-    :param frequency_range:
-    :return:
+    Parameters
+    ----------
+    data :
+    target :
+    initial_guess :
+    frequency_range:
+
+    Returns
+    -------
+
     """
 
     # make sure that there are no extra dimensions in the data
