@@ -6,6 +6,18 @@ import pydicom
 
 
 def load_dicom_volume(filename):
+    """ Creates a 3D volume from all the slices in a folder and extracts useful information from a supplied image
+
+    Parameters
+    ----------
+    filename : DICOM file
+
+    Returns
+    -------
+    dict
+        A dictionary containing values for voxel spacing, position, volume, vectors, and a transformation matrix
+
+    """
     # load the supplied file and get the UID of the series
     ds = pydicom.read_file(filename)
     seriesUID = ds.SeriesInstanceUID

@@ -5,6 +5,7 @@ import suspect
 
 
 def anonymize_twix():
+
     # start with a simple parser which looks for the single positional argument, the path to the graph file
     parser = argparse.ArgumentParser()
 

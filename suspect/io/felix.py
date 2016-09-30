@@ -32,6 +32,13 @@ import struct
 
 
 def save_mat(filename, data):
+    """
+    Parameters
+    ----------
+    filename :
+    data :
+
+    """
     with open(filename, "wb") as fout:
         header_bytes = struct.pack("<BBBB6I89I27III10I2f4I2f16I4f10If19I64s49I",
                                    1, 2, 3, 4,

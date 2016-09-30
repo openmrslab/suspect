@@ -17,11 +17,17 @@ def save_dpt(filename, data):
 
 
 def read_output(filename):
-    """
-    Reads in a Tarquin txt results file and returns a dict of the information
+    """Reads in a Tarquin txt results file and returns a dict of the information
 
-    :param filename: The filename to read from
-    :return:
+    Parameters
+    ----------
+    filename : txt file
+        The filename to read from
+
+    Returns
+    -------
+    result : dict
+
     """
     with open(filename) as fin:
         data = fin.read()
@@ -52,7 +58,7 @@ def process(data, options={}):
     subprocess.run("tarquin --input {} --format dpt --output_txt {}{}".format(
         "/tmp/temp.dpt", "/tmp/output.txt", option_string
     ), shell=True)
-    #with open("/tmp/output.txt") as fin:
+    # with open("/tmp/output.txt") as fin:
     #    result = fin.read()
     result = read_output("/tmp/output.txt")
     return result
