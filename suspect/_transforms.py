@@ -6,11 +6,21 @@ def transformation_matrix(x_vector, y_vector, translation, spacing):
     Creates a transformation matrix which will convert from a specified
     coordinate system to the scanner frame of reference.
 
-    :param x_vector: The unit vector along the space X axis in scanner coordinates
-    :param y_vector: The unit vector along the space Y axis in scanner coordinates
-    :param translation: The origin of the space in scanner coordinates
-    :param spacing: The size of a space unit in scanner units
-    :return:
+    Parameters
+    ----------
+    x_vector : array
+        The unit vector along the space X axis in scanner coordinates
+    y_vector : array
+        The unit vector along the space Y axis in scanner coordinates
+    translation : array
+        The origin of the space in scanner coordinates
+    spacing : float
+        The size of a space unit in scanner units
+
+    Returns
+    -------
+    matrix : array
+
     """
     matrix = numpy.zeros((4, 4), dtype=numpy.float)
     matrix[:3, 0] = x_vector

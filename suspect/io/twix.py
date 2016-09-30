@@ -48,7 +48,7 @@ class TwixBuilder(object):
         for i, loop_counter in enumerate(loop_counter_array):
             # have to break out the loop_counter parameters individually, the second line should work but doesn't
             data[loop_counter[0], loop_counter[1], loop_counter[2], loop_counter[3], loop_counter[4], loop_counter[5], loop_counter[6], loop_counter[7], loop_counter[8], loop_counter[9], loop_counter[10], loop_counter[11], loop_counter[12], loop_counter[13]] = self.data[i]
-            #data[loop_counter] = self.data[i]
+            # data[loop_counter] = self.data[i]
 
         # get rid of all the size 1 dimensions
         data = data.squeeze()
@@ -64,7 +64,7 @@ class TwixBuilder(object):
 
 
 def parse_twix_header(header_string):
-    #print(header_string)
+    # print(header_string)
     # get the name of the protocol being acquired
     protocol_name_string = re.search(r"<ParamString.\"tProtocolName\">  { \".+\"  }\n", header_string).group()
     protocol_name = protocol_name_string.split("\"")[3]
@@ -331,9 +331,9 @@ def load_twix(filename):
 
 
 def anonymize_twix_header(header_string):
-    """
-    Removes the PHI from the supplied twix header and returns the sanitized
-    version. This consists of:
+    """Removes the PHI from the supplied twix header and returns the sanitized version.
+
+    This consists of:
     1) Replacing the patient id and name with strings of lower case x
     characters.
     2) Replacing the patient birthday with 19700101
@@ -342,8 +342,15 @@ def anonymize_twix_header(header_string):
     characters replaced by lower case x. Other characters (notably the period)
     are left unchanged.
 
-    :param header_string: The header string to be anonymized
-    :return: The anonymized version of the header.
+    Parameters
+    ----------
+    header_string : str
+        The header string to be anonymized
+
+    Returns
+    -------
+    str
+        The anonymized version of the header.
     """
     patient_id = re.search(r"(<ParamString.\"PatientID\">  { )(\".+\")(  }\n)", header_string).group(2)
     header_string = re.sub(patient_id, "\"" + ("x" * (len(patient_id) - 2)) + "\"", header_string)
