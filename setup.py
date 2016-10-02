@@ -1,9 +1,13 @@
 from setuptools import setup, find_packages
 
+# get the version information from the relevant file
+with open('./suspect/_version.py') as f:
+    exec(f.read())
+
 
 setup(
         name='suspect',
-        version='0.2.0',
+        version=__version__,
         packages=find_packages(),
         url='https://github.com/bennyrowland/suspect.git',
         license='MIT',
