@@ -6,3 +6,4 @@ from . import basis
 from . import fitting
 from . import image
 from . import viz
+from ._version import __version__
