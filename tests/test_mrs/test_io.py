@@ -6,7 +6,23 @@ import builtins
 from unittest.mock import patch
 import os
 
+from suspect.io._common import complex_array_from_iter
+
 import numpy
+
+
+def test_complex_from_iter():
+    float_list = [1.0, 0.0, 0.0, 1.0]
+    array = complex_array_from_iter(iter(float_list))
+    assert array.shape == (2,)
+    assert array[0] == 1
+    assert array[1] == 1j
+
+
+def test_shaped_complex_from_iter():
+    float_list = [1.0, 1.0, 0.0, 0.0, 1.0, 0.0, 0.0, 1.0]
+    array = complex_array_from_iter(iter(float_list), shape=[2, 2])
+    assert array.shape == (2, 2)
 
 
 def test_write_dpt():
