@@ -29,10 +29,10 @@ def spectral_registration(data, target, initial_guess=(0.0, 0.0), frequency_rang
 
     Parameters
     ----------
-    data :
-    target :
-    initial_guess :
-    frequency_range:
+    data : MRSData
+    target : MRSData
+    initial_guess : tuple
+    frequency_range : 
 
     Returns
     -------
