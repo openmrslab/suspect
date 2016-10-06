@@ -2,7 +2,6 @@ from suspect import MRSData
 
 from ._common import complex_array_from_iter
 
-import numpy as np
 import pydicom.dicomio
 import pydicom.tag
 
