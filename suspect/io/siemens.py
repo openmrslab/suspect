@@ -4,6 +4,7 @@ import numpy
 import struct
 
 from suspect import MRSData
+from ._common import complex_array_from_iter
 
 CSA1 = 0
 CSA2 = 1
@@ -143,14 +144,9 @@ def load_siemens_dicom(filename):
     csa_data_bytes = dataset[0x7fe1, 0x0100 * data_index + 0x0010].value
     # the data is stored as a list of 4 byte floats in (real, imaginary) pairs
     data_floats = struct.unpack("<%df" % (len(csa_data_bytes) / 4), csa_data_bytes)
-    # form an iterator which will provide the numbers one at a time, then an iterator which calls that iterator twice
-    # each cycle to give a complex pair
-    data_iter = iter(data_floats)
-    complex_iter = (complex(r, i) for r, i in zip(data_iter, data_iter))
-    # give this iterator to numpy to build the data array
-    complex_data = numpy.fromiter(complex_iter, "complex128", int(len(csa_data_bytes) / 8))
-    # reshape the array to structure of rows, columns and slices
-    complex_data = numpy.reshape(complex_data, data_shape).squeeze()
+    complex_data = complex_array_from_iter(iter(data_floats),
+                                           length=len(data_floats) // 2,
+                                           shape=data_shape)
 
     return MRSData(complex_data,
                    csa_header["RealDwellTime"] * 1e-9,
