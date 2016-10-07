@@ -34,7 +34,7 @@ def sliding_window(input_signal, window_width):
     window /= numpy.sum(window)
     # pad the signal to cover half the window width on each side
     padded_input = _pad(input_signal, len(input_signal) + window_width - 1)
-    result = numpy.zeros(len(input_signal))
+    result = numpy.zeros(len(input_signal), input_signal.dtype)
     for i in range(len(input_signal)):
         result[i] = numpy.dot(window, padded_input[i:(i + window_width)])
     return result
@@ -62,7 +62,7 @@ def sift(input_signal, threshold):
 def svd(input_signal, rank):
     matrix_width = int(len(input_signal) / 2)
     matrix_height = len(input_signal) - matrix_width + 1
-    hankel_matrix = numpy.zeros((matrix_width, matrix_height))
+    hankel_matrix = numpy.zeros((matrix_width, matrix_height), input_signal.dtype)
     for i in range(matrix_height):
         hankel_matrix[:, i] = input_signal[i:(i + matrix_width)]
     # perform the singular value decomposition

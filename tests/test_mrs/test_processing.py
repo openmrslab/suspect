@@ -1,6 +1,8 @@
 import suspect
 
 import numpy
+import pytest
+import warnings
 
 
 def test_null_transform():
@@ -79,6 +81,39 @@ def test_gaussian_denoising():
     data = numpy.ones(128)
     denoised_data = suspect.processing.denoising.sliding_gaussian(data, 11)
     numpy.testing.assert_almost_equal(data, denoised_data)
+
+
+def test_svd_dtype():
+    warnings.filterwarnings('error')
+    try:
+        data = numpy.ones(128, dtype=complex)
+        denoised_data = suspect.processing.denoising.svd(data, 8)
+        assert data.dtype == denoised_data.dtype
+
+    except numpy.core.numeric.ComplexWarning:
+        raise
+
+
+def test_sliding_window_dtype():
+    warnings.filterwarnings('error')
+    try:
+        data = numpy.ones(128, dtype=complex)
+        denoised_data = suspect.processing.denoising.sliding_window(data, 30)
+        assert data.dtype == denoised_data.dtype
+
+    except numpy.core.numeric.ComplexWarning:
+        raise
+
+
+def test_sliding_gaussian_dtype():
+    warnings.filterwarnings('error')
+    try:
+        data = numpy.ones(128, dtype=complex)
+        denoised_data = suspect.processing.denoising.sliding_gaussian(data, 30)
+        assert data.dtype == denoised_data.dtype
+
+    except numpy.core.numeric.ComplexWarning:
+        raise
 
 
 def test_water_suppression():
