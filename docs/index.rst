@@ -26,4 +26,5 @@ API Reference
    :maxdepth: 1
    :glob:
 
+   suspect_api.rst
    mrs_data_api.rst

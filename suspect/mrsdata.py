@@ -247,3 +247,25 @@ class MRSData(numpy.ndarray):
         transformed_point = numpy.linalg.inv(self.transform) * numpy.matrix([x, y, z, 1]).T
 
         return numpy.squeeze(numpy.asarray(transformed_point))[0:3]
+
+    def adjust_phase(self, zero_phase, first_phase=0, fixed_frequency=0):
+        """
+        Adjust the phases of the signal.
+
+        Refer to suspect.adjust_phase for full documentation.
+
+        See Also
+        --------
+        suspect.adjust_phase : equivalent function
+        """
+        # easiest to apply the phase shift in the frequency domain
+        # TODO when MRSSpectrum is a real class, this function can delegate
+        # to that one.
+        spectrum = self.spectrum()
+        phase_ramp = numpy.linspace(-self.sw / 2,
+                                    self.sw / 2,
+                                    self.np,
+                                    endpoint=False)
+        phase_shift = zero_phase + first_phase * (fixed_frequency + phase_ramp)
+        phased_spectrum = spectrum * numpy.exp(1j * phase_shift)
+        return self.inherit(numpy.fft.ifft(numpy.fft.ifftshift(phased_spectrum, axes=-1), axis=-1))
