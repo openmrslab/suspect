@@ -93,8 +93,8 @@ def write_all_files(filename, data, wref_data=None, params=None):
         "IROWEN": shape[1],
         "NDROWS": shape[1],
         "NDSLIC": shape[2],
-        "DOWS": "T" if wref_data is not None else "F",
-        "DOECC": "T" if wref_data is not None else "F",
+        "DOWS": True if wref_data is not None else False,
+        "DOECC": True if wref_data is not None else False,
         "FILRAW": os.path.join(folder, file_root + ".RAW"),
         "FILPS": os.path.join(folder, file_root + ".PS")
     }
@@ -108,38 +108,38 @@ def write_all_files(filename, data, wref_data=None, params=None):
     # make a few modifications based on user edits
     if "FILTAB" in base_params:
         base_params["LTABLE"] = 7
-        base_params["FILTAB"] = "'{}'".format(base_params["FILTAB"])
+        base_params["FILTAB"] = "{}".format(base_params["FILTAB"])
     elif "LTABLE" in base_params:
         base_params["LTABLE"] = 7
-        base_params["FILTAB"] = "'{}'".format(os.path.join(folder, file_root + ".TABLE"))
+        base_params["FILTAB"] = "{}".format(os.path.join(folder, file_root + ".TABLE"))
     if "FILCSV" in base_params:
         base_params["LCSV"] = 11
-        base_params["FILCSV"] = "'{}'".format(base_params["FILCSV"])
+        base_params["FILCSV"] = "{}".format(base_params["FILCSV"])
     elif "LCSV" in base_params:
         base_params["LCSV"] = 11
-        base_params["FILCSV"] = "'{}'".format(os.path.join(folder, file_root + ".CSV"))
+        base_params["FILCSV"] = "{}".format(os.path.join(folder, file_root + ".CSV"))
     if "FILCOO" in base_params:
         base_params["LCOORD"] = 9
-        base_params["FILCOO"] = "'{}'".format(base_params["FILCOO"])
+        base_params["FILCOO"] = "{}".format(base_params["FILCOO"])
     elif "LCOORD" in base_params:
         base_params["LCOORD"] = 9
-        base_params["FILCOO"] = "'{}'".format(os.path.join(folder, file_root + ".COORD"))
+        base_params["FILCOO"] = "{}".format(os.path.join(folder, file_root + ".COORD"))
     if "FILCOR" in base_params:
         base_params["LCORAW"] = 10
-        base_params["FILCOR"] = "'{}'".format(base_params["FILCOR"])
+        base_params["FILCOR"] = "{}".format(base_params["FILCOR"])
     elif "LCORAW" in base_params:
         base_params["LCORAW"] = 10
-        base_params["FILCOR"] = "'{}'".format(os.path.join(folder, file_root + ".CORAW"))
+        base_params["FILCOR"] = "{}".format(os.path.join(folder, file_root + ".CORAW"))
 
     save_raw(base_params["FILRAW"], data)
     if wref_data is not None:
         save_raw(base_params["FILH2O"], wref_data)
     # have to add single quotes to the various paths
-    base_params["FILRAW"] = "'{}'".format(base_params["FILRAW"])
-    base_params["FILBAS"] = "'{}'".format(base_params["FILBAS"])
-    base_params["FILPS"] = "'{}'".format(base_params["FILPS"])
+    base_params["FILRAW"] = "{}".format(base_params["FILRAW"])
+    base_params["FILBAS"] = "{}".format(base_params["FILBAS"])
+    base_params["FILPS"] = "{}".format(base_params["FILPS"])
     if wref_data is not None:
-        base_params["FILH2O"] = "'{}'".format(base_params["FILH2O"])
+        base_params["FILH2O"] = "{}".format(base_params["FILH2O"])
 
     for slice_index in range(shape[2]):
         control_filename = "{0}_sl{1}.CONTROL".format(file_root, slice_index)
@@ -154,6 +154,8 @@ def write_all_files(filename, data, wref_data=None, params=None):
             for key, value in base_params.items():
                 if isinstance(value, str):
                     value = "'{0}'".format(value)
+                elif isinstance(value, bool):
+                    value = 'T' if value else 'F'
                 fout.write(" {0} = {1}\n".format(key, value))
             fout.write(" $END\n")
 
