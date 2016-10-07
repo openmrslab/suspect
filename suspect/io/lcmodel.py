@@ -154,6 +154,8 @@ def write_all_files(filename, data, wref_data=None, params=None):
             for key, value in base_params.items():
                 if isinstance(value, str):
                     value = "'{0}'".format(value)
+                elif isinstance(value, bool):
+                    value = 'T' if value else 'F'
                 fout.write(" {0} = {1}\n".format(key, value))
             fout.write(" $END\n")
 
