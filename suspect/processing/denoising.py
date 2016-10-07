@@ -34,7 +34,7 @@ def sliding_window(input_signal, window_width):
     window /= numpy.sum(window)
     # pad the signal to cover half the window width on each side
     padded_input = _pad(input_signal, len(input_signal) + window_width - 1)
-    result = numpy.zeros(len(input_signal), input_signal.dtype)
+    result = numpy.zeros_like(input_signal)
     for i in range(len(input_signal)):
         result[i] = numpy.dot(window, padded_input[i:(i + window_width)])
     return result
