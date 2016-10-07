@@ -93,8 +93,8 @@ def write_all_files(filename, data, wref_data=None, params=None):
         "IROWEN": shape[1],
         "NDROWS": shape[1],
         "NDSLIC": shape[2],
-        "DOWS": "T" if wref_data is not None else "F",
-        "DOECC": "T" if wref_data is not None else "F",
+        "DOWS": True if wref_data is not None else False,
+        "DOECC": True if wref_data is not None else False,
         "FILRAW": os.path.join(folder, file_root + ".RAW"),
         "FILPS": os.path.join(folder, file_root + ".PS")
     }
