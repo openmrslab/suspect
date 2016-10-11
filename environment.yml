@@ -11,3 +11,4 @@ dependencies:
   - scipy
   - pywavelets
   - lmfit
+  - nbsphinx
