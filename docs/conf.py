@@ -28,6 +28,8 @@ class Mock(MagicMock):
 MOCK_MODULES = ['pydicom', 'pydicom.tag', 'pydicom.dicomio']
 sys.modules.update((mod_name, Mock()) for mod_name in MOCK_MODULES)
 
+path = os.path.abspath('.').rstrip("/docs")
+sys.path.insert(0, path)
 import suspect
 
 # If extensions (or modules to document with autodoc) are in another directory,
