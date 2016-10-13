@@ -4,3 +4,4 @@ from suspect.io.philips import load_sdat
 from suspect.io.siemens import load_siemens_dicom
 from . import tarquin, lcmodel, felix
 from .dicom import load_dicom
+from .bruker import load_svs_bruker
