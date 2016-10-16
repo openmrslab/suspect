@@ -38,6 +38,9 @@ def test_write_dpt():
 def test_read_tarquin_results():
     fitting_result = suspect.io.tarquin.read_output("tests/test_data/tarquin/tarquin_results.txt")
     assert "metabolite_fits" in fitting_result
+    assert "quality" in fitting_result
+    assert fitting_result["quality"]["Metab FWHM (PPM)"] == 0.04754
+    assert fitting_result["quality"]["Q"] == 4.048
 
 
 def test_write_raw():

@@ -33,6 +33,7 @@ def read_output(filename):
         data = fin.read()
 
         metabolite_fits = {}
+        fit_quality = {}
 
         sections = data.split("\n\n")
 
@@ -45,8 +46,15 @@ def read_output(filename):
                 "sd": pc_sd,
             }
 
+        # second section is the fit quality
+        lines = sections[1].splitlines()[2:]
+        for line in lines:
+            key, value = line.split(":")
+            fit_quality[key.strip()] = float(value.strip())
+
         return {
-            "metabolite_fits": metabolite_fits
+            "metabolite_fits": metabolite_fits,
+            "quality": fit_quality
         }
 
 
