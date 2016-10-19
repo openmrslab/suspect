@@ -2,3 +2,5 @@ setuptools>=26.0
 sphinx>=1.4
 nbsphinx
 ipykernel
+numpy
+lmfit

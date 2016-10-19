@@ -92,30 +92,6 @@ def fit(fid, model, baseline_points=16):
             errors[name] = param.stderr
         return errors
 
-    def phase_fid(fid_in, phase0, phase1):
-        """This function performs a Fourier Transform on the FID to shift it into phase.
-
-        Parameters
-        ----------
-        fid_in : MRSData instance
-            FID to be fitted.
-        phase1 : Number
-            phase1 value.
-        phase0 : Number
-            phase0 value.
-
-        Returns
-        -------
-        MRSData instance
-            FID that has been shifted into phase by FFT
-
-        """
-        spectrum = numpy.fft.fftshift(numpy.fft.fft(fid_in))
-        np = fid_in.np
-        phase_shift = phase0 + phase1 * numpy.linspace(-np / 2, np / 2, np, endpoint=False)
-        phased_spectrum = spectrum * numpy.exp(1j * phase_shift)
-        return fid_in.inherit(numpy.fft.ifft(numpy.fft.ifftshift(phased_spectrum)))
-
     def make_basis(params, time_axis):
         """This function generates a basis set.
 
@@ -142,10 +118,10 @@ def fit(fid, model, baseline_points=16):
             basis_matrix[i, :] = real_gaussian
         return basis_matrix
 
-    #unphase the FID to make it pure absorptive
+    # unphase the FID to make it pure absorptive
     def unphase(data, params):
 
-        unphased_data = phase_fid(data, -params['phase0'], -params['phase1'])
+        unphased_data = suspect.adjust_phase(data, -params['phase0'], -params['phase1'])
         real_unphased_data = complex_to_real(unphased_data)
 
         return real_unphased_data
@@ -329,7 +305,7 @@ def fit(fid, model, baseline_points=16):
                 raise TypeError("Value of {0} must be a number (for phases), or a dictionary.".format(model_property))
             elif type(model_values) is dict:  # i.e. type(value) is not int
                 for peak_property, peak_value in model_values.items():
-                    if not isinstance(peak_value,(numbers.Number, dict, str)):
+                    if not isinstance(peak_value, (numbers.Number, dict, str)):
                         raise TypeError("Value of {0}_{1} must be a value, an expression, or a dictionary."
                                         .format(model_property, peak_property))
                     if type(peak_value) is dict:
@@ -390,4 +366,3 @@ def fit(fid, model, baseline_points=16):
 
     return_dict = {"model": final_model, "fit": fitted_data, "errors": stderr}  # Compile output into a dictionary.
     return return_dict
-
