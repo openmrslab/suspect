@@ -1,4 +1,4 @@
-from suspect.mrsdata import MRSData
+from suspect.mrsobjects import MRSBase, MRSData, MRSSpectrum
 from suspect._transforms import *
 from . import processing
 from . import io
