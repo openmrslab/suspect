@@ -1,7 +1,7 @@
 import numpy
 
 
-class MRSData(numpy.ndarray):
+class MRSBase(numpy.ndarray):
     """
     numpy.ndarray subclass with additional metadata like sampling rate and echo
     time.
@@ -22,7 +22,7 @@ class MRSData(numpy.ndarray):
         return obj
 
     def __array_finalize__(self, obj):
-        # if this instance is being created by slicing from another MRSData, copy the parameters across
+        # if this instance is being created by slicing from another MRSBase, copy the parameters across
         self._dt = getattr(obj, 'dt', None)
         self._f0 = getattr(obj, 'f0', None)
         self._te = getattr(obj, 'te', 30)
@@ -38,25 +38,25 @@ class MRSData(numpy.ndarray):
             return numpy.ndarray.__array_wrap__(self, obj)
 
     def __str__(self):
-        return "<MRSData instance f0={0}MHz TE={1}ms dt={2}ms>".format(self.f0, self.te, self.dt * 1e3)
+        return "<MRSBase instance f0={0}MHz TE={1}ms dt={2}ms>".format(self.f0, self.te, self.dt * 1e3)
 
     def inherit(self, new_array):
-        """Converts a generic numpy ndarray into an MRSData instance by copying its own MRS specific parameters.
+        """Converts a generic numpy ndarray into an MRSBase instance by copying its own MRS specific parameters.
 
-        This is useful when performing some processing on the MRSData object gives a bare ndarray result.
+        This is useful when performing some processing on the MRSBase object gives a bare ndarray result.
 
         Parameters
         ----------
         new_array : numpy ndarray
-            Generic ndarray to be converted to MRSData.
+            Generic ndarray to be converted to MRSBase.
 
         Returns
         -------
-        cast_array : MRSData
-            New MRSData instance with data from new_array and parameters from self.
+        cast_array : MRSBase
+            New MRSBase instance with data from new_array and parameters from self.
 
         """
-        cast_array = new_array.view(MRSData)
+        cast_array = new_array.view(MRSBase)
         cast_array._dt = self.dt
         cast_array._f0 = self.f0
         cast_array._te = self.te
@@ -109,16 +109,6 @@ class MRSData(numpy.ndarray):
 
         """
         return self._f0
-
-    def spectrum(self):
-        """
-        Returns
-        -------
-        ndarray
-            The Fourier-transformed and shifted data
-
-        """
-        return numpy.fft.fftshift(numpy.fft.fft(self, axis=-1), axes=-1)
 
     def hertz_to_ppm(self, frequency):
         """Converts a frequency in Hertz to the corresponding PPM for this dataset.
@@ -199,7 +189,7 @@ class MRSData(numpy.ndarray):
         return numpy.prod(self.voxel_dimensions)
 
     def to_scanner(self, x, y, z):
-        """Converts a 3d position in MRSData space to the scanner reference frame
+        """Converts a 3d position in MRSBase space to the scanner reference frame
 
         Parameters
         ----------
@@ -217,14 +207,14 @@ class MRSData(numpy.ndarray):
 
         """
         if self.transform is None:
-            raise ValueError("No transform set for MRSData object {}".format(self))
+            raise ValueError("No transform set for MRSBase object {}".format(self))
 
         transformed_point = self.transform * numpy.matrix([x, y, z, 1]).T
 
         return numpy.squeeze(numpy.asarray(transformed_point))[0:3]
 
     def from_scanner(self, x, y, z):
-        """Converts a 3d position in the scanner reference frame to the MRSData space
+        """Converts a 3d position in the scanner reference frame to the MRSBase space
 
         Parameters
         ----------
@@ -238,15 +228,58 @@ class MRSData(numpy.ndarray):
         Returns
         -------
         ndarray
-            Squeezed ndarray representing a point in 3d MRSData space
+            Squeezed ndarray representing a point in 3d MRSBase space
 
         """
         if self.transform is None:
-            raise ValueError("No transform set for MRSData object {}".format(self))
+            raise ValueError("No transform set for MRSBase object {}".format(self))
 
         transformed_point = numpy.linalg.inv(self.transform) * numpy.matrix([x, y, z, 1]).T
 
         return numpy.squeeze(numpy.asarray(transformed_point))[0:3]
+
+
+class MRSData(MRSBase):
+
+    def __new__(cls, input_array, dt, f0, te=30, ppm0=4.7, voxel_dimensions=(10, 10, 10), transform=None, metadata=None):
+        return super
+
+    def spectrum(self):
+        """
+        Returns
+        -------
+        MRSSpectrum
+            The Fourier-transformed and shifted data, represented as a spectrum
+
+        """
+        spectrum = self.inherit(numpy.fft.fftshift(numpy.fft.fft(self, axis=-1), axes=-1))
+        return spectrum
+
+
+class MRSSpectrum(MRSBase):
+
+    def __new__(cls, input_array, dt, f0, te=30, ppm0=4.7, voxel_dimensions=(10, 10, 10), transform=None, metadata=None):
+        obj = numpy.asarray(input_array).view(cls)
+        # add the new attributes to the created instance
+        obj._dt = dt
+        obj._f0 = f0
+        obj._te = te
+        obj.ppm0 = ppm0
+        obj.voxel_dimensions = voxel_dimensions
+        obj.transform = transform
+        obj.metadata = metadata
+        obj = obj.inherit(numpy.fft.fftshift(numpy.fft.fft(cls, axis=-1), axes=-1))
+        return obj
+
+    def fid(self):
+        """
+        Returns
+        -------
+        MRSData
+            The inverse-Fourier-shifted and inverse-Fourier-transformed data, represented as a FID
+        """
+        fid = self.inherit(numpy.fft.ifft(numpy.fft.ifftshift(self, axis=-1), axes=-1))
+        return fid
 
     def adjust_phase(self, zero_phase, first_phase=0, fixed_frequency=0):
         """
@@ -259,13 +292,11 @@ class MRSData(numpy.ndarray):
         suspect.adjust_phase : equivalent function
         """
         # easiest to apply the phase shift in the frequency domain
-        # TODO when MRSSpectrum is a real class, this function can delegate
-        # to that one.
-        spectrum = self.spectrum()
+
         phase_ramp = numpy.linspace(-self.sw / 2,
                                     self.sw / 2,
                                     self.np,
                                     endpoint=False)
         phase_shift = zero_phase + first_phase * (fixed_frequency + phase_ramp)
-        phased_spectrum = spectrum * numpy.exp(1j * phase_shift)
+        phased_spectrum = self * numpy.exp(1j * phase_shift)
         return self.inherit(numpy.fft.ifft(numpy.fft.ifftshift(phased_spectrum, axes=-1), axis=-1))

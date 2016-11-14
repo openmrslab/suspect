@@ -1,14 +1,14 @@
-from .mrsdata import MRSData
+from .mrsobjects import MRSSpectrum
 
 
 def adjust_phase(data, zero_phase, first_phase=0, fixed_frequency=0):
     """
-    Adjust the phase of an MRSData object
+    Adjust the phase of an MRSSpectrum object
 
     Parameters
     ----------
-    data : MRSData
-        The MRSData object to be phased
+    data : MRSSpectrum
+        The MRSSpectrum object to be phased
     zero_phase : scalar
         The change to the zero order phase, in radians
     first_phase : scalar, optional
@@ -19,7 +19,7 @@ def adjust_phase(data, zero_phase, first_phase=0, fixed_frequency=0):
 
     Returns
     -------
-    out : MRSData
-        A new MRSData object with adjusted phase.
+    out : MRSSpectrum
+        A new MRSSpectrum object with adjusted phase.
     """
     return data.adjust_phase(zero_phase, first_phase, fixed_frequency)
