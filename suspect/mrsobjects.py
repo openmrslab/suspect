@@ -241,9 +241,6 @@ class MRSBase(numpy.ndarray):
 
 class MRSData(MRSBase):
 
-    def __new__(cls, input_array, dt, f0, te=30, ppm0=4.7, voxel_dimensions=(10, 10, 10), transform=None, metadata=None):
-        return super
-
     def spectrum(self):
         """
         Returns
