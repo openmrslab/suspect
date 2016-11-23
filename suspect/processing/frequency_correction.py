@@ -55,7 +55,7 @@ def spectral_registration(data, target, initial_guess=(0.0, 0.0), frequency_rang
 
     # define a residual function for the optimizer to use
     def residual(input_vector):
-        transformed_data = transform_fid(data, input_vector[0], input_vector[1])
+        transformed_data = transform_fid(data, -input_vector[0], -input_vector[1])
         residual_data = transformed_data - target
         if frequency_range is not None:
             spectrum = residual_data.spectrum()
@@ -69,4 +69,4 @@ def spectral_registration(data, target, initial_guess=(0.0, 0.0), frequency_rang
         return return_vector
 
     out = scipy.optimize.leastsq(residual, initial_guess)
-    return -out[0][0], -out[0][1]
+    return out[0][0], out[0][1]
