@@ -10,8 +10,14 @@ def test_null_transform():
     fid = numpy.ones(128, 'complex')
     data = suspect.MRSData(fid, 1.0 / 128, 123)
     transformed_data = data.adjust_frequency(0)
-    transformed_data = data.adjust_phase(0, 0)
+    transformed_data = transformed_data.adjust_phase(0, 0)
     assert type(transformed_data) == suspect.MRSData
+    numpy.testing.assert_equal(transformed_data, data)
+    # test again using suspect namespace
+    transformed_data = suspect.adjust_frequency(data, 0)
+    transformed_data = suspect.adjust_phase(transformed_data, 0, 0)
+    numpy.testing.assert_equal(transformed_data, data)
+
 
 
 def test_water_peak_alignment_misshape():
