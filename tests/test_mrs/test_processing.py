@@ -9,8 +9,15 @@ warnings.filterwarnings('error')
 def test_null_transform():
     fid = numpy.ones(128, 'complex')
     data = suspect.MRSData(fid, 1.0 / 128, 123)
-    transformed_data = suspect.processing.frequency_correction.transform_fid(data, 0, 0)
+    transformed_data = data.adjust_frequency(0)
+    transformed_data = transformed_data.adjust_phase(0, 0)
     assert type(transformed_data) == suspect.MRSData
+    numpy.testing.assert_equal(transformed_data, data)
+    # test again using suspect namespace
+    transformed_data = suspect.adjust_frequency(data, 0)
+    transformed_data = suspect.adjust_phase(transformed_data, 0, 0)
+    numpy.testing.assert_equal(transformed_data, data)
+
 
 
 def test_water_peak_alignment_misshape():
@@ -63,7 +70,7 @@ def test_frequency_transform():
     for i in range(16):
         rolled_spectrum = numpy.roll(spectrum, i)
         fid = suspect.MRSData(numpy.fft.ifft(rolled_spectrum), 1.0 / 128, 123)
-        transformed_fid = suspect.processing.frequency_correction.transform_fid(fid, -i, 0)
+        transformed_fid = fid.adjust_frequency(-i)
         transformed_spectrum = numpy.fft.fft(transformed_fid)
         numpy.testing.assert_almost_equal(transformed_spectrum, spectrum)
 

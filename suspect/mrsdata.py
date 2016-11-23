@@ -269,3 +269,26 @@ class MRSData(numpy.ndarray):
         phase_shift = zero_phase + first_phase * (fixed_frequency + phase_ramp)
         phased_spectrum = spectrum * numpy.exp(1j * phase_shift)
         return self.inherit(numpy.fft.ifft(numpy.fft.ifftshift(phased_spectrum, axes=-1), axis=-1))
+
+    def adjust_frequency(self, frequency_shift):
+        """
+        Adjust the centre frequency of the signal.
+
+        Refer to suspect.adjust_frequency for full documentation.
+
+        Parameters
+        ----------
+        frequency_shift: float
+            The amount to shift the frequency, in Hertz.
+
+        Returns
+        -------
+        out : MRSData
+            Frequency adjusted FID
+
+        See Also
+        --------
+        suspect.adjust_frequency : equivalent function
+        """
+        correction = numpy.exp(2j * numpy.pi * (frequency_shift * self.time_axis()))
+        return self.inherit(numpy.multiply(self, correction))
