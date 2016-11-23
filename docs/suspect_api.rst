@@ -2,4 +2,4 @@ Suspect API Reference
 =====================
 
 .. automodule:: suspect
-    :members: adjust_phase
+    :members: adjust_frequency, adjust_phase

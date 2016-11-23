@@ -2,13 +2,6 @@ import numpy
 import scipy.optimize
 
 
-def transform_fid(fid, frequency_shift, phase_shift):
-    time_axis = fid.time_axis()
-    correction = numpy.exp(2j * numpy.pi * (frequency_shift * time_axis + phase_shift))
-    transformed_fid = numpy.multiply(fid, correction)
-    return transformed_fid
-
-
 def residual_water_alignment(data):
 
     # get rid of any extraneous dimensions to the data
@@ -55,7 +48,8 @@ def spectral_registration(data, target, initial_guess=(0.0, 0.0), frequency_rang
 
     # define a residual function for the optimizer to use
     def residual(input_vector):
-        transformed_data = transform_fid(data, -input_vector[0], -input_vector[1])
+        #transformed_data = transform_fid(data, -input_vector[0], -input_vector[1])
+        transformed_data = data.adjust_frequency(-input_vector[0]).adjust_phase(-input_vector[1])
         residual_data = transformed_data - target
         if frequency_range is not None:
             spectrum = residual_data.spectrum()
