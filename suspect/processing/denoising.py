@@ -108,9 +108,9 @@ def wavelet(input_signal, wavelet_shape, threshold):
     # we have to pad the signal to make it a power of two
     next_power_of_two = int(numpy.floor(numpy.log2(len(input_signal))) + 1)
     padded_input_signal = _pad(input_signal, 2**next_power_of_two)
-    wt_coeffs = pywt.wavedec(padded_input_signal, wavelet_shape, level=None, mode='per')
+    wt_coeffs = pywt.wavedec(padded_input_signal, wavelet_shape, level=None, mode='periodization')
     denoised_coeffs = wt_coeffs[:]
     denoised_coeffs[1:] = (pywt.threshold(i, value=threshold) for i in denoised_coeffs[1:])
-    recon = pywt.waverec(denoised_coeffs, wavelet_shape, mode='per')
+    recon = pywt.waverec(denoised_coeffs, wavelet_shape, mode='periodization')
     start_offset = (len(padded_input_signal) - len(input_signal)) // 2
     return recon[start_offset:(start_offset + len(input_signal))]
