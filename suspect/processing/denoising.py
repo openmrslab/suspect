@@ -111,6 +111,6 @@ def wavelet(input_signal, wavelet_shape, threshold):
     wt_coeffs = pywt.wavedec(padded_input_signal, wavelet_shape, level=None, mode='per')
     denoised_coeffs = wt_coeffs[:]
     denoised_coeffs[1:] = (pywt.threshold(i, value=threshold) for i in denoised_coeffs[1:])
-    recon = pywt.waverec(denoised_coeffs, wavelet_shape, mode='per')
+    recon = pywt.waverec(denoised_coeffs, wavelet_shape, mode='periodization')
     start_offset = (len(padded_input_signal) - len(input_signal)) // 2
     return recon[start_offset:(start_offset + len(input_signal))]
