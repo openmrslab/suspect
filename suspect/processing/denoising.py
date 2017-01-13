@@ -85,8 +85,8 @@ def svd(input_signal, rank):
 
 def spline(input_signal, num_splines, spline_order):
     # input signal  has to be a multiple of num_splines
-    padded_input_signal = _pad(input_signal, (numpy.ceil(len(input_signal) / float(num_splines))) * num_splines)
-    stride = len(padded_input_signal) / num_splines
+    padded_input_signal = _pad(input_signal, int(numpy.ceil(len(input_signal) / float(num_splines))) * num_splines)
+    stride = len(padded_input_signal) // num_splines
     import scipy.signal
     # we construct the spline basis by building the first one, then the rest
     # are identical copies offset by stride
@@ -95,11 +95,11 @@ def spline(input_signal, num_splines, spline_order):
     spline_basis = numpy.zeros((num_splines + 1, len(padded_input_signal)), input_signal.dtype)
     for i in range(num_splines + 1):
         spline_basis[i, :] = numpy.roll(first_spline, i * stride)
-    spline_basis[:(num_splines / 4), (len(padded_input_signal) / 2):] = 0.0
-    spline_basis[(num_splines * 3 / 4):, :(len(padded_input_signal) / 2)] = 0.0
+    spline_basis[:(num_splines // 4), (len(padded_input_signal) // 2):] = 0.0
+    spline_basis[(num_splines * 3 // 4):, :(len(padded_input_signal) // 2)] = 0.0
     coefficients = numpy.linalg.lstsq(spline_basis.T, padded_input_signal)
     recon = numpy.dot(coefficients[0], spline_basis)
-    start_offset = (len(padded_input_signal) - len(input_signal)) / 2.0
+    start_offset = (len(padded_input_signal) - len(input_signal)) // 2
     return recon[start_offset:(start_offset + len(input_signal))]
 
 
@@ -112,5 +112,5 @@ def wavelet(input_signal, wavelet_shape, threshold):
     denoised_coeffs = wt_coeffs[:]
     denoised_coeffs[1:] = (pywt.threshold(i, value=threshold) for i in denoised_coeffs[1:])
     recon = pywt.waverec(denoised_coeffs, wavelet_shape, mode='per')
-    start_offset = (len(padded_input_signal) - len(input_signal)) / 2.0
+    start_offset = (len(padded_input_signal) - len(input_signal)) // 2
     return recon[start_offset:(start_offset + len(input_signal))]
