@@ -2,6 +2,8 @@ import suspect
 
 import numpy
 
+import warnings
+warnings.filterwarnings("ignore", message="numpy.dtype size changed")
 
 def test_spline():
     # we need to check if this runs correctly when number of splines is not a
