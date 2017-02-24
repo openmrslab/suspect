@@ -1,12 +1,12 @@
 suspect
 -------
 
-==========   =================
+============ =================
 Travis CI    |build_status|
 Coveralls    |coverage_status|
 Code Climate |code_climate|
 Waffle       |waffle|
-==========   =================
+============ =================
 
 .. |build_status| image:: https://travis-ci.org/openmrslab/suspect.svg?branch=master
     :target: https://travis-ci.org/openmrslab/suspect
