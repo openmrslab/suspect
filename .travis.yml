@@ -10,6 +10,6 @@ install:
   - pip install .
 #  - pip install -r requirements.txt
 # command to run tests
-script: py.test --cov .
+script: py.test -W ignore --cov .
 after_success:
   - coveralls
