@@ -11,4 +11,5 @@ dependencies:
   - scipy
   - pywavelets
   - lmfit
+  - jupyter_client
   - nbsphinx
