@@ -56,7 +56,7 @@ class MRSBase(numpy.ndarray):
             New MRSBase instance with data from new_array and parameters from self.
 
         """
-        cast_array = new_array.view(MRSBase)
+        cast_array = new_array.view(type(self))
         cast_array._dt = self.dt
         cast_array._f0 = self.f0
         cast_array._te = self.te
@@ -249,34 +249,8 @@ class MRSData(MRSBase):
             The Fourier-transformed and shifted data, represented as a spectrum
 
         """
-        spectrum = self.inherit(numpy.fft.fftshift(numpy.fft.fft(self, axis=-1), axes=-1))
+        spectrum = self.inherit(numpy.fft.fftshift(numpy.fft.fft(self, axis=-1), axes=-1)).view(MRSSpectrum)
         return spectrum
-
-
-class MRSSpectrum(MRSBase):
-
-    def __new__(cls, input_array, dt, f0, te=30, ppm0=4.7, voxel_dimensions=(10, 10, 10), transform=None, metadata=None):
-        obj = numpy.asarray(input_array).view(cls)
-        # add the new attributes to the created instance
-        obj._dt = dt
-        obj._f0 = f0
-        obj._te = te
-        obj.ppm0 = ppm0
-        obj.voxel_dimensions = voxel_dimensions
-        obj.transform = transform
-        obj.metadata = metadata
-        obj = obj.inherit(numpy.fft.fftshift(numpy.fft.fft(cls, axis=-1), axes=-1))
-        return obj
-
-    def fid(self):
-        """
-        Returns
-        -------
-        MRSData
-            The inverse-Fourier-shifted and inverse-Fourier-transformed data, represented as a FID
-        """
-        fid = self.inherit(numpy.fft.ifft(numpy.fft.ifftshift(self, axis=-1), axes=-1))
-        return fid
 
     def adjust_phase(self, zero_phase, first_phase=0, fixed_frequency=0):
         """
@@ -284,19 +258,27 @@ class MRSSpectrum(MRSBase):
 
         Refer to suspect.adjust_phase for full documentation.
 
+        Parameters
+        ----------
+        zero_phase: float
+            The zero order phase shift in radians
+        first_order: float
+            The first order phase shift in radians per Hertz
+        fixed_frequency: float
+            The frequency at which the first order phase shift is zero
+
+        Returns
+        -------
+        out : MRSData
+            Phase adjusted FID
+
         See Also
         --------
         suspect.adjust_phase : equivalent function
         """
-        # easiest to apply the phase shift in the frequency domain
-
-        phase_ramp = numpy.linspace(-self.sw / 2,
-                                    self.sw / 2,
-                                    self.np,
-                                    endpoint=False)
-        phase_shift = zero_phase + first_phase * (fixed_frequency + phase_ramp)
-        phased_spectrum = self * numpy.exp(1j * phase_shift)
-        return self.inherit(numpy.fft.ifft(numpy.fft.ifftshift(phased_spectrum, axes=-1), axis=-1))
+        # easiest to do this in the spectral domain
+        spectrum = self.spectrum()
+        return spectrum.adjust_phase(zero_phase, first_phase, fixed_frequency).fid()
 
     def adjust_frequency(self, frequency_shift):
         """
@@ -320,3 +302,83 @@ class MRSSpectrum(MRSBase):
         """
         correction = numpy.exp(2j * numpy.pi * (frequency_shift * self.time_axis()))
         return self.inherit(numpy.multiply(self, correction))
+
+
+class MRSSpectrum(MRSBase):
+
+    #def __new__(cls, input_array, dt, f0, te=30, ppm0=4.7, voxel_dimensions=(10, 10, 10), transform=None, metadata=None):
+    #    obj = numpy.asarray(input_array).view(cls)
+    #    # add the new attributes to the created instance
+    #    obj._dt = dt
+    #    obj._f0 = f0
+    #    obj._te = te
+    #    obj.ppm0 = ppm0
+    #    obj.voxel_dimensions = voxel_dimensions
+    #    obj.transform = transform
+    #    obj.metadata = metadata
+    #    obj = obj.inherit(numpy.fft.fftshift(numpy.fft.fft(cls, axis=-1), axes=-1))
+    #    return obj
+
+    def fid(self):
+        """
+        Returns
+        -------
+        MRSData
+            The inverse-Fourier-shifted and inverse-Fourier-transformed data, represented as a FID
+        """
+        fid = self.inherit(numpy.fft.ifft(numpy.fft.ifftshift(self, axes=-1), axis=-1)).view(MRSData)
+        return fid
+
+    def adjust_phase(self, zero_phase, first_phase=0, fixed_frequency=0):
+        """
+        Adjust the phases of the signal.
+
+        Refer to suspect.adjust_phase for full documentation.
+
+        Parameters
+        ----------
+        zero_phase: float
+            The zero order phase shift in radians
+        first_order: float
+            The first order phase shift in radians per Hertz
+        fixed_frequency: float
+            The frequency at which the first order phase shift is zero
+
+        Returns
+        -------
+        out : MRSSpectrum
+            Phase adjusted spectrum
+
+        See Also
+        --------
+        suspect.adjust_phase : equivalent function
+        """
+        phase_ramp = numpy.linspace(-self.sw / 2,
+                                    self.sw / 2,
+                                    self.np,
+                                    endpoint=False)
+        phase_shift = zero_phase + first_phase * (fixed_frequency + phase_ramp)
+        phased_spectrum = self * numpy.exp(1j * phase_shift)
+        return phased_spectrum
+
+    def adjust_frequency(self, frequency_shift):
+        """
+        Adjust the centre frequency of the signal.
+
+        Refer to suspect.adjust_frequency for full documentation.
+
+        Parameters
+        ----------
+        frequency_shift: float
+            The amount to shift the frequency, in Hertz.
+
+        Returns
+        -------
+        out : MRSSpectrum
+            Frequency adjusted spectrum
+
+        See Also
+        --------
+        suspect.adjust_frequency : equivalent function
+        """
+        return self.fid().adjust_frequency(frequency_shift).spectrum()

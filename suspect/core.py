@@ -1,9 +1,6 @@
-from .mrsobjects import MRSSpectrum
-
-
 def adjust_phase(data, zero_phase, first_phase=0, fixed_frequency=0):
     """
-    Adjust the phase of an MRSSpectrum object
+    Adjust the phase of an MRSBase object
 
     Parameters
     ----------
@@ -27,7 +24,7 @@ def adjust_phase(data, zero_phase, first_phase=0, fixed_frequency=0):
 
 def adjust_frequency(data, frequency_shift):
     """
-    Adjust the centre frequency of an MRSData object.
+    Adjust the centre frequency of an MRSBase object.
 
     Parameters
     ----------
