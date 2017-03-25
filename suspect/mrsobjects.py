@@ -240,6 +240,9 @@ class MRSBase(numpy.ndarray):
 
 
 class MRSData(MRSBase):
+    """
+    MRS data in the time domain.
+    """
 
     def spectrum(self):
         """
@@ -252,7 +255,7 @@ class MRSData(MRSBase):
         spectrum = self.inherit(numpy.fft.fftshift(numpy.fft.fft(self, axis=-1), axes=-1)).view(MRSSpectrum)
         return spectrum
 
-    def adjust_phase(self, zero_phase, first_phase=0, fixed_frequency=0):
+    def adjust_phase(self, zero_phase, first_phase=0., fixed_frequency=0.):
         """
         Adjust the phases of the signal.
 
@@ -262,7 +265,7 @@ class MRSData(MRSBase):
         ----------
         zero_phase: float
             The zero order phase shift in radians
-        first_order: float
+        first_phase: float
             The first order phase shift in radians per Hertz
         fixed_frequency: float
             The frequency at which the first order phase shift is zero
@@ -305,19 +308,9 @@ class MRSData(MRSBase):
 
 
 class MRSSpectrum(MRSBase):
-
-    #def __new__(cls, input_array, dt, f0, te=30, ppm0=4.7, voxel_dimensions=(10, 10, 10), transform=None, metadata=None):
-    #    obj = numpy.asarray(input_array).view(cls)
-    #    # add the new attributes to the created instance
-    #    obj._dt = dt
-    #    obj._f0 = f0
-    #    obj._te = te
-    #    obj.ppm0 = ppm0
-    #    obj.voxel_dimensions = voxel_dimensions
-    #    obj.transform = transform
-    #    obj.metadata = metadata
-    #    obj = obj.inherit(numpy.fft.fftshift(numpy.fft.fft(cls, axis=-1), axes=-1))
-    #    return obj
+    """
+    MRS data in the frequency domain
+    """
 
     def fid(self):
         """
@@ -329,7 +322,7 @@ class MRSSpectrum(MRSBase):
         fid = self.inherit(numpy.fft.ifft(numpy.fft.ifftshift(self, axes=-1), axis=-1)).view(MRSData)
         return fid
 
-    def adjust_phase(self, zero_phase, first_phase=0, fixed_frequency=0):
+    def adjust_phase(self, zero_phase, first_phase=0., fixed_frequency=0.):
         """
         Adjust the phases of the signal.
 
@@ -339,7 +332,7 @@ class MRSSpectrum(MRSBase):
         ----------
         zero_phase: float
             The zero order phase shift in radians
-        first_order: float
+        first_phase: float
             The first order phase shift in radians per Hertz
         fixed_frequency: float
             The frequency at which the first order phase shift is zero
