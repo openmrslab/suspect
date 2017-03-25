@@ -4,3 +4,4 @@ nbsphinx
 ipykernel
 numpy
 lmfit
+pydicom

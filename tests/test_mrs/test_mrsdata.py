@@ -31,3 +31,12 @@ def test_zero_rank_to_scalar():
     data = suspect.MRSData(numpy.ones(1024, 'complex'), 5e-4, 123)
     sum = numpy.sum(data)
     assert numpy.isscalar(sum)
+
+
+def test_spectrum_2_fid():
+    data = suspect.MRSData(numpy.ones(1024, 'complex'), 5e-4, 123)
+    spectrum = data.spectrum()
+    assert type(spectrum) == suspect.MRSSpectrum
+    numpy.testing.assert_equal(spectrum, numpy.fft.fftshift(numpy.fft.fft(data)))
+    fid = spectrum.fid()
+    numpy.testing.assert_equal(data, fid)
