@@ -44,7 +44,12 @@ def test_read_tarquin_results():
 
 
 def test_write_raw():
-    data = suspect.MRSData(numpy.zeros(1, 'complex'), 1e-3, 123.456)
+    # lcmodel needs to know the transform properties
+    transform = suspect.transformation_matrix([1, 0, 0], [0, 1, 0], [0, 0, 0], [10, 10, 10])
+    data = suspect.MRSData(numpy.zeros(1, 'complex'),
+                           1e-3,
+                           123.456,
+                           transform=transform)
     mock = unittest.mock.mock_open()
     with patch.object(builtins, 'open', mock):
         suspect.io.lcmodel.save_raw("/home/ben/test_raw.raw", data)
@@ -54,7 +59,12 @@ def test_write_raw():
 
 
 def test_lcmodel_all_files():
-    data = suspect.MRSData(numpy.zeros(1, 'complex'), 1e-3, 123.456)
+    # lcmodel needs to know the transform properties
+    transform = suspect.transformation_matrix([1, 0, 0], [0, 1, 0], [0, 0, 0], [10, 10, 10])
+    data = suspect.MRSData(numpy.zeros(1, 'complex'),
+                           1e-3,
+                           123.456,
+                           transform=transform)
     mock = unittest.mock.mock_open()
     with patch.object(builtins, 'open', mock):
         suspect.io.lcmodel.write_all_files(os.path.join(os.getcwd(), "lcmodel"),

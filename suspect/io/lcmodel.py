@@ -33,7 +33,7 @@ def save_raw(filename, data):
         fout.write(" $NMID\n")
         fout.write(" FMTDAT = '(2E15.6)'\n")
         # convert the volume from mm^3 to cc
-        fout.write(" VOLUME = {}\n".format(data.voxel_size() * 1e-3))
+        fout.write(" VOLUME = {}\n".format(data.voxel_volume() * 1e-3))
         fout.write(" $END\n")
         for point in numpy.nditer(data, order='C'):
             fout.write("  {0: 4.6e}  {1: 4.6e}\n".format(float(point.real), float(point.imag)))
