@@ -1,23 +1,22 @@
+import suspect.base
+
 import numpy
 
 
-class MRSBase(numpy.ndarray):
+class MRSBase(suspect.base.ImageBase):
     """
     numpy.ndarray subclass with additional metadata like sampling rate and echo
     time.
 
     """
     def __new__(cls, input_array, dt, f0, te=30, ppm0=4.7, voxel_dimensions=(10, 10, 10), transform=None, metadata=None):
-        # Input array is an already formed ndarray instance
-        # We first cast to be our class type
-        obj = numpy.asarray(input_array).view(cls)
+        obj = super(MRSBase, cls).__new__(cls, input_array, transform)
         # add the new attributes to the created instance
         obj._dt = dt
         obj._f0 = f0
         obj._te = te
         obj.ppm0 = ppm0
         obj.voxel_dimensions = voxel_dimensions
-        obj.transform = transform
         obj.metadata = metadata
         return obj
 
@@ -177,7 +176,7 @@ class MRSBase(numpy.ndarray):
                               self.hertz_to_ppm(self.sw / 2.0),
                               self.np, endpoint=False)
 
-    def voxel_size(self):
+    def voxel_volume(self):
         """
 
         Returns
@@ -186,57 +185,7 @@ class MRSBase(numpy.ndarray):
             The size of the voxel in cubic mm.
 
         """
-        return numpy.prod(self.voxel_dimensions)
-
-    def to_scanner(self, x, y, z):
-        """Converts a 3d position in MRSBase space to the scanner reference frame
-
-        Parameters
-        ----------
-        x : float
-            The x dimension value of the voxel
-        y : float
-            The y dimension value of the voxel
-        z : float
-            The z dimension value of the voxel
-
-        Returns
-        -------
-        squeezed ndarray
-            The transformed 3d point converted to scanner reference frame
-
-        """
-        if self.transform is None:
-            raise ValueError("No transform set for MRSBase object {}".format(self))
-
-        transformed_point = self.transform * numpy.matrix([x, y, z, 1]).T
-
-        return numpy.squeeze(numpy.asarray(transformed_point))[0:3]
-
-    def from_scanner(self, x, y, z):
-        """Converts a 3d position in the scanner reference frame to the MRSBase space
-
-        Parameters
-        ----------
-        x : float
-            The x-dimension
-        y : float
-            The y-dimension
-        z : float
-            The z-dimension
-
-        Returns
-        -------
-        ndarray
-            Squeezed ndarray representing a point in 3d MRSBase space
-
-        """
-        if self.transform is None:
-            raise ValueError("No transform set for MRSBase object {}".format(self))
-
-        transformed_point = numpy.linalg.inv(self.transform) * numpy.matrix([x, y, z, 1]).T
-
-        return numpy.squeeze(numpy.asarray(transformed_point))[0:3]
+        return numpy.prod(self.voxel_size)
 
 
 class MRSData(MRSBase):
