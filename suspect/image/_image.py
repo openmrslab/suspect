@@ -77,11 +77,3 @@ def load_dicom_volume(filename):
                                               voxel_spacing)
 
     return suspect.base.ImageBase(voxel_array, transform)
-
-    #return {
-    #    "voxel_spacing": voxel_spacing,
-    #    "position": position,
-    #    "volume": voxel_array,
-    #    "vectors": [row_vector, col_vector, normal_vector],
-    #    "transform": transform
-    #}
