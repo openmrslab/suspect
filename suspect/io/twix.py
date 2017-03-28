@@ -1,8 +1,8 @@
-from suspect import MRSData, transformation_matrix
+from suspect import MRSData, transformation_matrix, rotation_matrix
 
 import struct
 import numpy
-import quaternion
+#import quaternion
 import re
 
 # This file largely relies on information from Siemens regarding the structure
@@ -134,13 +134,15 @@ def parse_twix_header(header_string):
     # a rotation angle. to get the row vector, we first use Gram-Schmidt to
     # make [-1, 0, 0] (the default row vector) orthogonal to the normal, and
     # then rotate that vector by the rotation angle (which we do here with a
-    # quaternion
+    # quaternion (not any more, quaternion library has issues with Travis)
     x_vector = numpy.array([-1, 0, 0])
     normal_vector = numpy.array([normal_sag, normal_cor, normal_tra])
     orthogonal_x = x_vector - numpy.dot(x_vector, normal_vector) * normal_vector
     orthonormal_x = orthogonal_x / numpy.linalg.norm(orthogonal_x)
-    rotation_quaternion = quaternion.from_rotation_vector(in_plane_rot * normal_vector)
-    row_vector = quaternion.rotate_vectors(rotation_quaternion, orthonormal_x)
+    #rotation_quaternion = quaternion.from_rotation_vector(in_plane_rot * normal_vector)
+    #row_vector2 = quaternion.rotate_vectors(rotation_quaternion, orthonormal_x)
+    rot_matrix = rotation_matrix(in_plane_rot, normal_vector)
+    row_vector = numpy.dot(rot_matrix, orthonormal_x)
     column_vector = numpy.cross(row_vector, normal_vector)
     transform = transformation_matrix(row_vector,
                                       column_vector,

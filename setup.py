@@ -41,6 +41,6 @@ setup(
             'Programming Language :: Python :: 3.3',
             'Programming Language :: Python :: 3.4',
         ],
-        install_requires=['pywavelets', 'scipy', 'numpy', 'lmfit', 'pydicom', 'parsley', 'numpy-quaternion'],
+        install_requires=['pywavelets', 'scipy', 'numpy', 'lmfit', 'pydicom', 'parsley'],
         test_requires=['pytest', 'mock']
 )

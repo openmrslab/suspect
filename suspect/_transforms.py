@@ -38,3 +38,33 @@ def transformation_matrix(x_vector, y_vector, translation, spacing):
         for j in range(4):
             matrix[i, j] *= spacing[j]
     return matrix
+
+
+def rotation_matrix(angle, axis):
+    """
+    Creates a 3x3 matrix which rotates `angle` radians around `axis`
+    
+    Parameters
+    ----------
+    angle : float
+        The angle in radians to rotate around the axis
+    axis : array
+        The unit vector around which to rotate
+        
+    Returns
+    -------
+    matrix : array
+    """
+    c = numpy.cos(angle)
+    s = numpy.sin(angle)
+    matrix = numpy.zeros((3, 3))
+    matrix[0, 0] = c + axis[0] ** 2 * (1 - c)
+    matrix[0, 1] = axis[0] * axis[1] * (1 - c) - axis[2] * s
+    matrix[0, 2] = axis[0] * axis[2] * (1 - c) + axis[1] * s
+    matrix[1, 0] = axis[1] * axis[0] * (1 - c) + axis[2] * s
+    matrix[1, 1] = c + axis[1] ** 2 * (1 - c)
+    matrix[1, 2] = axis[1] * axis[2] * (1 - c) - axis[0] * s
+    matrix[2, 0] = axis[2] * axis[0] * (1 - c) - axis[1] * s
+    matrix[2, 1] = axis[2] * axis[1] * (1 - c) + axis[0] * s
+    matrix[2, 2] = c + axis[2] ** 2 * (1 - c)
+    return matrix
