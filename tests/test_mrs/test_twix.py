@@ -15,6 +15,12 @@ def test_veriofile():
     assert data.np == 2048
     assert data.dt == 2.5e-4
     numpy.testing.assert_almost_equal(data.f0, 123.261716)
+    numpy.testing.assert_allclose(data.transform, numpy.array(
+        [[-20, 0, 0, 4.917676],
+         [0, 20, 0, 57.525424],
+         [0, 0, -20, 43.220339],
+         [0, 0, 0, 1]]
+    ))
 
 
 #def test_skyra():

@@ -1,7 +1,8 @@
-from suspect import MRSData
+from suspect import MRSData, transformation_matrix, rotation_matrix
 
 import struct
 import numpy
+#import quaternion
 import re
 
 # This file largely relies on information from Siemens regarding the structure
@@ -58,13 +59,25 @@ class TwixBuilder(object):
             "patient_id": self.header_params["patient_id"],
             "patient_birthdate": self.header_params["patient_birthdate"]
         }
-        mrs_data = MRSData(data, self.header_params["dt"], self.header_params["f0"], metadata=metadata)
+        mrs_data = MRSData(data,
+                           self.header_params["dt"],
+                           self.header_params["f0"],
+                           metadata=metadata,
+                           transform=self.header_params["transform"])
 
         return mrs_data
 
 
+def read_double(name, header_string):
+    substring = re.search(r"<ParamDouble.\"{}\">  {{ <Precision> \d+(  -?[0-9\.]+)?  }}".format(name), header_string)
+    if not substring:
+        raise KeyError(r'ParamDouble."{}" not found in header string'.format(name))
+    number_string = substring.group(1)
+    return float(number_string) if number_string else 0
+
+
 def parse_twix_header(header_string):
-    # print(header_string)
+    #print(header_string)
     # get the name of the protocol being acquired
     protocol_name_string = re.search(r"<ParamString.\"tProtocolName\">  { \".+\"  }\n", header_string).group()
     protocol_name = protocol_name_string.split("\"")[3]
@@ -100,12 +113,49 @@ def parse_twix_header(header_string):
             break
     else:
         raise KeyError("Unable to identify Dwell Time from header")
+
+    # get voxel size
+    ro_fov = read_double("VoI_RoFOV", header_string)
+    pe_fov = read_double("VoI_PeFOV", header_string)
+    slice_thickness = read_double("VoI_SliceThickness", header_string)
+
+    # get position information
+    pos_sag = read_double("VoI_Position_Sag", header_string)
+    pos_cor = read_double("VoI_Position_Cor", header_string)
+    pos_tra = read_double("VoI_Position_Tra", header_string)
+
+    # get orientation information
+    in_plane_rot = read_double("VoI_InPlaneRotAngle", header_string)
+    normal_sag = read_double("VoI_Normal_Sag", header_string)
+    normal_cor = read_double("VoI_Normal_Cor", header_string)
+    normal_tra = read_double("VoI_Normal_Tra", header_string)
+
+    # the orientation is stored in a somewhat strange way - a normal vector and
+    # a rotation angle. to get the row vector, we first use Gram-Schmidt to
+    # make [-1, 0, 0] (the default row vector) orthogonal to the normal, and
+    # then rotate that vector by the rotation angle (which we do here with a
+    # quaternion (not any more, quaternion library has issues with Travis)
+    x_vector = numpy.array([-1, 0, 0])
+    normal_vector = numpy.array([normal_sag, normal_cor, normal_tra])
+    orthogonal_x = x_vector - numpy.dot(x_vector, normal_vector) * normal_vector
+    orthonormal_x = orthogonal_x / numpy.linalg.norm(orthogonal_x)
+    #rotation_quaternion = quaternion.from_rotation_vector(in_plane_rot * normal_vector)
+    #row_vector2 = quaternion.rotate_vectors(rotation_quaternion, orthonormal_x)
+    rot_matrix = rotation_matrix(in_plane_rot, normal_vector)
+    row_vector = numpy.dot(rot_matrix, orthonormal_x)
+    column_vector = numpy.cross(row_vector, normal_vector)
+    transform = transformation_matrix(row_vector,
+                                      column_vector,
+                                      [pos_sag, pos_cor, pos_tra],
+                                      [ro_fov, pe_fov, slice_thickness])
+
     return {"protocol_name": protocol_name,
             "patient_name": patient_name,
             "patient_id": patient_id,
             "patient_birthdate": patient_birthday,
             "dt": dwell_time,
-            "f0": frequency
+            "f0": frequency,
+            "transform": transform
             }
 
 
