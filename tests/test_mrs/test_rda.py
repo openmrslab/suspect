@@ -17,6 +17,7 @@ def test_svs_file():
     # transform of centre of voxel is same as position
     voxel_position = data.to_scanner(0, 0, 0)
     numpy.testing.assert_allclose(data.metadata["position"], voxel_position)
+    numpy.testing.assert_equal(data.position, voxel_position)
 
     # transform of corner of voxel is same as PositionVector parameter in file
     position_vector = numpy.array([36.834798, 42.553376, 1.117466])

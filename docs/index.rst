@@ -20,6 +20,7 @@ Getting started
    notebooks/tut02_channels.ipynb
    notebooks/tut04_quant.ipynb
    notebooks/tut05_hsvd.ipynb
+   notebooks/tut06_mpl.ipynb
 
 API Reference
 

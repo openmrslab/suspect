@@ -1,4 +1,4 @@
-from suspect import transformation_matrix
+import suspect
 
 import numpy
 import os
@@ -71,15 +71,9 @@ def load_dicom_volume(filename):
     # replace the initial slice z position with the lowest slice z position
     # position[2] = sorted_slice_positions[0]
 
-    transform = transformation_matrix(row_vector,
-                                      col_vector,
-                                      position,
-                                      voxel_spacing)
+    transform = suspect.transformation_matrix(row_vector,
+                                              col_vector,
+                                              position,
+                                              voxel_spacing)
 
-    return {
-        "voxel_spacing": voxel_spacing,
-        "position": position,
-        "volume": voxel_array,
-        "vectors": [row_vector, col_vector, normal_vector],
-        "transform": transform
-    }
+    return suspect.base.ImageBase(voxel_array, transform)
