@@ -24,7 +24,7 @@ setup(
             #   3 - Alpha
             #   4 - Beta
             #   5 - Production/Stable
-            'Development Status :: 2 - Pre-Alpha',
+            'Development Status :: 3 - Alpha',
 
             # Indicate who your project is intended for
             'Intended Audience :: Science/Research',
