@@ -452,12 +452,12 @@ def anonymize_twix_vb(fin, fout):
     header = fin.read(header_size - 4)
     # for some reason the last 24 bytes of the header contain some stuff that
     # is not a string, I don't know what it is
-    header_string = header[:-24].decode('windows-1252')
+    header_string = header[:-24].decode('latin-1')
 
     anonymized_header = anonymize_twix_header(header_string)
 
     fout.write(struct.pack("I", header_size))
-    fout.write(anonymized_header.encode('windows-1252'))
+    fout.write(anonymized_header.encode('latin-1'))
     fout.write(header[-24:])
     fout.write(fin.read())
 
