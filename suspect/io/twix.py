@@ -385,7 +385,7 @@ def anonymize_twix_header(header_string):
     This consists of:
     1) Replacing the patient id and name with strings of lower case x
     characters.
-    2) Replacing the patient birthday with 19900101
+    2) Replacing the patient birthday with 19700101
     3) Replacing the patient gender with the number 0
     4) Replacing all digits in the patient age, weight and height with 0s
     5) All references to the date and time of the exam have all alphanumeric
