@@ -407,9 +407,9 @@ def anonymize_twix_header(header_string):
     patient_id = "(<ParamString.\"PatientID\">\s*\{\s*\")(.+)(\"\s*\}\n)"
     patient_birthday = "(<ParamString.\"PatientBirthDay\">\s*\{\s*\")(.+)(\"\s*\}\n)"
     patient_gender = "(<ParamLong.\"l?PatientSex\">\s*\{\s*)(\d+)(\s*\}\n)"
-    patient_age = "(<ParamDouble.\"flPatientAge\">\s*\{\s*)(<Precision> \d+\s*)(\d+\.\d*)(\s*\}\n)"
-    patient_weight = "(<ParamDouble.\"flUsedPatientWeight\">\s*\{\s*)(<Precision> \d+\s*)(\d+\.\d*)(\s*\}\n)"
-    patient_height = "(<ParamDouble.\"flPatientHeight\">\s*\{\s*<Unit> \"\[mm\]\"\s*)(<Precision> \d+\s*)(\d+\.\d*)(\s*\}\n)"
+    patient_age = "(<ParamDouble.\"flPatientAge\">\s*\{\s*<Precision> \d+\s*)(\d+\.\d*)(\s*\}\n)"
+    patient_weight = "(<ParamDouble.\"flUsedPatientWeight\">\s*\{\s*<Precision> \d+\s*)(\d+\.\d*)(\s*\}\n)"
+    patient_height = "(<ParamDouble.\"flPatientHeight\">\s*\{\s*<Unit> \"\[mm\]\"\s*<Precision> \d+\s*)(\d+\.\d*)(\s*\}\n)"
 
     header_string = re.sub(patient_name, lambda match: "".join(
         (match.group(1), ("x" * (len(match.group(2)))), match.group(3))),
@@ -428,15 +428,15 @@ def anonymize_twix_header(header_string):
         header_string)
 
     header_string = re.sub(patient_age, lambda match: "".join(
-        (match.group(1), match.group(2), re.sub(r"\d", "0", match.group(3)), match.group(4))),
+        (match.group(1), re.sub(r"\d", "0", match.group(2)), match.group(3))),
         header_string)
 
     header_string = re.sub(patient_weight, lambda match: "".join(
-        (match.group(1), match.group(2), re.sub(r"\d", "0", match.group(3)), match.group(4))),
+        (match.group(1), re.sub(r"\d", "0", match.group(2)), match.group(3))),
         header_string)
 
     header_string = re.sub(patient_height, lambda match: "".join(
-        (match.group(1), match.group(2), re.sub(r"\d", "0", match.group(3)), match.group(4))),
+        (match.group(1), re.sub(r"\d", "0", match.group(2)), match.group(3))),
         header_string)
     
     # We need to remove information which contains the date and time of the exam
