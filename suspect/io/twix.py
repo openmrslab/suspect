@@ -382,44 +382,53 @@ def load_twix(filename):
 
 def anonymize_twix_header(header_string):
     """Removes the PHI from the supplied twix header and returns the sanitized version.
-
     This consists of:
     1) Replacing the patient id and name with strings of lower case x
     characters.
-    2) Replacing the patient birthday with 19700101
+    2) Replacing the patient birthday with 19900101
     3) Replacing the patient gender with the number 0
-    4) All references to the date and time of the exam have all alphanumeric
-    characters replaced by lower case x. Other characters (notably the period)
-    are left unchanged.
-
+    4) Replacing the patient age and weight with 00.000000
+    5) Replacing the patient height with 0000.000000
+  
     Parameters
     ----------
     header_string : str
         The header string to be anonymized
-
     Returns
     -------
     str
         The anonymized version of the header.
     """
-    patient_id = re.search(r"(<ParamString.\"PatientID\">  { )(\".+\")(  }\n)", header_string).group(2)
-    header_string = re.sub(patient_id, "\"" + ("x" * (len(patient_id) - 2)) + "\"", header_string)
 
-    patient_birthday = re.search(r"(<ParamString.\"PatientBirthDay\">  { )(\".+\")(  }\n)", header_string).group(2)
-    header_string = re.sub(patient_birthday, "\"19700101\"", header_string)
+    patient_name = "(<ParamString.\"t?Patients?Name\">\s*\{\s*)(\".+\")(\s*\}\n)"
+    patient_id = "(<ParamString.\"PatientID\">\s*\{\s*)(\".+\")(\s*\}\n)"
+    patient_birthday = "(<ParamString.\"PatientBirthDay\">\s*\{\s*)(\".+\")(\s*\}\n)"
+    patient_gender = "(<ParamLong.\"l?PatientSex\">\s*\{\s*)(\d+)(\s*\}\n)"
+    patient_age = "(<ParamDouble.\"flPatientAge\">\s*\{\s*)(<Precision> 6 \s*)(\d+\.\d*)(\s*\}\n)"
+    patient_weight = "(<ParamDouble.\"flUsedPatientWeight\">\s*\{\s*)(<Precision> 6 \s*)(\d+\.\d*)(\s*\}\n)"
+    patient_height = "(<ParamDouble.\"flPatientHeight\">\s*\{\s*<Unit> \"\[mm\]\"\s*)(<Precision> 6 \s*)(\d+\.\d*)(\s*\}\n)"
 
-    patient_name = re.escape(re.search(r"(<ParamString.\"PatientName\">  { )(\".+\")(  }\n)", header_string).group(2))
-    # every occurrence of patient_name, replace it with a string where all the
-    # characters apart from the surrounding quotations are replaced with x
-    header_string = re.sub(patient_name, lambda x: re.sub(r"[^\"]", "x", x.group()), header_string)
-
-    patient_gender_span = re.search(r"(<ParamLong.\"PatientSex\">  { )(\d+)(  }\n)", header_string).span(2)
-    header_string = header_string[:patient_gender_span[0]] + "0" + header_string[patient_gender_span[1]:]
-
-    header_string = re.sub("(Sex\">\s+\{\s*)(\d)(\s*\})",
-                           lambda match: "".join((match.group(1), "0", match.group(3))),
-                           header_string)
-
+    header_string = re.sub(patient_name, lambda match: "".join(
+        (match.group(1), "\"", ("x" * (len(match.group(2)) - 2)), "\"", match.group(3))), header_string)
+        
+    header_string = re.sub(patient_id, lambda match: "".join(
+        (match.group(1), "\"", ("x" * (len(match.group(2)) - 2)), "\"", match.group(3))), header_string)
+    
+    header_string = re.sub(patient_birthday, lambda match: "".join(
+        (match.group(1), "\"19900101\"", match.group(3))), header_string)
+    
+    header_string = re.sub(patient_gender, lambda match: "".join(
+        (match.group(1), "0", match.group(3))), header_string)
+    
+    header_string = re.sub(patient_age, lambda match: "".join(
+        (match.group(1), match.group(2), "00.000000", match.group(4))), header_string)
+    
+    header_string = re.sub(patient_weight, lambda match: "".join(
+        (match.group(1), match.group(2), "00.000000", match.group(4))), header_string)
+    
+    header_string = re.sub(patient_height, lambda match: "".join(
+        (match.group(1), match.group(2), "0000.000000", match.group(4))), header_string)
+    
     # We need to remove information which contains the date and time of the exam
     # this is not stored in a helpful way which complicates finding it.
     # I think that this FrameOfReference parameter is the correct time, it is
