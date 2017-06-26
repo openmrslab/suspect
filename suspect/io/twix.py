@@ -69,15 +69,24 @@ class TwixBuilder(object):
 
 
 def read_double(name, header_string):
-    substring = re.search(r"<ParamDouble.\"{}\">  {{ <Precision> \d+(  -?[0-9\.]+)?  }}".format(name), header_string)
+    substring = re.search(r"<ParamDouble.\"{}\">\s*{{\s*<Precision>\s*\d+\s*(\s*-?[0-9\.]+)?\s*}}".format(name), header_string)
     if not substring:
         raise KeyError(r'ParamDouble."{}" not found in header string'.format(name))
     number_string = substring.group(1)
     return float(number_string) if number_string else 0
 
 
+def read_long(name, header_string):
+    pattern = r'<ParamLong."{}">\s*{{\s*(-?\d+)\s*}}'.format(name)
+    substring = re.search(pattern, header_string)
+    if not substring:
+        raise KeyError(r'ParamLong."{}" not found in header string'.format(name))
+    number_string = substring.group(1)
+    return int(number_string) if number_string else 0
+
+
 def parse_twix_header(header_string):
-    #print(header_string)
+    print(header_string)
     # get the name of the protocol being acquired
     protocol_name_string = re.search(r"<ParamString.\"tProtocolName\">  { \".+\"  }\n", header_string).group()
     protocol_name = protocol_name_string.split("\"")[3]
@@ -114,10 +123,22 @@ def parse_twix_header(header_string):
     else:
         raise KeyError("Unable to identify Dwell Time from header")
 
-    # get voxel size
-    ro_fov = read_double("VoI_RoFOV", header_string)
-    pe_fov = read_double("VoI_PeFOV", header_string)
+    # get excitation region size
+    ro_voi = read_double("VoI_RoFOV", header_string)
+    pe_voi = read_double("VoI_PeFOV", header_string)
     slice_thickness = read_double("VoI_SliceThickness", header_string)
+
+    # get readout region size
+    #ro_fov = read_double("dReadoutFOV", header_string)
+    ro_fov = read_double("RoFOV", header_string)
+    #pe_fov = read_double("dPhaseFOV", header_string)
+    pe_fov = read_double("PeFOV", header_string)
+    #thickness_fov = read_double("dThickness", header_string)
+    thickness_fov = re.search(r"(sSliceArray.asSlice[0].dThickness\s*=\s*)(\d+)(\n)", header_string).group(2)
+
+    # get number of voxels (to get voxel size from readout size)
+    num_rows = read_long("NImageLins", header_string)
+    num_cols = read_long("NImageCols", header_string)
 
     # get position information
     pos_sag = read_double("VoI_Position_Sag", header_string)
@@ -382,6 +403,7 @@ def load_twix(filename):
 
 def anonymize_twix_header(header_string):
     """Removes the PHI from the supplied twix header and returns the sanitized version.
+
     This consists of:
     1) Replacing the patient id and name with strings of lower case x
     characters.
@@ -438,7 +460,7 @@ def anonymize_twix_header(header_string):
     header_string = re.sub(patient_height, lambda match: "".join(
         (match.group(1), re.sub(r"\d", "0", match.group(2)), match.group(3))),
         header_string)
-    
+
     # We need to remove information which contains the date and time of the exam
     # this is not stored in a helpful way which complicates finding it.
     # I think that this FrameOfReference parameter is the correct time, it is
