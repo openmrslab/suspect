@@ -129,12 +129,12 @@ def parse_twix_header(header_string):
     slice_thickness = read_double("VoI_SliceThickness", header_string)
 
     # get readout region size
-    #ro_fov = read_double("dReadoutFOV", header_string)
-    ro_fov = read_double("RoFOV", header_string)
-    #pe_fov = read_double("dPhaseFOV", header_string)
-    pe_fov = read_double("PeFOV", header_string)
+    ro_fov = read_double("dReadoutFOV", header_string)
+    #ro_fov = read_double("RoFOV", header_string)
+    pe_fov = read_double("dPhaseFOV", header_string)
+    #pe_fov = read_double("PeFOV", header_string)
     #thickness_fov = read_double("dThickness", header_string)
-    thickness_fov = re.search(r"(sSliceArray.asSlice[0].dThickness\s*=\s*)(\d+)(\n)", header_string).group(2)
+    thickness_fov = re.search(r"(sSliceArray.asSlice\[0\].dThickness\s*=\s*)(\d+)", header_string).group(2)
 
     # get number of voxels (to get voxel size from readout size)
     num_rows = read_long("NImageLins", header_string)
