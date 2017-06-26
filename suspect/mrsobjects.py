@@ -324,3 +324,46 @@ class MRSSpectrum(MRSBase):
         suspect.adjust_frequency : equivalent function
         """
         return self.fid().adjust_frequency(frequency_shift).spectrum()
+
+    def slice_hz(self, lower_bound, upper_bound):
+        """
+        Creates a slice object to access the region of the spectrum between
+        the specified bounds, in Hertz.
+        
+        Parameters
+        ----------
+        lower_bound : float
+            The lower frequency bound of the region, in Hertz.
+        upper_bound : float
+            The upper frequency bound of the region, in Hertz.
+        
+        Returns
+        -------
+        out : Slice
+        """
+        lower_index = numpy.floor((lower_bound + self.sw / 2) / self.df)
+        upper_index = numpy.ceil((upper_bound + self.sw / 2) / self.df)
+        if lower_index < 0:
+            raise ValueError("Could not create a slice for lower bound {}, value is outside range".format(lower_bound))
+        if upper_index < 0:
+            raise ValueError("Could not create a slice for upper bound {}, value is outside range".format(upper_bound))
+        return slice(int(lower_index), int(upper_index))
+
+    def slice_ppm(self, lower_bound, upper_bound):
+        """
+        Creates a slice object to access the region of the spectrum between
+        the specified bounds, in PPM.
+
+        Parameters
+        ----------
+        lower_bound : float
+            The lower frequency bound of the region, in PPM.
+        upper_bound : float
+            The upper frequency bound of the region, in PPM.
+
+        Returns
+        -------
+        out : Slice
+        """
+        return self.slice_hz(self.ppm_to_hertz(lower_bound),
+                             self.ppm_to_hertz(upper_bound))
