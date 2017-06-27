@@ -62,6 +62,7 @@ class TwixBuilder(object):
         mrs_data = MRSData(data,
                            self.header_params["dt"],
                            self.header_params["f0"],
+                           te=self.header_params["te"],
                            metadata=metadata,
                            transform=self.header_params["transform"])
 
@@ -114,6 +115,10 @@ def parse_twix_header(header_string):
     else:
         raise KeyError("Unable to identify Dwell Time from header")
 
+    # get TE
+    # TE is stored in us, we would prefer to use ms
+    te = float(re.search(r"(alTE\[0\]\s*=\s*)(\d+)", header_string).group(2)) / 1000
+
     # get voxel size
     ro_fov = read_double("VoI_RoFOV", header_string)
     pe_fov = read_double("VoI_PeFOV", header_string)
@@ -155,7 +160,8 @@ def parse_twix_header(header_string):
             "patient_birthdate": patient_birthday,
             "dt": dwell_time,
             "f0": frequency,
-            "transform": transform
+            "transform": transform,
+            "te": te
             }
 
 

@@ -14,6 +14,7 @@ def test_veriofile():
     assert data.shape == (128, 32, 2048)
     assert data.np == 2048
     assert data.dt == 2.5e-4
+    assert data.te == 30.0
     numpy.testing.assert_almost_equal(data.f0, 123.261716)
     numpy.testing.assert_allclose(data.transform, numpy.array(
         [[-20, 0, 0, 4.917676],
