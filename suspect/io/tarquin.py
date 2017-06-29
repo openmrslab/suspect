@@ -1,4 +1,9 @@
+from suspect import MRSSpectrum
+
 import subprocess
+import parse
+import re
+import numpy as np
 
 
 def save_dpt(filename, data):
@@ -58,15 +63,97 @@ def read_output(filename):
         }
 
 
+def read_fit_file(filename):
+    """Reads in a Tarquin txt fit file and returns all the fitted plots
+    
+    Parameters
+    ----------
+    filename : txt file
+        The filename to read from
+
+    Returns
+    -------
+    result : dict 
+    """
+    with open(filename) as fin:
+        contents = fin.read()
+
+    # we don't know the exact size and shape of the grid of voxels
+    # we are reading in yet, so start by making a dictionary of
+    # positions and arrange them later
+    voxel_dict = {}
+    metabolite_names = None
+
+    # the file is divided into data from each voxel sequentially
+    # we want to split the file into separate voxel components
+    # each voxel data starts with Row : x, Col : y ...
+    # use re.split rather than str.split to avoid getting an
+    # empty string before the first Row, by matching the new line
+    # followed by Row instead.
+    for voxel_string in re.split("\n(?=Row)", contents):
+
+        # first two lines contain metadata, the rest is spectral points
+        position_string, metabolite_string, data_string = voxel_string.split("\n", 2)
+        position = parse.parse("Row : {:d}, Col : {:d}, Slice : {:d}", position_string)
+
+        # metabolite names are only necessary once
+        # also, the first four are fixed (ppm, data, fit, baseline)
+        # only collect the rest
+        if metabolite_names is None:
+            metabolite_names = [name.strip() for name in metabolite_names.split(",")[4:]]
+
+        voxel_dict[position] = np.array([[float(j) for j in i.split(',')] for i in data_string.splitlines()])
+
+    # get the maximum row, col and slice
+    max_row = max([pos[0] for pos in voxel_dict.keys()])
+    max_col = max([pos[1] for pos in voxel_dict.keys()])
+    max_slice = max([pos[2] for pos in voxel_dict.keys()])
+
+    voxel_shape = voxel_dict.values()[0].shape
+    combined_data = np.zeros((max_row, max_col, max_slice, *voxel_shape), 'complex')
+    for (row, col, slc), voxel_data in voxel_dict.items():
+        combined_data[row - 1, col - 1, slc - 1] = voxel_data
+
+    return metabolite_names, combined_data
+
+
+def _extract_fit_data(ref_data, metabolite_names, combined_data):
+    # helper function to save space
+    def make_spectrum(spectrum_data):
+        return MRSSpectrum(spectrum_data,
+                           ref_data.dt,
+                           ref_data.f0,
+                           ref_data.te,
+                           ref_data.ppm0)
+
+    # split out the individual lines (data, fit, baseline etc.)
+    data = make_spectrum(combined_data[:, :, :, :, 1].squeeze())
+    fit = make_spectrum(combined_data[:, :, :, :, 2].squeeze())
+    baseline = make_spectrum(combined_data[:, :, :, :, 3].squeeze())
+    metabolite_dict = {
+        metabolite_name: make_spectrum(combined_data[:, :, :, :, i + 4].squeeze())
+        for i, metabolite_name in enumerate(metabolite_names)
+    }
+    return {
+        "data": data,
+        "fit": fit,
+        "baseline": baseline,
+        "metabolites": metabolite_dict
+    }
+
+
 def process(data, options={}):
     save_dpt("/tmp/temp.dpt", data)
     option_string = ""
     for key, value in options.items():
         option_string += " --{} {}".format(key, value)
-    subprocess.run("tarquin --input {} --format dpt --output_txt {}{}".format(
-        "/tmp/temp.dpt", "/tmp/output.txt", option_string
+    subprocess.run("tarquin --input {} --format dpt --output_txt {} --output_fit{}{}".format(
+        "/tmp/temp.dpt", "/tmp/output.txt", "/tmp/fit.txt", option_string
     ), shell=True)
     # with open("/tmp/output.txt") as fin:
     #    result = fin.read()
     result = read_output("/tmp/output.txt")
+    metabolite_names, fit_data = read_fit_file("/tmp/fit.txt")
+    fit_results = _extract_fit_data(data, metabolite_names, fit_data)
+    result["plots"] = fit_results
     return result
