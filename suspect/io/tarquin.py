@@ -100,7 +100,7 @@ def read_fit_file(filename):
         # also, the first four are fixed (ppm, data, fit, baseline)
         # only collect the rest
         if metabolite_names is None:
-            metabolite_names = [name.strip() for name in metabolite_names.split(",")[4:]]
+            metabolite_names = [name.strip() for name in metabolite_string.split(",")[4:]]
 
         voxel_dict[position] = np.array([[float(j) for j in i.split(',')] for i in data_string.splitlines()])
 
@@ -109,7 +109,7 @@ def read_fit_file(filename):
     max_col = max([pos[1] for pos in voxel_dict.keys()])
     max_slice = max([pos[2] for pos in voxel_dict.keys()])
 
-    voxel_shape = voxel_dict.values()[0].shape
+    voxel_shape = voxel_dict.values().__iter__().__next__().shape
     combined_data = np.zeros((max_row, max_col, max_slice, *voxel_shape), 'complex')
     for (row, col, slc), voxel_data in voxel_dict.items():
         combined_data[row - 1, col - 1, slc - 1] = voxel_data
