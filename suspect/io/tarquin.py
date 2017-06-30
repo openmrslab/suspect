@@ -147,7 +147,7 @@ def process(data, options={}):
     option_string = ""
     for key, value in options.items():
         option_string += " --{} {}".format(key, value)
-    subprocess.run("tarquin --input {} --format dpt --output_txt {} --output_fit{}{}".format(
+    subprocess.run("tarquin --input {} --format dpt --output_txt {} --output_fit {}{}".format(
         "/tmp/temp.dpt", "/tmp/output.txt", "/tmp/fit.txt", option_string
     ), shell=True)
     # with open("/tmp/output.txt") as fin:
