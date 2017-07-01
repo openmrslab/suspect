@@ -24,7 +24,7 @@ rda_types = {
                 "SeriesDescription", "ProtocolName", "PatientPosition", "ModelName",
                 "StationName", "InstitutionName", "DeviceSerialNumber", "InstanceDate",
                 "InstanceTime", "InstanceComments", "SequenceName", "SequenceDescription",
-                "Nucleus", "TransmitCoil", "PatientSex", "HammingFilter", "FrequenceCorrection"],
+                "Nucleus", "TransmitCoil", "PatientSex", "HammingFilter", "FrequencyCorrection"],
     "float_arrays": ["PositionVector", "RowVector", "ColumnVector"],
     "integer_arrays": ["CSIMatrixSize", "CSIMatrixSizeOfScan", "CSIGridShift"],
     "string_arrays": ["SoftwareVersion"],
