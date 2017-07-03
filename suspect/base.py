@@ -1,5 +1,7 @@
 import numpy
 
+from . import _transforms
+
 
 class ImageBase(numpy.ndarray):
     """
@@ -15,10 +17,14 @@ class ImageBase(numpy.ndarray):
     def __array_finalize__(self, obj):
         self.transform = getattr(obj, 'transform', None)
 
-    def to_scanner(self, x, y, z):
+    def to_scanner(self, *args):
         """
         Converts a 3d position in ImageBase space to the scanner
-        reference space. Raises a ValueError if no transform is set.
+        reference space. Argument can either be 3 individual floats
+        for x, y and z or a numpy array_like with final dimension of
+        size 3.
+        
+        Raises a ValueError if no transform is set.
 
         Parameters
         ----------
@@ -37,14 +43,20 @@ class ImageBase(numpy.ndarray):
         if self.transform is None:
             raise ValueError("No transform set for {} object {}".format(type(self), self))
 
-        transformed_point = self.transform * numpy.matrix([x, y, z, 1]).T
+        positions = _transforms.normalise_positions_for_transform(*args)
 
-        return numpy.squeeze(numpy.asarray(transformed_point))[0:3]
+        transformed_point = numpy.einsum("ij,...j", self.transform, positions)
 
-    def from_scanner(self, x, y, z):
+        return numpy.squeeze(numpy.asarray(transformed_point))[..., 0:3]
+
+    def from_scanner(self, *args):
         """
         Converts a 3d position in scanner space to the ImageBase
-        reference space. Raises a ValueError if no transform is set.
+        reference space. Argument can either be 3 individual floats
+        for x, y and z or a numpy array_like with final dimension of
+        size 3.
+        
+        Raises a ValueError if no transform is set.
 
         Parameters
         ----------
@@ -63,9 +75,13 @@ class ImageBase(numpy.ndarray):
         if self.transform is None:
             raise ValueError("No transform set for {} object {}".format(type(self), self))
 
-        transformed_point = numpy.linalg.inv(self.transform) * numpy.matrix([x, y, z, 1]).T
+        positions = _transforms.normalise_positions_for_transform(*args)
 
-        return numpy.squeeze(numpy.asarray(transformed_point))[0:3]
+        transformed_point = numpy.einsum("ij,...j",
+                                         numpy.linalg.inv(self.transform),
+                                         positions)
+
+        return numpy.squeeze(numpy.asarray(transformed_point))[..., 0:3]
 
     @property
     def voxel_size(self):
