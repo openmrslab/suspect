@@ -1,5 +1,7 @@
 import numpy as np
 
+from ..base import ImageBase
+
 
 def create_mask(source_image, ref_image, voxels=None):
     """
@@ -38,9 +40,11 @@ def create_mask(source_image, ref_image, voxels=None):
     # TODO for now, we assume single voxel data until issue 50 is resolved
 
     # have to transpose the result to get it to match the shape of ref_image
-    return np.all((source_coords[..., 0] < 0.5,
-                   source_coords[..., 0] >= -0.5,
-                   source_coords[..., 1] >= -0.5,
-                   source_coords[..., 2] >= -0.5,
-                   source_coords[..., 1] < 0.5,
-                   source_coords[..., 2] < 0.5), axis=0).T
+    mask_volume = np.all((source_coords[..., 0] < 0.5,
+                          source_coords[..., 0] >= -0.5,
+                          source_coords[..., 1] >= -0.5,
+                          source_coords[..., 2] >= -0.5,
+                          source_coords[..., 1] < 0.5,
+                          source_coords[..., 2] < 0.5), axis=0).T
+
+    return ImageBase(mask_volume, ref_image.transform)
