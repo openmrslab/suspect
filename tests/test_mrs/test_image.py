@@ -3,6 +3,7 @@ import suspect
 import suspect._transforms
 
 import numpy as np
+import os
 
 
 def test_simple_mask():
@@ -26,6 +27,7 @@ def test_simple_mask():
 def test_nifti_io():
     dicom_volume = suspect.image.load_dicom_volume("tests/test_data/siemens/mri/T1.0001.IMA")
     # save in a temporary nifti file
+    os.makedirs("tests/test_data/tmp", exist_ok=True)
     suspect.image.save_nifti("tests/test_data/tmp/nifti.nii", dicom_volume)
     nifti_volume = suspect.image.load_nifti("tests/test_data/tmp/nifti.nii")
     np.testing.assert_equal(dicom_volume, nifti_volume)
