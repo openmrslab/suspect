@@ -11,7 +11,8 @@ class ImageBase(numpy.ndarray):
         # input_array is an already formed ndarray
         # we want to make it our class type
         obj = numpy.asarray(input_array).view(cls)
-        obj.transform = transform
+        if transform is not None:
+            obj.transform = transform.copy()
         return obj
 
     def __array_finalize__(self, obj):
