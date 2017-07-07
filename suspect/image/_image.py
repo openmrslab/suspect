@@ -1,5 +1,6 @@
 import suspect
 
+import nibabel
 import numpy
 import os
 import pydicom
@@ -77,3 +78,51 @@ def load_dicom_volume(filename):
                                               voxel_spacing)
 
     return suspect.base.ImageBase(voxel_array, transform)
+
+
+def load_nifti(filename):
+    """
+    Load the 3D volume contained in the supplied Nifti file, and convert the
+    coordinate system to the DICOM standard. This means transposing the data
+    to use slices as the first index and columns as the last, and negating
+    the x and y axes.
+    
+    Parameters
+    ----------
+    filename : str
+        The filename from which to load the data
+        
+    Returns
+    -------
+    suspect.base.ImageBase
+        3D image volume
+    """
+    # start by loading the nifti file using nibabel
+    nii = nibabel.load(filename)
+
+    # nibabel loads cols, rows, slices, so we transpose to match DICOM
+    image = suspect.base.ImageBase(nii.get_data().T, nii.affine)
+
+    # nifti also uses a reversed coordinate system for x and y, so negate them
+    image.transform[:2] *= -1.0
+
+    return image
+
+
+def save_nifti(filename, image):
+    """
+    Save a 3D volume to a file in the Nifti1 format.
+    
+    Parameters
+    ----------
+    filename : str
+        The filename where the file should be saved
+    image : suspect.base.ImageBase
+        The volume to save
+    """
+    # we have to modify the transform to use nifti coordinates (negate x and y)
+    affine = image.transform.copy()
+    affine[:2] *= -1.0
+
+    nii = nibabel.nifti1.Nifti1Image(image.T, affine)
+    nii.to_filename(filename)
