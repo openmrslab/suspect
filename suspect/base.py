@@ -1,6 +1,16 @@
 import numpy
+import functools
 
 from . import _transforms
+
+
+def requires_transform(func):
+    @functools.wraps(func)
+    def wrapper(self, *args, **kwargs):
+        if self.transform is None:
+            raise ValueError("No transform set for {} object {}".format(type(self), self))
+        return func(self, *args, **kwargs)
+    return wrapper
 
 
 class ImageBase(numpy.ndarray):
@@ -18,6 +28,7 @@ class ImageBase(numpy.ndarray):
     def __array_finalize__(self, obj):
         self.transform = getattr(obj, 'transform', None)
 
+    @requires_transform
     def to_scanner(self, *args):
         """
         Converts a 3d position in ImageBase space to the scanner
@@ -41,15 +52,13 @@ class ImageBase(numpy.ndarray):
         numpy.ndarray
             The transformed 3d point in scanner coordinates
         """
-        if self.transform is None:
-            raise ValueError("No transform set for {} object {}".format(type(self), self))
-
         positions = _transforms.normalise_positions_for_transform(*args)
 
         transformed_point = numpy.einsum("ij,...j", self.transform, positions)
 
         return numpy.squeeze(numpy.asarray(transformed_point))[..., 0:3]
 
+    @requires_transform
     def from_scanner(self, *args):
         """
         Converts a 3d position in scanner space to the ImageBase
@@ -73,9 +82,6 @@ class ImageBase(numpy.ndarray):
         numpy.ndarray
             The transformed 3d point in ImageBase coordinates
         """
-        if self.transform is None:
-            raise ValueError("No transform set for {} object {}".format(type(self), self))
-
         positions = _transforms.normalise_positions_for_transform(*args)
 
         transformed_point = numpy.einsum("ij,...j",
@@ -85,22 +91,90 @@ class ImageBase(numpy.ndarray):
         return numpy.squeeze(numpy.asarray(transformed_point))[..., 0:3]
 
     @property
+    @requires_transform
     def voxel_size(self):
         """
         The dimensions of a voxel.
-        :return:
+        
+        Returns
+        -------
+        numpy.ndarray
+            The dimensions of a voxel along each axis.
         """
-        if self.transform is None:
-            raise ValueError("No transform set for {} object {}".format(type(self), self))
-
         return numpy.linalg.norm(self.transform, axis=0)[0:3]
 
     @property
+    @requires_transform
     def position(self):
         """
         The centre of the ImageBase in scanner coordinates.
         """
-        if self.transform is None:
-            raise ValueError("No transform set for {} object {}".format(type(self), self))
-
         return self.transform[:3, 3]
+
+    @property
+    @requires_transform
+    def slice_vector(self):
+        return self.transform[:3, 2] / numpy.linalg.norm(self.transform[:3, 2])
+
+    @property
+    @requires_transform
+    def row_vector(self):
+        return self.transform[:3, 1] / numpy.linalg.norm(self.transform[:3, 1])
+
+    @property
+    @requires_transform
+    def col_vector(self):
+        return self.transform[:3, 0] / numpy.linalg.norm(self.transform[:3, 0])
+
+    @requires_transform
+    def _closest_axis(self, target_axis):
+        overlap = numpy.abs(numpy.dot(target_axis, self.transform[:3, :3]))
+        return numpy.argmax(overlap)
+
+    @property
+    @requires_transform
+    def axial_vector(self):
+        """
+        Returns the image axis which is most closely aligned with the axial
+        direction.
+        
+        Returns
+        -------
+        numpy.ndarray
+            The most axial image axis
+        """
+        # dot the three candidate vectors with (0, 0, 1)
+        best_axis = self._closest_axis((0, 0, 1))
+        return self.transform[:3, best_axis] / numpy.linalg.norm(self.transform[:3, best_axis])
+
+    @property
+    @requires_transform
+    def coronal_vector(self):
+        """
+        Returns the image axis which is most closely aligned with the coronal
+        direction.
+
+        Returns
+        -------
+        numpy.ndarray
+            The most coronal image axis
+        """
+        # dot the three candidate vectors with (0, 1, 0)
+        best_axis = self._closest_axis((0, 1, 0))
+        return self.transform[:3, best_axis] / numpy.linalg.norm(self.transform[:3, best_axis])
+
+    @property
+    @requires_transform
+    def sagittal_vector(self):
+        """
+        Returns the image axis which is most closely aligned with the sagittal
+        direction.
+
+        Returns
+        -------
+        numpy.ndarray
+            The most sagittal image axis
+        """
+        # dot the three candidate vectors with (1, 0, 0)
+        best_axis = self._closest_axis((1, 0, 0))
+        return self.transform[:3, best_axis] / numpy.linalg.norm(self.transform[:3, best_axis])
