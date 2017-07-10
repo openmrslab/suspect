@@ -17,5 +17,5 @@ def combine_channels(data, weights=None):
     if weights is None:
         weights = svd_weighting(data)
     weighted_data = weights.reshape((len(weights), 1)) * data
-    combined_data = weighted_data.sum(axis=0)
+    combined_data = weighted_data.sum(axis=-2)
     return combined_data
