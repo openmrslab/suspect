@@ -149,7 +149,7 @@ def process(data, options={}):
         option_string += " --{} {}".format(key, value)
     subprocess.run("tarquin --input {} --format dpt --output_txt {} --output_fit {}{}".format(
         "/tmp/temp.dpt", "/tmp/output.txt", "/tmp/fit.txt", option_string
-    ), shell=True)
+    ), shell=True, stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL)
     # with open("/tmp/output.txt") as fin:
     #    result = fin.read()
     result = read_output("/tmp/output.txt")
