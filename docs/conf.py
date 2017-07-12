@@ -25,7 +25,7 @@ class Mock(MagicMock):
     def __getattr__(cls, name):
             return MagicMock()
 
-MOCK_MODULES = ['pydicom', 'pydicom.tag', 'pydicom.dicomio']
+MOCK_MODULES = ['pydicom', 'pydicom.tag', 'pydicom.dicomio', 'pydicom.values']
 sys.modules.update((mod_name, Mock()) for mod_name in MOCK_MODULES)
 
 path = os.path.abspath('.').rstrip("/docs")

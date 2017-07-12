@@ -29,4 +29,5 @@ API Reference
    :glob:
 
    suspect_api.rst
+   imagebase_api.rst
    mrs_data_api.rst
