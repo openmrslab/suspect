@@ -136,7 +136,9 @@ class ImageBase(numpy.ndarray):
     def axial_vector(self):
         """
         Returns the image axis which is most closely aligned with the axial
-        direction.
+        direction. The returned vector is guaranteed to point in the positive
+        axial direction, even if the original volume vector is in the
+        opposite direction.
         
         Returns
         -------
@@ -154,7 +156,9 @@ class ImageBase(numpy.ndarray):
     def coronal_vector(self):
         """
         Returns the image axis which is most closely aligned with the coronal
-        direction.
+        direction. The returned vector is guaranteed to point in the positive
+        coronal direction, even if the original volume vector is in the
+        opposite direction.
 
         Returns
         -------
@@ -171,7 +175,9 @@ class ImageBase(numpy.ndarray):
     def sagittal_vector(self):
         """
         Returns the image axis which is most closely aligned with the sagittal
-        direction.
+        direction. The returned vector is guaranteed to point in the positive
+        sagittal direction, even if the original volume vector is in the
+        opposite direction.
 
         Returns
         -------
