@@ -57,3 +57,14 @@ def test_find_axes():
     np.testing.assert_equal(base.axial_vector, base.slice_vector)
     np.testing.assert_equal(base.coronal_vector, base.row_vector)
     np.testing.assert_equal(base.sagittal_vector, base.col_vector)
+
+
+def test_find_axes_reversed():
+    transform = _transforms.transformation_matrix([-2, -1, 0],
+                                                  [1, -2, 0],
+                                                  [0, 0, 0],
+                                                  [1, 1, 1])
+    base = suspect.base.ImageBase(np.zeros(1), transform=transform)
+    np.testing.assert_equal(base.axial_vector, base.slice_vector)
+    np.testing.assert_equal(base.coronal_vector, -base.row_vector)
+    np.testing.assert_equal(base.sagittal_vector, -base.col_vector)

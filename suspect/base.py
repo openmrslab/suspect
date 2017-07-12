@@ -129,7 +129,7 @@ class ImageBase(numpy.ndarray):
     @requires_transform
     def _closest_axis(self, target_axis):
         overlap = numpy.abs(numpy.dot(target_axis, self.transform[:3, :3]))
-        return numpy.argmax(overlap)
+        return self.transform[:3, numpy.argmax(overlap)]
 
     @property
     @requires_transform
@@ -145,7 +145,9 @@ class ImageBase(numpy.ndarray):
         """
         # dot the three candidate vectors with (0, 0, 1)
         best_axis = self._closest_axis((0, 0, 1))
-        return self.transform[:3, best_axis] / numpy.linalg.norm(self.transform[:3, best_axis])
+        norm_axis = best_axis / numpy.linalg.norm(best_axis)
+        # work out if we need to reverse the direction
+        return norm_axis if norm_axis[2] > 0 else -1 * norm_axis
 
     @property
     @requires_transform
@@ -161,7 +163,8 @@ class ImageBase(numpy.ndarray):
         """
         # dot the three candidate vectors with (0, 1, 0)
         best_axis = self._closest_axis((0, 1, 0))
-        return self.transform[:3, best_axis] / numpy.linalg.norm(self.transform[:3, best_axis])
+        norm_axis = best_axis / numpy.linalg.norm(best_axis)
+        return norm_axis if norm_axis[1] > 0 else -1 * norm_axis
 
     @property
     @requires_transform
@@ -177,4 +180,5 @@ class ImageBase(numpy.ndarray):
         """
         # dot the three candidate vectors with (1, 0, 0)
         best_axis = self._closest_axis((1, 0, 0))
-        return self.transform[:3, best_axis] / numpy.linalg.norm(self.transform[:3, best_axis])
+        norm_axis = best_axis / numpy.linalg.norm(best_axis)
+        return norm_axis if norm_axis[0] > 0 else -1 * norm_axis
