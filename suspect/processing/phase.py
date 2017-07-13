@@ -38,8 +38,8 @@ def mag_real(data, *args, range_hz=None, range_ppm=None):
     def single_spectrum_version(spectrum):
         def residual(pars):
             par_vals = pars.valuesdict()
-            phased_data = spectrum.adjust_phase(par_vals['phi0'],)
-                                                #par_vals['phi1'])
+            phased_data = spectrum.adjust_phase(par_vals['phi0'],
+                                                par_vals['phi1'])
 
             diff = np.real(phased_data) - np.abs(spectrum)
 
@@ -47,11 +47,10 @@ def mag_real(data, *args, range_hz=None, range_ppm=None):
 
         params = lmfit.Parameters()
         params.add('phi0', value=0, min=-np.pi, max=np.pi)
-        #params.add('phi1', value=0.0, min=-0.01, max=0.25)
+        params.add('phi1', value=0.0, min=-0.01, max=0.25)
 
         result = lmfit.minimize(residual, params)
-        #return result.params['phi0'].value, result.params['phi1'].value
-        return result.params['phi0'].value, 0
+        return result.params['phi0'].value, result.params['phi1'].value
 
     return np.apply_along_axis(single_spectrum_version,
                                axis=-1,
@@ -95,7 +94,7 @@ def ernst(data):
     return result.params['phi0'].value, result.params['phi1'].value
 
 
-def acme(data, *args, range_hz=None, range_ppm=None):
+def acme(data, *args, range_hz=None, range_ppm=None, gamma=100):
     """
     Estimates the zero and first order phase using the ACME algorithm, which
     minimises the entropy of the real part of the spectrum. Note that these
@@ -135,6 +134,7 @@ def acme(data, *args, range_hz=None, range_ppm=None):
                                             par_vals['phi1'])
 
             r = phased_data.real[frequency_slice]
+            r = r / np.sum(r)
             derivative = np.abs((r[1:] - r[:-1]))
             derivative_norm = derivative / np.sum(derivative)
 
@@ -145,13 +145,12 @@ def acme(data, *args, range_hz=None, range_ppm=None):
 
             # penalty function
             p = np.sum(r[r < 0] ** 2)
-            gamma = 1000
-
+            
             return entropy + gamma * p
 
         params = lmfit.Parameters()
         params.add('phi0', value=0.0, min=-np.pi, max=np.pi)
-        params.add('phi1', value=0.0, min=-0.005, max=0.01)
+        params.add('phi1', value=0.001, min=-0.005, max=0.25)
 
         result = lmfit.minimize(residual, params, method='simplex')
         return result.params['phi0'].value, result.params['phi1'].value
