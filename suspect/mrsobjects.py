@@ -187,11 +187,65 @@ class MRSBase(suspect.base.ImageBase):
         """
         return numpy.prod(self.voxel_size)
 
+    def slice_hz(self, lower_bound, upper_bound):
+        """
+        Creates a slice object to access the region of the spectrum between
+        the specified bounds, in Hertz.
+
+        Parameters
+        ----------
+        lower_bound : float
+            The lower frequency bound of the region, in Hertz.
+        upper_bound : float
+            The upper frequency bound of the region, in Hertz.
+
+        Returns
+        -------
+        out : Slice
+        """
+        lower_index = numpy.floor((lower_bound + self.sw / 2) / self.df)
+        upper_index = numpy.ceil((upper_bound + self.sw / 2) / self.df)
+        if lower_index < 0:
+            raise ValueError("Could not create a slice for lower bound {}, value is outside range".format(lower_bound))
+        if upper_index < 0:
+            raise ValueError("Could not create a slice for upper bound {}, value is outside range".format(upper_bound))
+        return slice(int(lower_index), int(upper_index))
+
+    def slice_ppm(self, lower_bound, upper_bound):
+        """
+        Creates a slice object to access the region of the spectrum between
+        the specified bounds, in PPM.
+
+        Parameters
+        ----------
+        lower_bound : float
+            The lower frequency bound of the region, in PPM.
+        upper_bound : float
+            The upper frequency bound of the region, in PPM.
+
+        Returns
+        -------
+        out : Slice
+        """
+        return self.slice_hz(self.ppm_to_hertz(lower_bound),
+                             self.ppm_to_hertz(upper_bound))
+
 
 class MRSData(MRSBase):
     """
     MRS data in the time domain.
     """
+
+    def fid(self):
+        """
+        Returns itself. This is useful when you have either a spectrum or an
+        FID, but want an FID
+        
+        Returns
+        -------
+        MRSData:
+            The called MRSData object
+        """
 
     def spectrum(self):
         """
@@ -261,6 +315,17 @@ class MRSSpectrum(MRSBase):
     MRS data in the frequency domain
     """
 
+    def spectrum(self):
+        """
+        Returns itself. This is useful if you have something which is either a
+        spectrum or an FID, but want a spectrum.
+        Returns
+        -------
+        MRSSpectrum
+            The called MRSpectrum object.
+        """
+        return self
+
     def fid(self):
         """
         Returns
@@ -324,46 +389,3 @@ class MRSSpectrum(MRSBase):
         suspect.adjust_frequency : equivalent function
         """
         return self.fid().adjust_frequency(frequency_shift).spectrum()
-
-    def slice_hz(self, lower_bound, upper_bound):
-        """
-        Creates a slice object to access the region of the spectrum between
-        the specified bounds, in Hertz.
-        
-        Parameters
-        ----------
-        lower_bound : float
-            The lower frequency bound of the region, in Hertz.
-        upper_bound : float
-            The upper frequency bound of the region, in Hertz.
-        
-        Returns
-        -------
-        out : Slice
-        """
-        lower_index = numpy.floor((lower_bound + self.sw / 2) / self.df)
-        upper_index = numpy.ceil((upper_bound + self.sw / 2) / self.df)
-        if lower_index < 0:
-            raise ValueError("Could not create a slice for lower bound {}, value is outside range".format(lower_bound))
-        if upper_index < 0:
-            raise ValueError("Could not create a slice for upper bound {}, value is outside range".format(upper_bound))
-        return slice(int(lower_index), int(upper_index))
-
-    def slice_ppm(self, lower_bound, upper_bound):
-        """
-        Creates a slice object to access the region of the spectrum between
-        the specified bounds, in PPM.
-
-        Parameters
-        ----------
-        lower_bound : float
-            The lower frequency bound of the region, in PPM.
-        upper_bound : float
-            The upper frequency bound of the region, in PPM.
-
-        Returns
-        -------
-        out : Slice
-        """
-        return self.slice_hz(self.ppm_to_hertz(lower_bound),
-                             self.ppm_to_hertz(upper_bound))
