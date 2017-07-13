@@ -145,7 +145,7 @@ def acme(data, *args, range_hz=None, range_ppm=None, gamma=100):
 
             # penalty function
             p = np.sum(r[r < 0] ** 2)
-            
+
             return entropy + gamma * p
 
         params = lmfit.Parameters()
