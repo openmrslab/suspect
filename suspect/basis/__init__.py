@@ -1,7 +1,9 @@
 import numpy
+from ..mrsobjects import MRSData
 
 
-def gaussian(time_axis, frequency, phase, fwhm):
+def gaussian(time_axis, frequency, phase, fwhm, f0=123.0):
+    dt = time_axis[1] - time_axis[0]
     oscillatory_term = numpy.exp(2j * numpy.pi * (frequency * time_axis) + 1j * phase)
     damping = numpy.exp(-time_axis ** 2 / 4 * numpy.pi ** 2 / numpy.log(2) * fwhm ** 2)
     fid = oscillatory_term * damping
@@ -13,10 +15,11 @@ def gaussian(time_axis, frequency, phase, fwhm):
     # the chosen df does not affect the area, so we divide by df, which is
     # equivalent to multiplying by dt * np, then the np terms cancel and we
     # are left with the dt term (and a 2 because fid[0] = 0.5, not 1)
-    return fid * (time_axis[1] - time_axis[0]) * 2.0
+    fid = fid * dt * 2.0
+    return MRSData(fid, dt, f0)
 
 
-def lorentzian(time_axis, frequency, phase, fwhm):
+def lorentzian(time_axis, frequency, phase, fwhm, f0=123.0):
     oscillatory_term = numpy.exp(1j * (2 * numpy.pi * frequency * time_axis + phase))
     damping = numpy.exp(-time_axis * numpy.pi * fwhm)
     fid = oscillatory_term * damping
