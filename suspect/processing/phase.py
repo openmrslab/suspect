@@ -103,13 +103,15 @@ def acme(data, *args, range_hz=None, range_ppm=None, gamma=100):
     
     Parameters
     ----------
-    data: MRSBase
+    data : MRSBase
         The data to be phased
-    range_hz: tuple (low, high)
+    range_hz : tuple (low, high)
         The frequency range in Hertz over which to compare the spectra
-    range_ppm: tuple (low, high)
+    range_ppm : tuple (low, high)
         The frequency range in PPM over which to compare the spectra. range_hz
         and range_ppm cannot both be defined.
+    gamma : float
+        Weighting factor for penalty function.
     Returns
     -------
     phi0 : float
@@ -131,7 +133,7 @@ def acme(data, *args, range_hz=None, range_ppm=None, gamma=100):
         def residual(pars):
             par_vals = pars.valuesdict()
             phased_data = spectrum.adjust_phase(par_vals['phi0'],
-                                            par_vals['phi1'])
+                                                par_vals['phi1'])
 
             r = phased_data.real[frequency_slice]
             r = r / np.sum(r)
