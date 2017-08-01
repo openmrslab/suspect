@@ -13,3 +13,11 @@ install:
 script: py.test -W ignore --cov .
 after_success:
   - coveralls
+deploy:
+  provider: pypi
+  user: bennyrowland
+  password:
+    secure: 0Heh9034vI3yC/ti3dC9yVcg6NWivwS7b0JLr+FLdaynXrkwo9WQQQ6gKE25sP4YBxDWxRHbzn8h415WY98LiSBGLydqEQcB43leY393fgSsftlLOTFmuO2eDGrEsVzgDGJmQPJGvuu1z0rQ9jLPLKNGdxKzS4pm+pJDejO0O48tddfJ2STixXHpSyoAwD/8Vizxmznq7YBwUNg43OqroTWOABiR1HjAkbBzoQYeCv274oZ0ibqC9m/VS23ciWRoSIr2sYjLdbev8qLa4wP2c++zlFTfGSViavmw8/6fIEEkXmNV+bkHljmzVBwwU0zxogs8AWbErWQxlBEgKZd8muP6loF3RfhKZhjZhKcpNrX+W3zNTG0MEGElAjJeZP5ZiHJRDtQW1sxvZkBSoodSYVhU7RtdRLbIHebovF8/WmEHPDAviXiUcGSyd9iRd/x2dH/T7k7OREC/oblAiOnWuVpVHYyQVB3SDSvZ+7jK6fIJKwChCOaWair26TLY7VXnOAqUqoU/pClfVqL6nAJ6DBkq7RUHdrd41zxW6CtC0WTBYS4jGSsVWfevjK44xzHbQqzVI5P8buYxjzxRD2VcBsRRVozQgHiflQZLGmCNNpeY8xx6Wn36ttIyfSgzpzr7S6GIP+rzlLkuoj8zBRiSi4IfIyG2zR4YUzSnzj6l8YQ=
+  distributions: "sdist bdist_wheel"
+  on:
+    tags: true

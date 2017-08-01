@@ -59,3 +59,19 @@ def test_acme_range_hz():
 
     np.testing.assert_allclose(in_0, -out_0, rtol=0.05)
     np.testing.assert_allclose(in_1, -out_1, rtol=0.2)
+
+
+def test_real():
+    mega = suspect.io.load_twix("/Users/ben/mrs/openmrslab/misc_suspect/data/JESS_MEGAPRESS/full_example_2/MRS_pre/meas_MID00155_FID16351_MEGAPRESS_68_Vis.dat")
+    tmp_ave = np.mean(mega, axis=(0, 1))
+    channel_weights = suspect.processing.channel_combination.svd_weighting(tmp_ave)
+    cc_mega = suspect.processing.channel_combination.combine_channels(mega, channel_weights)
+    on, off = np.mean(cc_mega, axis=0)
+    import matplotlib.pyplot as plt
+    plt.plot(off.spectrum())
+    print(suspect.processing.phase.mag_real(off))
+    print(suspect.processing.phase.acme(off))
+    plt.plot(off.adjust_phase(*suspect.processing.phase.acme(off, range_ppm=(4.2, 0))).spectrum())
+    plt.plot(off.adjust_phase(*suspect.processing.phase.mag_real(off, range_ppm=(4.2, 0))).spectrum())
+    plt.show()
+    #assert 3==4
