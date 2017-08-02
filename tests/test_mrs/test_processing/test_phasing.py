@@ -40,8 +40,8 @@ def test_acme_first():
 
     out_0, out_1 = suspect.processing.phase.acme(sample_data)
 
-    np.testing.assert_allclose(in_0, -out_0, rtol=0.05)
-    np.testing.assert_allclose(in_1, -out_1, rtol=0.05)
+    np.testing.assert_allclose(in_0, -out_0, rtol=0.15)
+    np.testing.assert_allclose(in_1, -out_1, rtol=0.15)
 
 
 def test_acme_range_hz():
