@@ -56,7 +56,7 @@ def sift(input_signal, threshold):
     ft = numpy.fft.fft(input_signal)
     ft[numpy.absolute(ft) < threshold] = 0.0
     sifted = numpy.fft.ifft(ft)
-    return numpy.real(sifted)
+    return sifted.astype(input_signal.dtype)
 
 
 def svd(input_signal, rank):
