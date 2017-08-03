@@ -57,7 +57,9 @@ class TwixBuilder(object):
         metadata = {
             "patient_name": self.header_params["patient_name"],
             "patient_id": self.header_params["patient_id"],
-            "patient_birthdate": self.header_params["patient_birthdate"]
+            "patient_birthdate": self.header_params["patient_birthdate"],
+            "exam_date": self.header_params["exam_date"],
+            "exam_time": self.header_params["exam_time"],
         }
         mrs_data = MRSData(data,
                            self.header_params["dt"],
@@ -87,6 +89,11 @@ def parse_twix_header(header_string):
     patient_id = patient_id_string.split("\"")[3]
     patient_name = re.escape(re.search(r"(<ParamString.\"PatientName\">  { \")(.+)(\"  }\n)", header_string).group(2))
     patient_birthday = re.search(r"(<ParamString.\"PatientBirthDay\">  { \")(.+)(\"  }\n)", header_string).group(2)
+    # get the FrameOfReference to get the date and time of the scan
+    frame_of_reference = re.search(r"(<ParamString.\"FrameOfReference\">  { )(\".+\")(  }\n)", header_string).group(2)
+    exam_date_time = frame_of_reference.split(".")[10]
+    exam_date = exam_date_time[2:8]
+    exam_time = exam_date_time[8:14]
     # get the scan parameters
     frequency_matches = [
         r"<ParamLong.\"Frequency\">  { \d*  }",
@@ -161,7 +168,9 @@ def parse_twix_header(header_string):
             "dt": dwell_time,
             "f0": frequency,
             "transform": transform,
-            "te": te
+            "te": te,
+            "exam_date": exam_date,
+            "exam_time": exam_time
             }
 
 
