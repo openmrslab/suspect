@@ -188,3 +188,17 @@ class ImageBase(numpy.ndarray):
         best_axis = self._closest_axis((1, 0, 0))
         norm_axis = best_axis / numpy.linalg.norm(best_axis)
         return norm_axis if norm_axis[0] > 0 else -1 * norm_axis
+
+    @property
+    @requires_transform
+    def centre(self):
+        """
+        Returns the centre of the image volume in scanner coordinates.
+
+        Returns
+        -------
+        numpy.ndarray
+            The centre of the image volume
+        :return:
+        """
+        return self.to_scanner((numpy.array(self.shape[::-1]) - 1) / 2)
