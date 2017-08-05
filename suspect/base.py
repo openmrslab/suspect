@@ -1,5 +1,6 @@
-import numpy
+import numpy as np
 import functools
+import scipy.interpolate
 
 from . import _transforms
 
@@ -10,17 +11,19 @@ def requires_transform(func):
         if self.transform is None:
             raise ValueError("No transform set for {} object {}".format(type(self), self))
         return func(self, *args, **kwargs)
+
     return wrapper
 
 
-class ImageBase(numpy.ndarray):
+class ImageBase(np.ndarray):
     """
     numpy.ndarray subclass with an affine transform associated with it
     """
+
     def __new__(cls, input_array, transform=None):
         # input_array is an already formed ndarray
         # we want to make it our class type
-        obj = numpy.asarray(input_array).view(cls)
+        obj = np.asarray(input_array).view(cls)
         if transform is not None:
             obj.transform = transform.copy()
         return obj
@@ -54,9 +57,9 @@ class ImageBase(numpy.ndarray):
         """
         positions = _transforms.normalise_positions_for_transform(*args)
 
-        transformed_point = numpy.einsum("ij,...j", self.transform, positions)
+        transformed_point = np.einsum("ij,...j", self.transform, positions)
 
-        return numpy.squeeze(numpy.asarray(transformed_point))[..., 0:3]
+        return np.squeeze(np.asarray(transformed_point))[..., 0:3]
 
     @requires_transform
     def from_scanner(self, *args):
@@ -84,11 +87,11 @@ class ImageBase(numpy.ndarray):
         """
         positions = _transforms.normalise_positions_for_transform(*args)
 
-        transformed_point = numpy.einsum("ij,...j",
-                                         numpy.linalg.inv(self.transform),
-                                         positions)
+        transformed_point = np.einsum("ij,...j",
+                                      np.linalg.inv(self.transform),
+                                      positions)
 
-        return numpy.squeeze(numpy.asarray(transformed_point))[..., 0:3]
+        return np.squeeze(np.asarray(transformed_point))[..., 0:3]
 
     @property
     @requires_transform
@@ -101,7 +104,7 @@ class ImageBase(numpy.ndarray):
         numpy.ndarray
             The dimensions of a voxel along each axis.
         """
-        return numpy.linalg.norm(self.transform, axis=0)[0:3]
+        return np.linalg.norm(self.transform, axis=0)[0:3]
 
     @property
     @requires_transform
@@ -114,22 +117,22 @@ class ImageBase(numpy.ndarray):
     @property
     @requires_transform
     def slice_vector(self):
-        return self.transform[:3, 2] / numpy.linalg.norm(self.transform[:3, 2])
+        return self.transform[:3, 2] / np.linalg.norm(self.transform[:3, 2])
 
     @property
     @requires_transform
     def row_vector(self):
-        return self.transform[:3, 1] / numpy.linalg.norm(self.transform[:3, 1])
+        return self.transform[:3, 1] / np.linalg.norm(self.transform[:3, 1])
 
     @property
     @requires_transform
     def col_vector(self):
-        return self.transform[:3, 0] / numpy.linalg.norm(self.transform[:3, 0])
+        return self.transform[:3, 0] / np.linalg.norm(self.transform[:3, 0])
 
     @requires_transform
     def _closest_axis(self, target_axis):
-        overlap = numpy.abs(numpy.dot(target_axis, self.transform[:3, :3]))
-        return self.transform[:3, numpy.argmax(overlap)]
+        overlap = np.abs(np.dot(target_axis, self.transform[:3, :3]))
+        return self.transform[:3, np.argmax(overlap)]
 
     @property
     @requires_transform
@@ -147,7 +150,7 @@ class ImageBase(numpy.ndarray):
         """
         # dot the three candidate vectors with (0, 0, 1)
         best_axis = self._closest_axis((0, 0, 1))
-        norm_axis = best_axis / numpy.linalg.norm(best_axis)
+        norm_axis = best_axis / np.linalg.norm(best_axis)
         # work out if we need to reverse the direction
         return norm_axis if norm_axis[2] > 0 else -1 * norm_axis
 
@@ -167,7 +170,7 @@ class ImageBase(numpy.ndarray):
         """
         # dot the three candidate vectors with (0, 1, 0)
         best_axis = self._closest_axis((0, 1, 0))
-        norm_axis = best_axis / numpy.linalg.norm(best_axis)
+        norm_axis = best_axis / np.linalg.norm(best_axis)
         return norm_axis if norm_axis[1] > 0 else -1 * norm_axis
 
     @property
@@ -186,7 +189,7 @@ class ImageBase(numpy.ndarray):
         """
         # dot the three candidate vectors with (1, 0, 0)
         best_axis = self._closest_axis((1, 0, 0))
-        norm_axis = best_axis / numpy.linalg.norm(best_axis)
+        norm_axis = best_axis / np.linalg.norm(best_axis)
         return norm_axis if norm_axis[0] > 0 else -1 * norm_axis
 
     @property
@@ -201,4 +204,77 @@ class ImageBase(numpy.ndarray):
             The centre of the image volume
         :return:
         """
-        return self.to_scanner((numpy.array(self.shape[::-1]) - 1) / 2)
+        return self.to_scanner((np.array(self.shape[::-1]) - 1) / 2)
+
+    @requires_transform
+    def resample(self,
+                 row_vector,
+                 col_vector,
+                 shape,
+                 centre=(0, 0, 0),
+                 voxel_size=(1, 1, 1),
+                 method='linear'):
+        """
+        Create a new volume by resampling this one using a different coordinate
+        system.
+
+        Parameters
+        ----------
+        row_vector: array
+            Row direction vector for new volume
+        col_vector: array
+            Column direction vector for new volume
+        shape: array
+            The shape of the new volume, as slices, rows, columns
+        centre: array
+            The position of the centre of the new volume in scanner
+            coordinates, in mm
+        voxel_size: array
+            The size of each voxel in the new volume, in mm
+        method: str
+            The interpolation method to use - either "linear" or "nearest"
+
+        Returns
+        -------
+        suspect.base.ImageBase
+            The resampled volume
+        """
+        # make sure row_vector and col_vector are normalised
+        row_vector = np.asanyarray(row_vector) / np.linalg.norm(row_vector)
+        col_vector = np.asanyarray(col_vector) / np.linalg.norm(col_vector)
+
+        # mgrid produces 3D index grids for the x, y and z coords separately
+        II, JJ, KK = np.mgrid[0:shape[2],
+                              0:shape[1],
+                              0:shape[0]].astype(np.float)
+        # shift the indices from the corner to the centre
+        II -= (shape[2] - 1) / 2
+        JJ -= (shape[1] - 1) / 2
+        KK -= (shape[0] - 1) / 2
+        # scale the indices by the size of the voxel
+        II *= voxel_size[0]
+        JJ *= voxel_size[1]
+        KK *= voxel_size[2]
+
+        slice_vector = np.cross(row_vector, col_vector)
+
+        # combine the x, y and z indices with the row, col and slice vectors
+        # to get the spatial coordinates at each point in the new volume
+        space_coords = II[..., np.newaxis] * row_vector \
+                       + JJ[..., np.newaxis] * col_vector \
+                       + KK[..., np.newaxis] * slice_vector + centre
+
+        resampled = scipy.interpolate.interpn([np.arange(dim) for dim in self.shape],
+                                              self,
+                                              self.from_scanner(space_coords)[..., ::-1],
+                                              method=method,
+                                              bounds_error=False,
+                                              fill_value=0)
+
+        transform = _transforms.transformation_matrix(row_vector,
+                                                      col_vector,
+                                                      space_coords[0, 0, 0],
+                                                      voxel_size)
+
+        # we have to transpose the result to go from x, y, z to row, col, slice
+        return ImageBase(resampled.T, transform=transform)
