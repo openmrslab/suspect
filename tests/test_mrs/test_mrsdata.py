@@ -2,6 +2,7 @@ import suspect
 
 import numpy
 import pytest
+from suspect import _transforms
 
 
 def test_create_mrs():
@@ -40,3 +41,14 @@ def test_spectrum_2_fid():
     numpy.testing.assert_equal(spectrum, numpy.fft.fftshift(numpy.fft.fft(data)))
     fid = spectrum.fid()
     numpy.testing.assert_equal(data, fid)
+
+
+def test_centre():
+    position = (12.4, -9.8, 11.0)
+    transform = _transforms.transformation_matrix((1, 0, 0),
+                                                  (0, 1, 0),
+                                                  (12.4, -9.8, 11.0),
+                                                  (10, 10, 10))
+    data = suspect.MRSData(numpy.ones(1024, 'complex'), 5e-4, 123, transform=transform)
+    numpy.testing.assert_equal(data.centre, position)
+    numpy.testing.assert_equal(data.position, position)
