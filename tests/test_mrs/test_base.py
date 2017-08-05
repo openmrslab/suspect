@@ -68,3 +68,35 @@ def test_find_axes_reversed():
     np.testing.assert_equal(base.axial_vector, base.slice_vector)
     np.testing.assert_equal(base.coronal_vector, -base.row_vector)
     np.testing.assert_equal(base.sagittal_vector, -base.col_vector)
+
+
+def test_centre():
+    transform = _transforms.transformation_matrix([1, 0, 0],
+                                                  [0, 1, 0],
+                                                  [-127.5, -99.5, -99],
+                                                  [1, 1, 2])
+    base = suspect.base.ImageBase(np.zeros((128, 256, 256)), transform=transform)
+    np.testing.assert_equal(base.centre, [0, 28, 28])
+
+
+def test_resample():
+    transform = _transforms.transformation_matrix([1, 0, 0],
+                                                  [0, 1, 0],
+                                                  [-1.5, -0.5, -1.5],
+                                                  [1, 1, 1])
+    data = np.random.rand(4, 2, 4)
+    base = suspect.base.ImageBase(data, transform=transform)
+    resampled_1 = base.resample([1, 0, 0], [0, 1, 0], [1, 2, 4],
+                                centre=[0, 0, 0.5])
+    np.testing.assert_equal(base[2], resampled_1)
+    resampled_1_transform = np.array([[1, 0, 0, -1.5],
+                                      [0, 1, 0, -0.5],
+                                      [0, 0, 1, 0.5],
+                                      [0, 0, 0, 1]])
+    np.testing.assert_equal(resampled_1_transform, resampled_1.transform)
+    resampled_2 = base.resample([0, 1, 0], [0, 0, 2], [1, 4, 2],
+                                centre=[0.5, 0, 0])
+    np.testing.assert_equal(base[:, :, 2], resampled_2)
+    resampled_3 = base.resample([1, 0, 0], [0, 0, 1], [1, 4, 4],
+                                centre=[0, 0.5, 0])
+    np.testing.assert_equal(base[:, 1], resampled_3)

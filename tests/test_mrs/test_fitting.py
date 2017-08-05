@@ -47,7 +47,7 @@ def test_gaussian(fixed_fid):
 
     numpy.testing.assert_allclose(fitting_result["model"]["pcr"]["fwhm"], 50.0, rtol=1e-2)
     numpy.testing.assert_allclose(fitting_result["model"]["pcr"]["amplitude"], 1.0, rtol=2e-2)
-    numpy.testing.assert_allclose(fitting_result["model"]["pcr"]["frequency"], 0.0, atol=5e-2)
+    numpy.testing.assert_allclose(fitting_result["model"]["pcr"]["frequency"], 0.0, atol=1e-1)
 
     numpy.testing.assert_allclose(fitting_result["fit"], fixed_fid, atol=0.001)
 
@@ -123,7 +123,7 @@ def test_missing_peak_phase(fixed_fid):
 
     numpy.testing.assert_allclose(fitting_result["model"]["pcr"]["fwhm"], 50.0, rtol=5e-2)
     numpy.testing.assert_allclose(fitting_result["model"]["pcr"]["amplitude"], 1.0, rtol=5e-2)
-    numpy.testing.assert_allclose(fitting_result["model"]["pcr"]["frequency"], 0.0, atol=5e-2)
+    numpy.testing.assert_allclose(fitting_result["model"]["pcr"]["frequency"], 0.0, atol=1e-1)
 
     numpy.testing.assert_allclose(fitting_result["fit"], fixed_fid, atol=0.001)
 
@@ -241,7 +241,7 @@ def test_dependencies(fixed_fid_sum):
 
     numpy.testing.assert_allclose(fitting_result["model"]["pcr"]["fwhm"], 50.0, rtol=1e-2)
     numpy.testing.assert_allclose(fitting_result["model"]["pcr"]["amplitude"], 1.0, rtol=2e-2)
-    numpy.testing.assert_allclose(fitting_result["model"]["pcr"]["frequency"], 0.0, atol=5e-2)
+    numpy.testing.assert_allclose(fitting_result["model"]["pcr"]["frequency"], 0.0, atol=1e-1)
 
     numpy.testing.assert_allclose(fitting_result["fit"], fixed_fid_sum, atol=0.001)
 

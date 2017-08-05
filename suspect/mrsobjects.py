@@ -230,6 +230,13 @@ class MRSBase(suspect.base.ImageBase):
         return self.slice_hz(self.ppm_to_hertz(lower_bound),
                              self.ppm_to_hertz(upper_bound))
 
+    @property
+    @suspect.base.requires_transform
+    def centre(self):
+        # unlike the ImageBase class, the centre of spectroscopy volumes is
+        # already encoded in the position of the volume
+        return self.position
+
 
 class MRSData(MRSBase):
     """
