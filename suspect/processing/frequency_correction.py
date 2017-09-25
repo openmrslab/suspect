@@ -25,7 +25,12 @@ def spectral_registration(data, target, initial_guess=(0.0, 0.0), frequency_rang
     data : MRSData
     target : MRSData
     initial_guess : tuple
-    frequency_range : 
+    frequency_range : tuple, slice or ndarray
+        The frequency range can be specified in multiple different ways: a
+        2-tuple containing low and high frequency cut-offs in Hertz for the
+        comparison, as a slice object into the spectrum (for use with the
+        slice_ppm() function, or as an array of weights to apply to the
+        spectrum.
 
     Returns
     -------
@@ -42,7 +47,11 @@ def spectral_registration(data, target, initial_guess=(0.0, 0.0), frequency_rang
     # be a numpy.array of the same size as the data in which case we simply use
     # that array as the weightings for the comparison
     if type(frequency_range) is tuple:
-        spectral_weights = frequency_range[0] < data.frequency_axis() & data.frequency_axis() < frequency_range[1]
+        spectral_weights = numpy.logical_and(frequency_range[0] < data.frequency_axis(),
+                                             frequency_range[1] > data.frequency_axis())
+    elif type(frequency_range) is slice:
+        spectral_weights = numpy.zeros_like(target, numpy.bool)
+        spectral_weights[frequency_range] = 1
     else:
         spectral_weights = frequency_range
 
@@ -53,7 +62,7 @@ def spectral_registration(data, target, initial_guess=(0.0, 0.0), frequency_rang
         residual_data = transformed_data - target
         if frequency_range is not None:
             spectrum = residual_data.spectrum()
-            weighted_spectrum = residual_data * spectral_weights
+            weighted_spectrum = spectrum * spectral_weights
             # remove zero-elements
             weighted_spectrum = weighted_spectrum[weighted_spectrum != 0]
             residual_data = numpy.fft.ifft(numpy.fft.ifftshift(weighted_spectrum))
