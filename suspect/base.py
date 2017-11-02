@@ -122,12 +122,12 @@ class ImageBase(np.ndarray):
     @property
     @requires_transform
     def row_vector(self):
-        return self.transform[:3, 1] / np.linalg.norm(self.transform[:3, 1])
+        return self.transform[:3, 0] / np.linalg.norm(self.transform[:3, 0])
 
     @property
     @requires_transform
     def col_vector(self):
-        return self.transform[:3, 0] / np.linalg.norm(self.transform[:3, 0])
+        return self.transform[:3, 1] / np.linalg.norm(self.transform[:3, 1])
 
     @requires_transform
     def _closest_axis(self, target_axis):
@@ -264,12 +264,13 @@ class ImageBase(np.ndarray):
                        + JJ[..., np.newaxis] * col_vector \
                        + KK[..., np.newaxis] * slice_vector + centre
 
+        image_coords = self.from_scanner(space_coords).reshape(*space_coords.shape)[..., ::-1].astype(np.int)
         resampled = scipy.interpolate.interpn([np.arange(dim) for dim in self.shape],
                                               self,
-                                              self.from_scanner(space_coords)[..., ::-1],
+                                              image_coords,
                                               method=method,
                                               bounds_error=False,
-                                              fill_value=0)
+                                              fill_value=0).squeeze()
 
         transform = _transforms.transformation_matrix(row_vector,
                                                       col_vector,
