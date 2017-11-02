@@ -31,3 +31,8 @@ API Reference
    suspect_api.rst
    imagebase_api.rst
    mrs_data_api.rst
+
+Changelog
+---------
+
+Please see :doc:`the changelog </changelog>`.

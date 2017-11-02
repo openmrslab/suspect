@@ -50,7 +50,8 @@ extensions = [
     'sphinx.ext.coverage',
     'sphinx.ext.mathjax',
     'nbsphinx',
-    'sphinx.ext.napoleon'
+    'sphinx.ext.napoleon',
+    'releases'
 ]
 
 # Add any paths that contain templates here, relative to this directory.
@@ -127,6 +128,10 @@ pygments_style = 'sphinx'
 
 # If true, `todo` and `todoList` produce output, else they produce nothing.
 todo_include_todos = False
+
+# releases extension config
+releases_github_path = "openmrslab/suspect"
+releases_unstable_prehistory = True
 
 
 # -- Options for HTML output ----------------------------------------------
