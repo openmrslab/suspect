@@ -4,6 +4,9 @@
 Changelog
 =========
 
+* :release:`0.3.6 <02/11/17>`
+* :feature:`94` loading Siemens DICOM now includes a voxel transform
+* :bug:`88` fixed an issue where certain Siemens DICOM files did not import
 * :bug:`92` fixed a problem where row_vector and column_vector where swapped
 * :bug:`90` fixed a problem with resampling to a single slice
 * :release:`0.3.5 <25/09/17>`
