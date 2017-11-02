@@ -2,8 +2,9 @@ import pydicom.tag
 import pydicom.dicomio
 import numpy
 import struct
+import warnings
 
-from suspect import MRSData
+from suspect import MRSData, transformation_matrix, rotation_matrix
 from ._common import complex_array_from_iter
 
 CSA1 = 0
@@ -25,7 +26,8 @@ ima_types = {
                  "EchoTrainLength", "EchoLinePosition", "EchoColumnPosition", "SpectroscopyAcquisitionDataColumns",
                  "SpectroscopyAcquisitionPhaseColumns", "SpectroscopyAcquisitionPhaseRows", "RfWatchdogMask",
                  "NumberOfPhaseEncodingSteps", "DataPointRows", "UsedPatientWeight", "NumberOfPrescans",
-                 "Stim_mon_mode", "Operation_mode_flag", "CoilId", "MiscSequenceParam", "MrProtocolVersion"],
+                 "Stim_mon_mode", "Operation_mode_flag", "CoilId", "MiscSequenceParam", "MrProtocolVersion",
+                 "ProtocolSliceNumber"],
     "strings": ["ReferencedImageSequence", "ScanningSequence", "SequenceName", "ImagedNucleus", "TransmittingCoil",
                 "PhaseEncodingDirection", "VariableFlipAngleFlag", "SequenceMask", "AcquisitionMatrixText",
                 "MultistepIndex", "DataRepresentation", "SignalDomainColumns", "k-spaceFiltering", "ResonantNucleus",
@@ -81,7 +83,7 @@ def read_csa_header(csa_header_bytes):
                 elif name in ima_types["strings"]:
                     pass
                 else:
-                    raise Exception("Unhandled name {0} with vr {1} and value {2}".format(name, vr, item))
+                    warnings.warn("Unhandled name {0} with vr {1} and value {2}".format(name, vr, item))
                 item_list.append(item)
             header_offset += item_length
             header_offset += (4 - (item_length % 4)) % 4  # move the offset to the next 4 byte boundary
@@ -148,10 +150,35 @@ def load_siemens_dicom(filename):
                                            length=len(data_floats) // 2,
                                            shape=data_shape)
 
+    in_plane_rot = csa_header["VoiInPlaneRotation"]
+    x_vector = numpy.array([-1, 0, 0])
+    normal_vector = numpy.array(csa_header["VoiOrientation"])
+    orthogonal_x = x_vector - numpy.dot(x_vector, normal_vector) * normal_vector
+    orthonormal_x = orthogonal_x / numpy.linalg.norm(orthogonal_x)
+    rot_matrix = rotation_matrix(in_plane_rot, normal_vector)
+    row_vector = numpy.dot(rot_matrix, orthonormal_x)
+    column_vector = numpy.cross(row_vector, normal_vector)
+    voxel_size = (*csa_header["PixelSpacing"],
+                  csa_header["SliceThickness"])
+    transform = transformation_matrix(row_vector,
+                                      column_vector,
+                                      csa_header["VoiPosition"],
+                                      voxel_size)
+
+    voi_size = [csa_header["VoiReadoutFoV"],
+                csa_header["VoiPhaseFoV"],
+                csa_header["VoiThickness"]]
+
+    metadata = {
+        "voi_size": voi_size
+    }
+
     return MRSData(complex_data,
                    csa_header["RealDwellTime"] * 1e-9,
                    csa_header["ImagingFrequency"],
-                   te=csa_header["EchoTime"])
+                   te=csa_header["EchoTime"],
+                   transform=transform,
+                   metadata=metadata)
 
 
 # def anonymize_siemens_dicom(filename, anonymized_filename):
