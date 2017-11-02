@@ -4,16 +4,41 @@
 Changelog
 =========
 
+* :bug:`92` fixed a problem where row_vector and column_vector where swapped
+* :bug:`90` fixed a problem with resampling to a single slice
 * :release:`0.3.5 <25/09/17>`
-* :feature:`77` Added new auto-phasing algorithms
+* :bug:`82` fixed an issue with spectral registration over limited frequency ranges
 * :release:`0.3.4 <05/08/17>`
+* :feature:`80` Added resampling of 3D volumes to new coordinate systems
 * :release:`0.3.3 <03/08/17>`
+* :feature:`76` Added new auto-phasing algorithms
 * :release:`0.3.2 <02/08/17>`
+* :bug:`78` fixed an issue where SIFT denoising returns real values from complex input
 * :release:`0.3.1 <01/08/17>`
-* :release:`0.3.0 <04/05/17>`
+* :bug:`74` changed image direction vectors to always be positive
+* :bug:`72` fixed a problem where sometimes channel combination was done over the wrong axis
+* :feature:`70` added direction vector accessors for spatial orientation
+* :feature:`68` added support for save/load of Nifti format
+* :bug:`67` created image mask is now an ImageBase object
+* :feature:`63` coordinate transform functions now accept nd grids as input, not just single coordinates
+* :feature:`62` can create a mask showing spectroscopy volume on structural volume
+* :feature:`59` TARQUIN processing now includes plots of fits and data
+* :feature:`56` added ability to get a slice to access a subset of spectrum
+* :bug:`54` removed some additional PHI when anonymising twix data. Thanks to @josephmje for the fix
+* :feature:`45` load_twix() now gets voxel positioning information
+* :feature:`44` added ImageBase class to handle working with structural images
 * :feature:`38` read TE from twix files
+* :release:`0.3.0 <04/05/17>`
+* :bug:`39` fixed issue with spline denoising receiving float instead of integer values
 * :feature:`35` adjust_frequency() function for MRSData
 * :bug:`33` negated initial guesses for spectral registration
 * :bug:`31` all phase adjustments use common function
 * :feature:`29` loading functions for Bruker data
 * :support:`28` add documentation for water suppression methods
+* :feature:`24` added MRSSpectrum object to match existing FID object. Thanks to @lasyasreepada for the feature
+* :bug:`23` fixed denoising methods casting complex to real
+* :feature:`21` added adjust_phase() function for MRSData
+* :feature:`20` added support for MRS DICOM format
+* :bug:`17` fixed bug where lcmodel files where created without quoted strings
+* :support:`15` single location for current version information _version.py
+* :support:`10` convert all docstrings to NumPy format, thanks to @lasyasreepada for a great job
