@@ -26,7 +26,9 @@ def create_mask(source_image, ref_image, voxels=None):
     # create a grid of coordinates for all points in the ref_image
     # the ref_image has coord index order [z, y, x] so we reverse the shape
     # to get the indices in (x, y, z) format for the coordinate conversion
-    ref_coords = np.mgrid[[range(0, size) for size in ref_image.shape[::-1]]]
+    # make sure that ref_image has 3 dimensions so that we can transform them
+    ref_image = np.atleast_3d(ref_image)
+    ref_coords = np.mgrid[[range(0, size) for size in np.atleast_3d(ref_image).shape[::-1]]]
 
     # mgrid puts the (x, y, z) tuple at the front, we want it at the back
     ref_coords = np.moveaxis(ref_coords, 0, -1)
