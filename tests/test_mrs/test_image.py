@@ -42,3 +42,7 @@ def test_resample_single_slice():
                                  centre=(5, 10, 0))
     assert slc.shape == (20, 10)
     np.testing.assert_equal(source_volume[0, :, :10], slc)
+    # once we have a single slice, test creating a mask from a 2D reference
+    spec_volume = suspect.MRSData(np.zeros(20), 0.1, 123, transform=np.eye(4))
+    mask = suspect.image.create_mask(spec_volume, slc)
+    assert mask.shape == (20, 10)

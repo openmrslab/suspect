@@ -4,6 +4,7 @@
 Changelog
 =========
 
+* :bug:`98` fixed an issue where 2D images could not be used to create a voxel mask
 * :release:`0.3.6 <02/11/17>`
 * :feature:`94` loading Siemens DICOM now includes a voxel transform
 * :bug:`88` fixed an issue where certain Siemens DICOM files did not import
