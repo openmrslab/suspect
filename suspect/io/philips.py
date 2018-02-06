@@ -53,8 +53,7 @@ def load_sdat(sdat_filename, spar_filename=None):
                     pass
                     #print("{} : {}".format(key, value))
 
-    dt = ((parameter_dict["spec_col_upper_val"] - parameter_dict["spec_col_lower_val"])
-          / parameter_dict["spec_num_col"])
+    dt = 1 / parameter_dict["sample_frequency"]
 
     with open(sdat_filename, 'rb') as fin:
         raw_bytes = fin.read()
