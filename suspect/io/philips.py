@@ -7,13 +7,14 @@ spar_types = {
     "floats": ["ap_size", "lr_size", "cc_size", "ap_off_center", "lr_off_center",
                "cc_off_center", "ap_angulation", "lr_angulation", "cc_angulation",
                "image_plane_slice_thickness", "slice_distance", "spec_col_lower_val",
-               "spec_col_upper_val", "spec_row_lower_val", "spec_row_upper_val"],
+               "spec_col_upper_val", "spec_row_lower_val", "spec_row_upper_val",
+               "spectrum_echo_time", "echo_time"],
     "integers": ["samples", "rows", "synthesizer_frequency", "offset_frequency",
                  "sample_frequency", "echo_nr", "mix_number", "t0_mul_direction",
-                 "echo_time", "repetition_time", "averages", "volumes",
+                 "repetition_time", "averages", "volumes",
                  "volume_selection_method", "nr_of_slices_for_multislice",
                  "spec_num_col", "spec_num_row", "num_dimensions", "TSI_factor",
-                 "spectrum_echo_time", "spectrum_inversion_time", "image_chemical_shift",
+                 "spectrum_inversion_time", "image_chemical_shift",
                  "t0_mu1_direction"],
     "strings": ["scan_id", "scan_date", "patient_name", "patient_birth_date",
                 "patient_position", "patient_orientation", "nucleus",
@@ -52,6 +53,9 @@ def load_sdat(sdat_filename, spar_filename=None):
                     pass
                     #print("{} : {}".format(key, value))
 
+    dt = ((parameter_dict["spec_col_upper_val"] - parameter_dict["spec_col_lower_val"])
+          / parameter_dict["spec_num_col"])
+
     with open(sdat_filename, 'rb') as fin:
         raw_bytes = fin.read()
 
@@ -61,7 +65,7 @@ def load_sdat(sdat_filename, spar_filename=None):
     raw_data = numpy.fromiter(complex_iter, "complex64")
     raw_data = numpy.reshape(raw_data, (parameter_dict["rows"], parameter_dict["samples"])).squeeze()
     return MRSData(raw_data,
-                   5e-4,
+                   dt,
                    parameter_dict["synthesizer_frequency"] * 1e-6,
                    te=parameter_dict["echo_time"])
 
