@@ -91,9 +91,13 @@ def parse_twix_header(header_string):
     patient_birthday = re.search(r"(<ParamString.\"PatientBirthDay\">  { \")(.+)(\"  }\n)", header_string).group(2)
     # get the FrameOfReference to get the date and time of the scan
     frame_of_reference = re.search(r"(<ParamString.\"FrameOfReference\">  { )(\".+\")(  }\n)", header_string).group(2)
-    exam_date_time = frame_of_reference.split(".")[10]
-    exam_date = exam_date_time[2:8]
-    exam_time = exam_date_time[8:14]
+    if re.match("x*", frame_of_reference):
+        exam_date = "x" * 6
+        exam_time = "x" * 6
+    else:
+        exam_date_time = frame_of_reference.split(".")[10]
+        exam_date = exam_date_time[2:8]
+        exam_time = exam_date_time[8:14]
     # get the scan parameters
     frequency_matches = [
         r"<ParamLong.\"Frequency\">  { \d*  }",

@@ -4,6 +4,8 @@
 Changelog
 =========
 
+* :bug:`102` fixed problem with loading anonymized twix files
+* :bug:`100` improved loading of Philips sdat files
 * :bug:`98` fixed an issue where 2D images could not be used to create a voxel mask
 * :release:`0.3.6 <02/11/17>`
 * :feature:`94` loading Siemens DICOM now includes a voxel transform
