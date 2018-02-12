@@ -51,6 +51,8 @@ def test_gaussian(fixed_fid):
 
     numpy.testing.assert_allclose(fitting_result["fit"], fixed_fid, atol=0.001)
 
+    assert(isinstance(fitting_result["fit"], MRSData))
+
 
 def test_bad_param(fixed_fid):
 
