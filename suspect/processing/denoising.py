@@ -56,6 +56,10 @@ def sift(input_signal, threshold):
     ft = numpy.fft.fft(input_signal)
     ft[numpy.absolute(ft) < threshold] = 0.0
     sifted = numpy.fft.ifft(ft)
+    # applying SIFT to real data should also return real data, but casting to
+    # a real type raises a ComplexWarning if we don't do this first
+    if numpy.isrealobj(input_signal):
+        sifted = sifted.real
     return sifted.astype(input_signal.dtype)
 
 
@@ -97,7 +101,7 @@ def spline(input_signal, num_splines, spline_order):
         spline_basis[i, :] = numpy.roll(first_spline, i * stride)
     spline_basis[:(num_splines // 4), (len(padded_input_signal) // 2):] = 0.0
     spline_basis[(num_splines * 3 // 4):, :(len(padded_input_signal) // 2)] = 0.0
-    coefficients = numpy.linalg.lstsq(spline_basis.T, padded_input_signal)
+    coefficients = numpy.linalg.lstsq(spline_basis.T, padded_input_signal, rcond=None)
     recon = numpy.dot(coefficients[0], spline_basis)
     start_offset = (len(padded_input_signal) - len(input_signal)) // 2
     return recon[start_offset:(start_offset + len(input_signal))]
