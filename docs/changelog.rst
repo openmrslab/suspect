@@ -4,6 +4,7 @@
 Changelog
 =========
 
+* :enh:`87` singlet fitting returns MRSData for fit
 * :bug:`102` fixed problem with loading anonymized twix files
 * :bug:`100` improved loading of Philips sdat files
 * :bug:`98` fixed an issue where 2D images could not be used to create a voxel mask

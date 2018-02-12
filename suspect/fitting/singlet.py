@@ -192,7 +192,7 @@ def fit(fid, model, baseline_points=16):
         -------
         fitting_weights : list
             Tuple of weights
-        fitted_data : list
+        fitted_data : MRSData
             Fitted data
         fitting_result : lmfit MinimizerResult instance
 
@@ -203,7 +203,7 @@ def fit(fid, model, baseline_points=16):
                                         xtol=5e-3)
 
         real_fitted_data, fitting_weights = do_fit(fitting_result.params, data.time_axis(), unphase(data, fitting_result.params))
-        fitted_data = real_to_complex(real_fitted_data)
+        fitted_data = data.inherit(real_to_complex(real_fitted_data))
 
         return fitting_weights, fitted_data, fitting_result
 
