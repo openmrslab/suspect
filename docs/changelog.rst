@@ -4,6 +4,8 @@
 Changelog
 =========
 
+* "release:`0.3.7 <30/04/18>`
+* :feature:`109` TARQUIN processing now supports a water reference
 * :feature:`85` new whiten function to decorrelate multi-channel data
 * :feature:`87` singlet fitting returns MRSData for fit
 * :bug:`102` fixed problem with loading anonymized twix files
