@@ -142,8 +142,11 @@ def _extract_fit_data(ref_data, metabolite_names, combined_data):
     }
 
 
-def process(data, options={}):
+def process(data, wref=None, options={}):
     save_dpt("/tmp/temp.dpt", data)
+    if wref is not None:
+        save_dpt("/tmp/wref.dpt", wref)
+    options["input_w"] = "/tmp/wref.dpt"
     option_string = ""
     for key, value in options.items():
         option_string += " --{} {}".format(key, value)
