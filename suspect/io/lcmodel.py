@@ -2,6 +2,7 @@ import numpy
 import os
 import itertools
 import parsley
+import warnings
 
 basis_grammar = r"""
 namelist = '$' name:n pairs:p ws -> (n, dict(p))
@@ -32,8 +33,12 @@ def save_raw(filename, data):
         fout.write(" $END\n")
         fout.write(" $NMID\n")
         fout.write(" FMTDAT = '(2E15.6)'\n")
+        # if we don't know the volume, just let LCModel use its default
         # convert the volume from mm^3 to cc
-        fout.write(" VOLUME = {}\n".format(data.voxel_volume() * 1e-3))
+        if data.transform is not None:
+            fout.write(" VOLUME = {}\n".format(data.voxel_volume() * 1e-3))
+        else:
+            warnings.warn("Saving LCModel data without a transform, using default voxel volume of 1ml")
         fout.write(" $END\n")
         for point in numpy.nditer(data, order='C'):
             fout.write("  {0: 4.6e}  {1: 4.6e}\n".format(float(point.real), float(point.imag)))
