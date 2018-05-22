@@ -4,6 +4,7 @@ import subprocess
 import parse
 import re
 import numpy as np
+import os
 
 
 def save_dpt(filename, data):
@@ -146,16 +147,21 @@ def process(data, wref=None, options={}):
     save_dpt("/tmp/temp.dpt", data)
     if wref is not None:
         save_dpt("/tmp/wref.dpt", wref)
-    options["input_w"] = "/tmp/wref.dpt"
+        options["input_w"] = "/tmp/wref.dpt"
     option_string = ""
     for key, value in options.items():
         option_string += " --{} {}".format(key, value)
-    subprocess.run("tarquin --input {} --format dpt --output_txt {} --output_fit {}{}".format(
+    result = subprocess.run("tarquin --input {} --format dpt --output_txt {} --output_fit {}{}".format(
         "/tmp/temp.dpt", "/tmp/output.txt", "/tmp/fit.txt", option_string
-    ), shell=True, stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL)
+    ), shell=True, stdout=subprocess.PIPE, stderr=subprocess.PIPE, encoding="UTF-8")
+    if result.returncode != 0:
+        raise Exception("Error doing quantification with TARQUIN: {}".format(result.stderr))
     # with open("/tmp/output.txt") as fin:
     #    result = fin.read()
-    result = read_output("/tmp/output.txt")
+    if os.path.isfile("/tmp/output.txt"):
+        result = read_output("/tmp/output.txt")
+    else:
+        raise FileNotFoundError("Could not find TARQUIN output file at /tmp/output.txt")
     metabolite_names, fit_data = read_fit_file("/tmp/fit.txt")
     fit_results = _extract_fit_data(data, metabolite_names, fit_data)
     result["plots"] = fit_results
