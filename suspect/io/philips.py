@@ -26,7 +26,7 @@ spar_types = {
 }
 
 
-def load_sdat(sdat_filename, spar_filename=None):
+def load_sdat(sdat_filename, spar_filename=None, spar_encoding=None):
     # if the spar filename is not supplied, assume it is in the same folder as
     # the sdat and only differs in the extension
     if spar_filename is None:
@@ -37,7 +37,7 @@ def load_sdat(sdat_filename, spar_filename=None):
         elif ext == ".sdat":
             spar_filename = path + ".spar"
 
-    with open(spar_filename, 'r') as fin:
+    with open(spar_filename, 'r', encoding=spar_encoding) as fin:
         parameter_dict = {}
         for line in fin:
             # ignore empty lines and comments starting with !
