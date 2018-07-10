@@ -4,6 +4,8 @@
 Changelog
 =========
 
+* :release:`0.3.9 <10/07/18>`
+* :bug:`115` added ability to change encoding used for Philips SPAR files
 * :release:`0.3.8 <22/05/18>`
 * :bug:`107` LCModel processing works without a voxel transform
 * :bug:`111` issues when processing with TARQUIN are reported to the user
