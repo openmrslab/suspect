@@ -253,6 +253,7 @@ class MRSData(MRSBase):
         MRSData:
             The called MRSData object
         """
+        return self
 
     def spectrum(self):
         """
