@@ -11,7 +11,7 @@ def test_create_mrs():
     assert data.dt == 5e-4
     assert data.np == 1024
     assert data.df == 1.953125
-    assert data.fid() == data
+    numpy.testing.assert_equal(data, data.fid())
 
 
 def test_slice_mrs():
