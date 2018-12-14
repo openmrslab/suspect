@@ -4,6 +4,7 @@
 Changelog
 =========
 
+* :bug:`121` fixed missing return of MRSData.fid method
 * :release:`0.3.9 <10/07/18>`
 * :bug:`115` added ability to change encoding used for Philips SPAR files
 * :release:`0.3.8 <22/05/18>`
