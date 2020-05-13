@@ -14,7 +14,7 @@ def transformation_matrix(x_vector, y_vector, translation, spacing):
         The unit vector along the space Y axis in scanner coordinates
     translation : array
         The origin of the space in scanner coordinates
-    spacing : float
+    spacing : float or array
         The size of a space unit in scanner units
 
     Returns

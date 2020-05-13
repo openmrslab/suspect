@@ -5,3 +5,4 @@ ipykernel
 numpy
 lmfit
 pydicom
+parsley

@@ -24,7 +24,7 @@ setup(
             #   3 - Alpha
             #   4 - Beta
             #   5 - Production/Stable
-            'Development Status :: 3 - Alpha',
+            'Development Status :: 4 - Beta',
 
             # Indicate who your project is intended for
             'Intended Audience :: Science/Research',
@@ -37,10 +37,10 @@ setup(
             # Specify the Python versions you support here. In particular, ensure
             # that you indicate whether you support Python 2, Python 3 or both.
             'Programming Language :: Python :: 3',
-            'Programming Language :: Python :: 3.2',
-            'Programming Language :: Python :: 3.3',
-            'Programming Language :: Python :: 3.4',
+            'Programming Language :: Python :: 3.6',
+            'Programming Language :: Python :: 3.7',
+            'Programming Language :: Python :: 3.8',
         ],
         install_requires=['pywavelets', 'scipy', 'numpy', 'lmfit', 'pydicom', 'parsley', 'parse', 'nibabel'],
-        test_requires=['pytest', 'mock']
+        test_requires=['pytest', 'mock', 'numpydoc']
 )
