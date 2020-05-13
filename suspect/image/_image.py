@@ -4,10 +4,14 @@ import nibabel
 import numpy
 import os
 import pydicom
+import pydicom.errors
 
 
 def load_dicom_volume(filename):
-    """ Creates a 3D volume from all the slices in a folder and extracts useful information from a supplied image
+    """ Creates a 3D volume from all the slices in a folder and extracts useful
+    information from a supplied image. The function will attempt to read all
+    files in the folder which have the same extension as the supplied filename
+    and combine all slices with a matching SeriesInstanceUID.
 
     Parameters
     ----------
@@ -19,6 +23,7 @@ def load_dicom_volume(filename):
         A dictionary containing values for voxel spacing, position, volume, vectors, and a transformation matrix
 
     """
+    _, file_ext = os.path.splitext(filename)
     # load the supplied file and get the UID of the series
     ds = pydicom.read_file(filename)
     seriesUID = ds.SeriesInstanceUID
@@ -41,9 +46,12 @@ def load_dicom_volume(filename):
     # extract the path to the folder of the file so we can look for others from the same series
     folder, _ = os.path.split(filename)
     for name in os.listdir(folder):
-        if name.lower().endswith(".ima") or name.lower().endswith(".dcm"):
+        if name.endswith(file_ext): # name.lower().endswith(".ima") or name.lower().endswith(".dcm"):
             new_dicom_name = os.path.join(folder, name)
-            new_ds = pydicom.read_file(new_dicom_name)
+            try:
+                new_ds = pydicom.read_file(new_dicom_name)
+            except pydicom.errors.InvalidDicomError as e:
+                continue
 
             # check that the series UID matches
             if new_ds.SeriesInstanceUID == seriesUID:
