@@ -4,6 +4,7 @@
 Changelog
 =========
 
+* :feature:`128` channel combination functions can now accept a channel axis
 * :bug:`125` loading DICOM image volumes uses supplied extension to identify candidate slices
 * :feature:`124` GE P-files are now supported
 * :bug:`121` fixed missing return of MRSData.fid method

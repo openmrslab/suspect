@@ -1,7 +1,15 @@
 import numpy
 
 
-def svd_weighting(data):
+def svd_weighting(data, axis=-2):
+
+    # the data shape that we require is 2D with channels as the zeroth
+    # dimension, the optional axis argument is a convenience to modify
+    # the array to fit that profile
+    if axis is not None:
+        num_channels = data.shape[axis]
+        data = numpy.moveaxis(data, axis, 0).reshape(num_channels, -1)
+
     p, _, v = numpy.linalg.svd(data, full_matrices=False)
     channel_weights = p[:, 0].conjugate()
 
@@ -49,9 +57,9 @@ def whiten(data, noise=100):
     return data.inherit(w.T.conj() @ data)
 
 
-def combine_channels(data, weights=None):
+def combine_channels(data, weights=None, axis=-2):
     if weights is None:
-        weights = svd_weighting(data)
+        weights = svd_weighting(data, axis)
     weighted_data = weights.reshape((len(weights), 1)) * data
-    combined_data = weighted_data.sum(axis=-2)
+    combined_data = weighted_data.sum(axis=axis)
     return combined_data
