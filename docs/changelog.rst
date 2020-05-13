@@ -4,6 +4,7 @@
 Changelog
 =========
 
+* :bug:`125` loading DICOM image volumes uses supplied extension to identify candidate slices
 * :feature:`124` GE P-files are now supported
 * :bug:`121` fixed missing return of MRSData.fid method
 * :release:`0.3.9 <10/07/18>`
