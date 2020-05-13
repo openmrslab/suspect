@@ -4,8 +4,8 @@ python:
 # command to install dependencies
 install:
   - pip install setuptools>=26.0
-  - pip install pytest==3.0.6
-  - pip install coveralls pytest-cov pytest-warnings==0.2.0
+  - pip install pytest==5.4.2
+  - pip install coveralls pytest-cov pytest-warnings
   - pip install https://github.com/darcymason/pydicom/archive/master.zip
   - pip install .
 #  - pip install -r requirements.txt
