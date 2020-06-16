@@ -6,3 +6,4 @@ numpy
 lmfit
 pydicom
 parsley
+scipy
