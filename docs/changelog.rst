@@ -4,6 +4,8 @@
 Changelog
 =========
 
+* :feature:`133` improved interface to frequency correction methods and new method RATS
+* :release:`0.4.0 <13/05/20>`
 * :feature:`128` channel combination functions can now accept a channel axis
 * :bug:`125` loading DICOM image volumes uses supplied extension to identify candidate slices
 * :feature:`124` GE P-files are now supported

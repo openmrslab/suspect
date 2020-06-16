@@ -31,6 +31,7 @@ API Reference
    suspect_api.rst
    imagebase_api.rst
    mrs_data_api.rst
+   frequency_correction_api.rst
 
 Changelog
 ---------
