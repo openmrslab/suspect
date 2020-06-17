@@ -66,7 +66,8 @@ def load_sdat(sdat_filename, spar_filename=None, spar_encoding=None):
     return MRSData(raw_data,
                    dt,
                    parameter_dict["synthesizer_frequency"] * 1e-6,
-                   te=parameter_dict["echo_time"])
+                   te=parameter_dict["echo_time"],
+                   tr=parameter_dict["repetition_time"])
 
 
 def _vax_to_ieee_single_float(data):

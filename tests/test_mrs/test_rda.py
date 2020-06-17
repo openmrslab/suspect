@@ -13,6 +13,8 @@ def test_twix_nofile():
 def test_svs_file():
     data = suspect.io.load_rda("tests/test_data/siemens/SVS_30.rda")
     assert data.shape == (1024,)
+    assert data.tr == 2000
+    assert data.te == 30
 
     # transform of centre of voxel is same as position
     voxel_position = data.to_scanner(0, 0, 0)

@@ -177,6 +177,7 @@ def load_siemens_dicom(filename):
                    csa_header["RealDwellTime"] * 1e-9,
                    csa_header["ImagingFrequency"],
                    te=csa_header["EchoTime"],
+                   tr=csa_header["RepetitionTime"],
                    transform=transform,
                    metadata=metadata)
 

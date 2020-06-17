@@ -9,12 +9,13 @@ class MRSBase(suspect.base.ImageBase):
     time.
 
     """
-    def __new__(cls, input_array, dt, f0, te=30, ppm0=4.7, voxel_dimensions=(10, 10, 10), transform=None, metadata=None):
+    def __new__(cls, input_array, dt, f0, te=30, tr=-1, ppm0=4.7, voxel_dimensions=(10, 10, 10), transform=None, metadata=None):
         obj = super(MRSBase, cls).__new__(cls, input_array, transform)
         # add the new attributes to the created instance
         obj._dt = dt
         obj._f0 = f0
         obj._te = te
+        obj._tr = tr
         obj.ppm0 = ppm0
         obj.voxel_dimensions = voxel_dimensions
         obj.metadata = metadata
@@ -25,6 +26,7 @@ class MRSBase(suspect.base.ImageBase):
         self._dt = getattr(obj, 'dt', None)
         self._f0 = getattr(obj, 'f0', None)
         self._te = getattr(obj, 'te', 30)
+        self._tr = getattr(obj, 'tr', -1)
         self.ppm0 = getattr(obj, 'ppm0', None)
         self.transform = getattr(obj, 'transform', None)
         self.metadata = getattr(obj, 'metadata', None)
@@ -59,6 +61,7 @@ class MRSBase(suspect.base.ImageBase):
         cast_array._dt = self.dt
         cast_array._f0 = self.f0
         cast_array._te = self.te
+        cast_array._tr = self.tr
         cast_array.ppm0 = self.ppm0
         cast_array.voxel_dimensions = self.voxel_dimensions
         cast_array.transform = self.transform
@@ -101,6 +104,13 @@ class MRSBase(suspect.base.ImageBase):
 
         """
         return self._te
+
+    @property
+    def tr(self):
+        """The repetition time of the sequence in ms.
+
+        """
+        return self._tr
 
     @property
     def f0(self):

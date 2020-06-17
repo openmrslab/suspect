@@ -1,4 +1,4 @@
-from suspect import MRSData, transformation_matrix, rotation_matrix
+from suspect import MRSData, transformation_matrix
 
 import functools
 import numpy
@@ -10,8 +10,8 @@ except ModuleNotFoundError as e:
 
 
 gerecon_err_msg = "GE P-file functionality requires the GE \"Orchestra for " \
-"Python\" package to be installed. For more information, please visit " \
-"http://suspect.readthedocs.io/en/latest/pfiles.html"
+  "Python\" package to be installed. For more information, please visit " \
+  "http://suspect.readthedocs.io/en/latest/pfiles.html"
 
 
 def requires_gerecon(func):
@@ -42,6 +42,7 @@ def extract_header_parameters(header):
     dt = 1 / header["rdb_hdr_rec"]["spectral_width"]
     f0 = header["rdb_hdr_ps"]["mps_freq"] * 1e-7
     te = header["rdb_hdr_rec"]["rdb_hdr_te"] / 1000  # convert from us to ms
+    tr = header["rdb_hdr_image"]["tr"] / 1000  # convert from us to ms
 
     # calculating the transform is quite involved
     # GE internally uses a RAS coordinate system, so we have to convert to the
@@ -78,6 +79,7 @@ def extract_header_parameters(header):
         "dt": dt,
         "f0": f0,
         "te": te,
+        "tr": tr,
         "transform": transform
     }
 

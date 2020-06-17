@@ -65,6 +65,7 @@ class TwixBuilder(object):
                            self.header_params["dt"],
                            self.header_params["f0"],
                            te=self.header_params["te"],
+                           tr=self.header_params["tr"],
                            metadata=metadata,
                            transform=self.header_params["transform"])
 
@@ -129,6 +130,8 @@ def parse_twix_header(header_string):
     # get TE
     # TE is stored in us, we would prefer to use ms
     te = float(re.search(r"(alTE\[0\]\s*=\s*)(\d+)", header_string).group(2)) / 1000
+    # get TR
+    tr = float(re.search(r"(alTR\[0\]\s*=\s*)(\d+)", header_string).group(2)) / 1000
 
     # get voxel size
     ro_fov = read_double("VoI_RoFOV", header_string)
@@ -173,6 +176,7 @@ def parse_twix_header(header_string):
             "f0": frequency,
             "transform": transform,
             "te": te,
+            "tr": tr,
             "exam_date": exam_date,
             "exam_time": exam_time
             }
@@ -422,13 +426,13 @@ def anonymize_twix_header(header_string):
         The anonymized version of the header.
     """
 
-    patient_name = "(<ParamString.\"t?Patients?Name\">\s*\{\s*\")(.+)(\"\s*\}\n)"
-    patient_id = "(<ParamString.\"PatientID\">\s*\{\s*\")(.+)(\"\s*\}\n)"
-    patient_birthday = "(<ParamString.\"PatientBirthDay\">\s*\{\s*\")(.+)(\"\s*\}\n)"
-    patient_gender = "(<ParamLong.\"l?PatientSex\">\s*\{\s*)(\d+)(\s*\}\n)"
-    patient_age = "(<ParamDouble.\"flPatientAge\">\s*\{\s*<Precision> \d+\s*)(\d+\.\d*)(\s*\}\n)"
-    patient_weight = "(<ParamDouble.\"flUsedPatientWeight\">\s*\{\s*<Precision> \d+\s*)(\d+\.\d*)(\s*\}\n)"
-    patient_height = "(<ParamDouble.\"flPatientHeight\">\s*\{\s*<Unit> \"\[mm\]\"\s*<Precision> \d+\s*)(\d+\.\d*)(\s*\}\n)"
+    patient_name = r"(<ParamString.\"t?Patients?Name\">\s*\{\s*\")(.+)(\"\s*\}\n)"
+    patient_id = r"(<ParamString.\"PatientID\">\s*\{\s*\")(.+)(\"\s*\}\n)"
+    patient_birthday = r"(<ParamString.\"PatientBirthDay\">\s*\{\s*\")(.+)(\"\s*\}\n)"
+    patient_gender = r"(<ParamLong.\"l?PatientSex\">\s*\{\s*)(\d+)(\s*\}\n)"
+    patient_age = r"(<ParamDouble.\"flPatientAge\">\s*\{\s*<Precision> \d+\s*)(\d+\.\d*)(\s*\}\n)"
+    patient_weight = r"(<ParamDouble.\"flUsedPatientWeight\">\s*\{\s*<Precision> \d+\s*)(\d+\.\d*)(\s*\}\n)"
+    patient_height = r"(<ParamDouble.\"flPatientHeight\">\s*\{\s*<Unit> \"\[mm\]\"\s*<Precision> \d+\s*)(\d+\.\d*)(\s*\}\n)"
 
     header_string = re.sub(patient_name, lambda match: "".join(
         (match.group(1), ("x" * (len(match.group(2)))), match.group(3))),
