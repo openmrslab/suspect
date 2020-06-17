@@ -4,6 +4,7 @@
 Changelog
 =========
 
+* :feature:`135` added TR parameter to MRSBase objects
 * :feature:`133` improved interface to frequency correction methods and new method RATS
 * :release:`0.4.0 <13/05/20>`
 * :feature:`128` channel combination functions can now accept a channel axis

@@ -109,7 +109,7 @@ def load_nifti(filename):
     nii = nibabel.load(filename)
 
     # nibabel loads cols, rows, slices, so we transpose to match DICOM
-    image = suspect.base.ImageBase(nii.get_data().T, nii.affine)
+    image = suspect.base.ImageBase(nii.get_fdata().T, nii.affine)
 
     # nifti also uses a reversed coordinate system for x and y, so negate them
     image.transform[:2] *= -1.0

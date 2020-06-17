@@ -49,7 +49,7 @@ def load_rda(filename):
                 header_dict[key] = float(value)
             elif "[" in key and "]" in key:
                 # could be a dict or a list
-                key, index = re.split("\]|\[", key)[0:2]
+                key, index = re.split(r"\]|\[", key)[0:2]
                 if key in rda_types["dictionaries"]:
                     if key not in header_dict:
                         header_dict[key] = {}
@@ -121,5 +121,6 @@ def load_rda(filename):
                    header_dict["DwellTime"] * 1e-6,
                    header_dict["MRFrequency"],
                    te=header_dict["TE"],
+                   tr=header_dict["TR"],
                    transform=to_scanner,
                    metadata=metadata)
