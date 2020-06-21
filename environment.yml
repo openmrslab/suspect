@@ -1,8 +1,8 @@
-name: py35
+name: py38
 dependencies:
-- pip=8.1.2=py35_0
-- python=3.5.1=0
-- setuptools=20.3=py35_0
+- pip
+- python=3.8
+- setuptools
 - pip:
   - parsley
   - cryptography
