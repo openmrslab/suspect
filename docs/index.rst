@@ -32,6 +32,7 @@ API Reference
    imagebase_api.rst
    mrs_data_api.rst
    frequency_correction_api.rst
+   fitting_api.rst
 
 Changelog
 ---------
