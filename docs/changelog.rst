@@ -4,6 +4,7 @@
 Changelog
 =========
 
+* :feature:`137` added functions to support absolute quantification
 * :feature:`135` added TR parameter to MRSBase objects
 * :feature:`133` improved interface to frequency correction methods and new method RATS
 * :release:`0.4.0 <13/05/20>`
