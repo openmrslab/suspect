@@ -11,6 +11,7 @@ Welcome! This is the documentation for Suspect |release|, last updated |today|
 Parts of the documentation:
 
 Getting started
+===============
 
 .. toctree::
    :maxdepth: 1
@@ -22,7 +23,20 @@ Getting started
    notebooks/tut05_hsvd.ipynb
    notebooks/tut06_mpl.ipynb
 
+Solving specific problems
+=========================
+
+.. toctree::
+   :caption: Solving specific problems
+   :hidden:
+
+   notebooks/howto/coregister_images.ipynb
+
+:doc:`notebooks/howto/coregister_images`
+   Learn how to combine anatomical scans with your MRS voxels
+
 API Reference
+=============
 
 .. toctree::
    :maxdepth: 1
