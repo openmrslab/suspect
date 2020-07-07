@@ -70,6 +70,17 @@ def test_find_axes_reversed():
     np.testing.assert_equal(base.sagittal_vector, -base.row_vector)
 
 
+def test_find_axes_oblong():
+    transform = _transforms.transformation_matrix([2, 1, 0],
+                                                  [-1, 2, 0],
+                                                  [0, 0, 0],
+                                                  [40, 4, 1])
+    base = suspect.base.ImageBase(np.zeros(1), transform=transform)
+    np.testing.assert_equal(base.axial_vector, base.slice_vector)
+    np.testing.assert_equal(base.coronal_vector, base.col_vector)
+    np.testing.assert_equal(base.sagittal_vector, base.row_vector)
+
+
 def test_centre():
     transform = _transforms.transformation_matrix([1, 0, 0],
                                                   [0, 1, 0],
