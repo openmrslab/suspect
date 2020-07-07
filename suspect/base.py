@@ -131,7 +131,8 @@ class ImageBase(np.ndarray):
 
     @requires_transform
     def _closest_axis(self, target_axis):
-        overlap = np.abs(np.dot(target_axis, self.transform[:3, :3]))
+        voxel_axes = self.transform[:3, :3] / self.voxel_size
+        overlap = np.abs(np.dot(target_axis, voxel_axes))
         return self.transform[:3, np.argmax(overlap)]
 
     @property
