@@ -4,6 +4,7 @@
 Changelog
 =========
 
+* :enh:`11` added anonymisation of twix VD/VE files
 * :bug:`139` fixed an issue where axial/sagittal/coronal vectors could be calculated incorrectly
 * :release:`0.4.1 <24/05/20>`
 * :feature:`137` added functions to support absolute quantification
