@@ -483,7 +483,41 @@ def anonymize_twix_header(header_string):
 
 
 def anonymize_twix_vd(fin, fout):
-    pass
+    twix_id, num_measurements = struct.unpack("II", fin.read(8))
+
+    fout.write(struct.pack("II", twix_id, num_measurements))
+
+    for i in range(num_measurements):
+        fin.seek(8 + 152 * i)
+
+        print(fin.tell())
+        meas_id, file_id, offset, length, patient_name, protocol_name = struct.unpack("IIQQ64s64s", fin.read(152))
+        print(patient_name)
+        anon_patient_name = ("x" * 64).encode("latin-1")
+        print(anon_patient_name)
+        print(offset)
+        print(length)
+        print(offset + length)
+        fout.seek(8 + 152 * i)
+        fout.write(struct.pack("IIQQ64s64s", meas_id, file_id, offset, length, anon_patient_name, protocol_name))
+
+        fin.seek(offset)
+        # read the header and anonymize it
+        header_size = struct.unpack("I", fin.read(4))[0]
+        print("header_size: {}".format(header_size))
+        header = fin.read(header_size - 4)
+        header_string = header[:-24].decode('latin-1')
+
+        anonymized_header = anonymize_twix_header(header_string)
+        print("fout position")
+        print(fout.tell())
+        fout.seek(offset)
+        print(fout.tell())
+        fout.write(struct.pack("I", header_size))
+        fout.write(anonymized_header.encode("latin1"))
+        fout.write(header[-24:])
+
+        fout.write(fin.read(length - header_size))
 
 
 def anonymize_twix_vb(fin, fout):
