@@ -146,6 +146,25 @@ def load_siemens_dicom(filename):
     csa_data_bytes = dataset[0x7fe1, 0x0100 * data_index + 0x0010].value
     # the data is stored as a list of 4 byte floats in (real, imaginary) pairs
     data_floats = struct.unpack("<%df" % (len(csa_data_bytes) / 4), csa_data_bytes)
+
+    # a bug report (#143) has been submitted that for at least one .IMA dataset
+    # created with an old Siemens VB17 WIP, the data_shape worked out above
+    # does not match the actual size of the data because the
+    # Out-of-planePhaseSteps value is not the number of slices. Assuming this
+    # is a rare situation that is unlikely to happen often, the simple solution
+    # is simply to check the size matches here, and if not then use the size
+    # of data available as the shape
+    available_points = len(data_floats) // 2
+    if numpy.prod(data_shape) != available_points:
+        data_shape = (available_points,)
+        warnings.warn("The calculated data shape for this file {} does not "
+                      "match the size of data contained in the file {}. "
+                      "Therefore the returned data shape from this function "
+                      "will simply be ({},), any reshaping must be done by "
+                      "the user. If you need help with this or believe this "
+                      "has occured in error, please raise an issue at"
+                      "https://github.com/openmrslab/suspect/issues.")
+
     complex_data = complex_array_from_iter(iter(data_floats),
                                            length=len(data_floats) // 2,
                                            shape=data_shape)
