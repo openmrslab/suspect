@@ -4,6 +4,7 @@
 Changelog
 =========
 
+* :release:`0.4.2 <20/08/20>`
 * :bug:`143` changed .IMA loading to handle cases where data shape is calculated incorrectly
 * :enh:`11` added anonymisation of twix VD/VE files
 * :bug:`139` fixed an issue where axial/sagittal/coronal vectors could be calculated incorrectly
