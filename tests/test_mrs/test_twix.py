@@ -37,3 +37,24 @@ def test_veriofile():
 #    assert data.metadata["patient_name"] == "x" * 13
 #    assert data.metadata["patient_id"] == "x" * 6
 #    assert data.metadata["patient_birthdate"] == "19700101"
+
+def test_calculate_orientation():
+    assert suspect.io.twix.calculate_orientation([1, 1, 1]) == "TRA"
+    assert suspect.io.twix.calculate_orientation([0.5, 0.5, 1]) == "TRA"
+    assert suspect.io.twix.calculate_orientation([1, 1, 0.5]) == "COR"
+    assert suspect.io.twix.calculate_orientation([0.5, 1, 0.5]) == "COR"
+    assert suspect.io.twix.calculate_orientation([1, 0.5, 1]) == "TRA"
+    assert suspect.io.twix.calculate_orientation([1, 0.5, 0.5]) == "SAG"
+    assert suspect.io.twix.calculate_orientation([0.5, 1, 1]) == "TRA"
+    assert suspect.io.twix.calculate_orientation([1, 0.5, 0.5]) == "SAG"
+    assert suspect.io.twix.calculate_orientation([0.5, 0, 1]) == "TRA"
+    assert suspect.io.twix.calculate_orientation([0, 1, 0.5]) == "COR"
+    assert suspect.io.twix.calculate_orientation([0, 0.5, 1]) == "TRA"
+    assert suspect.io.twix.calculate_orientation([0.5, 1, 0]) == "COR"
+    assert suspect.io.twix.calculate_orientation([1, 0, 0]) == "SAG"
+    assert suspect.io.twix.calculate_orientation([0, 1, 0.5]) == "COR"
+    assert suspect.io.twix.calculate_orientation([0.5, 0.5, 1]) == "TRA"
+    assert suspect.io.twix.calculate_orientation([1, 0.5, 0]) == "SAG"
+    assert suspect.io.twix.calculate_orientation([0, 1, 0]) == "COR"
+    assert suspect.io.twix.calculate_orientation([1, 0, 0.5]) == "SAG"
+    assert suspect.io.twix.calculate_orientation([0, 0, 1]) == "TRA"

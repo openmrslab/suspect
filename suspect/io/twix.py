@@ -72,6 +72,24 @@ class TwixBuilder(object):
         return mrs_data
 
 
+def calculate_orientation(normal):
+    """
+
+    Parameters
+    ----------
+    normal : the normal vector to the image plane
+
+    Returns
+    -------
+
+    """
+    if normal[2] >= normal[1] - 1e-6 and normal[2] >= normal[0] - 1e-6:
+        return "TRA"
+    elif normal[1] >= normal[0] - 1e-6:
+        return "COR"
+    return "SAG"
+
+
 def read_double(name, header_string):
     substring = re.search(r"<ParamDouble.\"{}\">  {{ <Precision> \d+(  -?[0-9\.]+)?  }}".format(name), header_string)
     if not substring:
@@ -154,8 +172,11 @@ def parse_twix_header(header_string):
     # make [-1, 0, 0] (the default row vector) orthogonal to the normal, and
     # then rotate that vector by the rotation angle (which we do here with a
     # quaternion (not any more, quaternion library has issues with Travis)
-    x_vector = numpy.array([-1, 0, 0])
     normal_vector = numpy.array([normal_sag, normal_cor, normal_tra])
+    if calculate_orientation(normal_vector) == "SAG":
+        x_vector = numpy.array([0, 0, 1])
+    else:
+        x_vector = numpy.array([1, 0, 0])
     orthogonal_x = x_vector - numpy.dot(x_vector, normal_vector) * normal_vector
     orthonormal_x = orthogonal_x / numpy.linalg.norm(orthogonal_x)
     #rotation_quaternion = quaternion.from_rotation_vector(in_plane_rot * normal_vector)
@@ -552,3 +573,40 @@ def anonymize_twix(filename, anonymized_filename):
                 anonymize_twix_vd(fin, fout)
             else:
                 anonymize_twix_vb(fin, fout)
+
+
+def get_header(filename):
+    with open(filename, 'rb') as fin:
+
+        # we can tell the type of file from the first two uints in the header
+        first_uint, second_uint = struct.unpack("II", fin.read(8))
+
+        # reset the file pointer before giving to specific function
+        fin.seek(0)
+
+
+        if first_uint == 0 and second_uint <= 64:
+            print("twix file is VD/VE")
+            headers = []
+            for i in range(second_uint):
+                fin.seek(8 + 152 * i)
+
+                meas_id, file_id, offset, length, patient_name, protocol_name = struct.unpack("IIQQ64s64s",
+                                                                                              fin.read(152))
+                fin.seek(offset)
+                # read the header and anonymize it
+                header_size = struct.unpack("I", fin.read(4))[0]
+                header = fin.read(header_size - 4)
+                header_string = header[:-24].decode('latin-1')
+                headers.append(header_string)
+            return headers
+
+        else:
+            print("twix file is VB")
+            # read the rest of the header minus the four bytes we already read
+            fin.seek(4)
+            header = fin.read(first_uint - 4)
+            # for some reason the last 24 bytes of the header contain some stuff that
+            # is not a string, I don't know what it is
+            header_string = header[:-24].decode('latin-1')
+            return header_string
