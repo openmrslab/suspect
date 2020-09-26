@@ -7,3 +7,6 @@ suspect.fitting API Reference
 
 .. automodule:: suspect.fitting.tarquin
     :members:
+
+.. automodule:: suspect.fitting.singlet
+    :members:
