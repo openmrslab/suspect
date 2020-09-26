@@ -4,9 +4,10 @@
 Changelog
 =========
 
+* :feature:`146` substantial overhaul of the singlet fitting module
 * :release:`0.4.2 <20/08/20>`
 * :bug:`143` changed .IMA loading to handle cases where data shape is calculated incorrectly
-* :enh:`11` added anonymisation of twix VD/VE files
+* :feature:`11` added anonymisation of twix VD/VE files
 * :bug:`139` fixed an issue where axial/sagittal/coronal vectors could be calculated incorrectly
 * :release:`0.4.1 <24/05/20>`
 * :feature:`137` added functions to support absolute quantification
