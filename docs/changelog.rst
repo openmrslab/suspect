@@ -4,6 +4,7 @@
 Changelog
 =========
 
+* :release:`0.4.3 <29/09/20>`
 * :bug:`145` fixed issue with calculating transform for sagittally planned twix voxels
 * :feature:`146` substantial overhaul of the singlet fitting module
 * :release:`0.4.2 <20/08/20>`
