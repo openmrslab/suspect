@@ -186,9 +186,9 @@ def prepare_pfile_svs(pfile):
     mrs_data = MRSData(raw_data,
                        **header_params)
 
-    print(ref_frames)
-    print(metadata)
-    print(mrs_data.shape)
+    #print(ref_frames)
+    #print(metadata)
+    #print(mrs_data.shape)
 
     wref = mrs_data[:, :ref_frames].reshape(-1, metadata["channels"], metadata["acquiredXRes"]).squeeze()
     data = mrs_data[:, ref_frames:].squeeze()
