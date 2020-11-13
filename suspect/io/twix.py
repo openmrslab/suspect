@@ -90,14 +90,6 @@ def calculate_orientation(normal):
     return "SAG"
 
 
-def read_double(name, header_string):
-    substring = re.search(r"<ParamDouble.\"{}\">  {{ <Precision> \d+(  -?[0-9\.]+)?  }}".format(name), header_string)
-    if not substring:
-        raise KeyError(r'ParamDouble."{}" not found in header string'.format(name))
-    number_string = substring.group(1)
-    return float(number_string) if number_string else 0
-
-
 def get_meta_regex(regex_list, header_string, convert=1, default=None):
     """
     Extract metadata using list of regex and apply unit convertion if value is number.
