@@ -153,8 +153,6 @@ def parse_twix_header(header_string):
         r"<ParamDouble.\"MainFrequency\">  { (.+)}\n"
     ]
     frequency = get_meta_regex(frequency_matches, header_string, convert=1e-6)
-    if frequency is None:
-        raise KeyError("Unable to identify Frequency from header")
 
     dwell_time_matches = [
         r"sRXSPEC\.alDwellTime\[0\]\s*=\s*([[0-9]*[.]?[0-9]*]{0,})\s*",
@@ -162,8 +160,6 @@ def parse_twix_header(header_string):
         r"<ParamDouble.\"DwellTime\">  { (.+)}",
     ]
     dwell_time = get_meta_regex(dwell_time_matches, header_string, convert=1e-9)
-    if dwell_time is None:
-        raise KeyError("Unable to identify Dwell Time from header")
 
     # get TE
     # TE is stored in us, we would prefer to use ms
