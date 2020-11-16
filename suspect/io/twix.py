@@ -111,11 +111,9 @@ def get_meta_regex(regex_list, header_string, convert=1, default=None):
     ------
     KeyError: if no matches found.
     """
-    rgx_found = False
     for rgx in regex_list:
         match = re.findall(rgx, header_string)
         if len(match) > 0:
-            rgx_found = True
             match_string = match[-1]
             try:
                 result = float(match_string) * convert
