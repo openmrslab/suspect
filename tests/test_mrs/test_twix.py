@@ -24,6 +24,20 @@ def test_veriofile():
          [0, 0, 0, 1]]
     ))
 
+    # Test with TWIX VD data (scanned on VIDA scanner)
+    data = suspect.io.load_twix("tests/test_data/siemens/twix_vd.dat")
+    assert data.shape == (64, 2, 9, 2048)
+    assert data.np == 2048
+    assert data.dt == 3.333e-4
+    assert data.te == 135.0
+    assert data.tr == 2000
+    numpy.testing.assert_almost_equal(data.f0, 123.256306)
+    numpy.testing.assert_allclose(data.transform, numpy.array(
+        [[-20, 0, 0, 38.341346],
+         [0, 20, 0, -2.531308],
+         [0, 0, -20, 6.560502],
+         [0, 0, 0, 1]]
+    ))
 
 #def test_skyra():
 #    data = suspect.io.load_twix("tests/test_data/twix_vd_csi.dat")

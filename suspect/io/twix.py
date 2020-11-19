@@ -90,26 +90,53 @@ def calculate_orientation(normal):
     return "SAG"
 
 
-def read_double(name, header_string):
-    substring = re.search(r"<ParamDouble.\"{}\">  {{ <Precision> \d+(  -?[0-9\.]+)?  }}".format(name), header_string)
-    if not substring:
-        raise KeyError(r'ParamDouble."{}" not found in header string'.format(name))
-    number_string = substring.group(1)
-    return float(number_string) if number_string else 0
+def get_meta_regex(regex_list, header_string, convert=1, default=None):
+    """
+    Extract metadata using list of regex and apply unit convertion if value is number.
+    If regex found, but value is empty (usually empty string), will return default.
+
+    Parameters
+    ----------
+    regex_list : List of regex string
+    header_string : TWIX header string
+    convert : Unit convertion, if value is number. Defaults to 1 (means no convertion)
+    default : Default value if match found, but value is empty. Defaults to None.
+
+    Returns
+    -------
+    If number, converted to float and converted to unit (by multiplying by convert).
+    If non-number, return as is. If empty, return default.
+
+    Raises
+    ------
+    KeyError: if no matches found.
+    """
+    for rgx in regex_list:
+        match = re.findall(rgx, header_string)
+        if len(match) > 0:
+            match_string = match[-1]
+            try:
+                result = float(match_string) * convert
+            except (ValueError, TypeError):
+                result = match_string if match_string else default
+            return result
+    raise KeyError("Regex list not found in header string. {}".format(regex_list))
 
 
 def parse_twix_header(header_string):
     #print(header_string)
     # get the name of the protocol being acquired
-    protocol_name_string = re.search(r"<ParamString.\"tProtocolName\">  { \".+\"  }\n", header_string).group()
-    protocol_name = protocol_name_string.split("\"")[3]
+    protocol_name_matches = [
+        r"tProtocolName\s*=\s*\"(.*)\"\s*"
+    ]
+    protocol_name = get_meta_regex(protocol_name_matches, header_string)
     # get information about the subject being scanned
-    patient_id_string = re.search(r"<ParamString.\"PatientID\">  { \".+\"  }\n", header_string).group()
+    patient_id_string = re.search(r"<ParamString.\"PatientID\">\s*{\s*\".+\"\s*}\n", header_string).group()
     patient_id = patient_id_string.split("\"")[3]
-    patient_name = re.escape(re.search(r"(<ParamString.\"PatientName\">  { \")(.+)(\"  }\n)", header_string).group(2))
-    patient_birthday = re.search(r"(<ParamString.\"PatientBirthDay\">  { \")(.+)(\"  }\n)", header_string).group(2)
+    patient_name = re.escape(re.search(r"(<ParamString.\"PatientName\">\s*{\s*\")(.+)(\"\s*}\n)", header_string).group(2))
+    patient_birthday = re.search(r"(<ParamString.\"PatientBirthDay\">\s*{\s*\")(.+)(\"\s*}\n)", header_string).group(2)
     # get the FrameOfReference to get the date and time of the scan
-    frame_of_reference = re.search(r"(<ParamString.\"FrameOfReference\">  { )(\".+\")(  }\n)", header_string).group(2)
+    frame_of_reference = re.search(r"(<ParamString.\"FrameOfReference\">\s*{\s*)(\".+\")(\s*}\n)", header_string).group(2)
     if re.match("x*", frame_of_reference):
         exam_date = "x" * 6
         exam_time = "x" * 6
@@ -119,31 +146,18 @@ def parse_twix_header(header_string):
         exam_time = exam_date_time[8:14]
     # get the scan parameters
     frequency_matches = [
-        r"<ParamLong.\"Frequency\">  { \d*  }",
+        r"sTXSPEC\.asNucleusInfo\[0\]\.lFrequency\s*=\s*([[0-9]*[.]?[0-9]*]{0,})\s*",
+        r"<ParamLong.\"Frequency\">  { (\d*)  }",
         r"<ParamDouble.\"MainFrequency\">  { (.+)}\n"
     ]
-    for frequency_pattern in frequency_matches:
-        match = re.search(frequency_pattern, header_string)
-        if match:
-            frequency_string = match.group()
-            number_string = re.findall(r"[0-9\.]+", frequency_string)[-1]
-            frequency = float(number_string) * 1e-6
-            break
-    else:
-        raise KeyError("Unable to identify Frequency from header")
+    frequency = get_meta_regex(frequency_matches, header_string, convert=1e-6)
+
     dwell_time_matches = [
-        r"<ParamLong.\"DwellTimeSig\">  { \d*  }",
-        r"<ParamDouble.\"DwellTime\">  { (.+)}"
+        r"sRXSPEC\.alDwellTime\[0\]\s*=\s*([[0-9]*[.]?[0-9]*]{0,})\s*",
+        r"<ParamLong.\"DwellTimeSig\">  { (\d*)  }",
+        r"<ParamDouble.\"DwellTime\">  { (.+)}",
     ]
-    for dwell_time_match in dwell_time_matches:
-        match = re.search(dwell_time_match, header_string)
-        if match:
-            dwell_time_string = match.group()
-            number_string = re.findall(r"[0-9\.]+", dwell_time_string)[-1]
-            dwell_time = float(number_string) * 1e-9
-            break
-    else:
-        raise KeyError("Unable to identify Dwell Time from header")
+    dwell_time = get_meta_regex(dwell_time_matches, header_string, convert=1e-9)
 
     # get TE
     # TE is stored in us, we would prefer to use ms
@@ -152,20 +166,73 @@ def parse_twix_header(header_string):
     tr = float(re.search(r"(alTR\[0\]\s*=\s*)(\d+)", header_string).group(2)) / 1000
 
     # get voxel size
-    ro_fov = read_double("VoI_RoFOV", header_string)
-    pe_fov = read_double("VoI_PeFOV", header_string)
-    slice_thickness = read_double("VoI_SliceThickness", header_string)
+    ro_fov_matches = [
+        r"sSpecPara\.sVoI\.dReadoutFOV\s*=\s*(-?[[0-9]*[.]?[0-9]*]{0,})\s*",
+        r"<ParamDouble.\"VoI_RoFOV\">  { <Precision> \d+(  -?[0-9\.]+)?  }",
+        r"<ParamDouble\.\"VoI_RoFOV\">\s*{\s*(-?[0-9\.]+)?\s*}"
+    ]
+    pe_fov_matches = [
+        r"sSpecPara\.sVoI\.dPhaseFOV\s*=\s*(-?[[0-9]*[.]?[0-9]*]{0,})\s*",
+        r"<ParamDouble.\"VoI_PeFOV\">  { <Precision> \d+(  -?[0-9\.]+)?  }",
+        r"<ParamDouble\.\"VoI_PeFOV\">\s*{\s*(-?[0-9\.]+)?\s*}"
+    ]
+    slice_thickness_matches = [
+        r"sSpecPara\.sVoI\.dThickness\s*=\s*(-?[[0-9]*[.]?[0-9]*]{0,})\s*",
+        r"<ParamDouble.\"VoI_SliceThickness\">  { <Precision> \d+(  -?[0-9\.]+)?  }",
+        r"<ParamDouble\.\"VoI_SliceThickness\">\s*{\s*(-?[0-9\.]+)?\s*}"
+    ]
+    ro_fov = get_meta_regex(ro_fov_matches, header_string, default=0)
+    pe_fov = get_meta_regex(pe_fov_matches, header_string, default=0)
+    slice_thickness = get_meta_regex(slice_thickness_matches, header_string, default=0)
 
     # get position information
-    pos_sag = read_double("VoI_Position_Sag", header_string)
-    pos_cor = read_double("VoI_Position_Cor", header_string)
-    pos_tra = read_double("VoI_Position_Tra", header_string)
+    pos_sag_matches = [
+        r"sSpecPara\.sVoI\.sPosition\.dSag\s*=\s*(-?[[0-9]*[.]?[0-9]*]{0,})\s*",
+        r"<ParamDouble\.\"VoI_Position_Sag\">  { <Precision> \d+(  -?[0-9\.]+)?  }",
+        r"<ParamDouble\.\"VoI_Position_Sag\">\s*{\s*(-?[0-9\.]+)?\s*}"
+    ]
+    pos_cor_matches = [
+        r"sSpecPara\.sVoI\.sPosition\.dCor\s*=\s*(-?[[0-9]*[.]?[0-9]*]{0,})\s*",
+        r"<ParamDouble\.\"VoI_Position_Cor\">  { <Precision> \d+(  -?[0-9\.]+)?  }",
+        r"<ParamDouble\.\"VoI_Position_Cor\">\s*{\s*(-?[0-9\.]+)?\s*}"
+    ]
+    pos_tra_matches = [
+        r"sSpecPara\.sVoI\.sPosition\.dTra\s*=\s*(-?[[0-9]*[.]?[0-9]*]{0,})\s*",
+        r"<ParamDouble\.\"VoI_Position_Tra\">  { <Precision> \d+(  -?[0-9\.]+)?  }",
+        r"<ParamDouble\.\"VoI_Position_Tra\">\s*{\s*(-?[0-9\.]+)?\s*}"
+    ]
+    pos_sag = get_meta_regex(pos_sag_matches, header_string, default=0)
+    pos_cor = get_meta_regex(pos_cor_matches, header_string, default=0)
+    pos_tra = get_meta_regex(pos_tra_matches, header_string, default=0)
 
     # get orientation information
-    in_plane_rot = read_double("VoI_InPlaneRotAngle", header_string)
-    normal_sag = read_double("VoI_Normal_Sag", header_string)
-    normal_cor = read_double("VoI_Normal_Cor", header_string)
-    normal_tra = read_double("VoI_Normal_Tra", header_string)
+    in_plane_rot_matches = [
+        r"<ParamDouble\.\"VoI_InPlaneRotAngle\">  { <Precision> \d+(  -?[0-9\.]+)?  }",
+        r"<ParamDouble\.\"VoiInPlaneRot\">  { <Precision> \d+(  -?[0-9\.]+)?  }",
+        r"<ParamDouble\.\"VoI_InPlaneRotAngle\">\s*{\s*(-?[0-9\.]+)?\s*}"
+    ]
+    normal_sag_matches = [
+        r"sSpecPara\.sVoI\.sNormal\.dSag\s*=\s*(-?[[0-9]*[.]?[0-9]*]{0,})\s*$",
+        r"<ParamDouble\.\"VoI_Normal_Sag\">  { <Precision> \d+(  -?[0-9\.]+)?  }",
+        r"<ParamDouble\.\"VoiNormalSag\">  { <Precision> \d+(  -?[0-9\.]+)?  }",
+        r"<ParamDouble\.\"VoI_Normal_Sag\">\s*{\s*(-?[0-9\.]+)?\s*}"
+    ]
+    normal_cor_matches = [
+        r"sSpecPara\.sVoI\.sNormal\.dCor\s*=\s*(-?[[0-9]*[.]?[0-9]*]{0,})\s*$",
+        r"<ParamDouble\.\"VoI_Normal_Cor\">  { <Precision> \d+(  -?[0-9\.]+)?  }",
+        r"<ParamDouble\.\"VoiNormalCor\">  { <Precision> \d+(  -?[0-9\.]+)?  }",
+        r"<ParamDouble\.\"VoI_Normal_Cor\">\s*{\s*(-?[0-9\.]+)?\s*}"
+    ]
+    normal_tra_matches = [
+        r"sSpecPara\.sVoI\.sNormal\.dTra\s*=\s*(-?[[0-9]*[.]?[0-9]*]{0,})\s*$",
+        r"<ParamDouble\.\"VoI_Normal_Tra\">  { <Precision> \d+(  -?[0-9\.]+)?  }",
+        r"<ParamDouble\.\"VoiNormalTra\">  { <Precision> \d+(  -?[0-9\.]+)?  }",
+        r"<ParamDouble\.\"VoI_Normal_Tra\">\s*{\s*(-?[0-9\.]+)?\s*}"
+    ]
+    in_plane_rot = get_meta_regex(in_plane_rot_matches, header_string, default=0)
+    normal_sag = get_meta_regex(normal_sag_matches, header_string, default=0)
+    normal_cor = get_meta_regex(normal_cor_matches, header_string, default=0)
+    normal_tra = get_meta_regex(normal_tra_matches, header_string, default=0)
 
     # the orientation is stored in a somewhat strange way - a normal vector and
     # a rotation angle. to get the row vector, we first use Gram-Schmidt to
@@ -440,7 +507,7 @@ def anonymize_twix_header(header_string):
     ----------
     header_string : str
         The header string to be anonymized
-        
+
     Returns
     -------
     str
@@ -482,7 +549,7 @@ def anonymize_twix_header(header_string):
     header_string = re.sub(patient_height, lambda match: "".join(
         (match.group(1), re.sub(r"\d", "0", match.group(2)), match.group(3))),
         header_string)
-    
+
     # We need to remove information which contains the date and time of the exam
     # this is not stored in a helpful way which complicates finding it.
     # I think that this FrameOfReference parameter is the correct time, it is
