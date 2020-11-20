@@ -4,6 +4,8 @@
 Changelog
 =========
 
+* :release:`0.4.9 <20/11/20>`
+* :bug:`149` improved reliability of twix file header reading (thanks to @darrencl for this)
 * :release:`0.4.3 <29/09/20>`
 * :bug:`145` fixed issue with calculating transform for sagittally planned twix voxels
 * :feature:`146` substantial overhaul of the singlet fitting module

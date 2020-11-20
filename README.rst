@@ -5,7 +5,6 @@ suspect
 Travis CI    |build_status|
 Coveralls    |coverage_status|
 Code Climate |code_climate|
-Waffle       |waffle|
 ============ =================
 
 .. |build_status| image:: https://travis-ci.org/openmrslab/suspect.svg?branch=master
@@ -16,10 +15,6 @@ Waffle       |waffle|
 
 .. |code_climate| image:: https://codeclimate.com/github/openmrslab/suspect/badges/gpa.svg
    :target: https://codeclimate.com/github/openmrslab/suspect
-
-.. |waffle| image:: https://badge.waffle.io/openmrslab/suspect.svg?label=ready&title=Ready
- :target: https://waffle.io/openmrslab/suspect
- :alt: 'Stories in Ready'
 
 Suspect is a Python package for processing MR spectroscopy data. It supports reading data from most common formats (with more on the way) and many different algorithms for core processing steps. Suspect allows researchers to build custom data processing scripts from reliable, modular building blocks and easily share their techniques with other labs around the world.
 
@@ -44,7 +39,7 @@ Suspect itself is a pure Python package and is easy to install with `pip`_. Howe
 Getting Started
 ^^^^^^^^^^^^^^^
 
-Suspect is a very new package and we are working hard to get useful examples and documentation available to get people started. Please bear with us while we work to improve this aspect of the project. Offical documentation for the project is available at http://suspect.readthedocs.io/en/latest/
+Suspect is still a young package and we are working hard to get useful examples out there. Documentation for the project is available at http://suspect.readthedocs.io/en/latest/
 
 Contributing
 ^^^^^^^^^^^^
