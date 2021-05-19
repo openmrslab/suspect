@@ -1,4 +1,4 @@
-from suspect import MRSData
+from suspect import MRSData, rotation_matrix, transformation_matrix
 
 import os
 import numpy
@@ -63,11 +63,37 @@ def load_sdat(sdat_filename, spar_filename=None, spar_encoding=None):
     complex_iter = (complex(r, -i) for r, i in zip(data_iter, data_iter))
     raw_data = numpy.fromiter(complex_iter, "complex64")
     raw_data = numpy.reshape(raw_data, (parameter_dict["rows"], parameter_dict["samples"])).squeeze()
+
+    # calculate transformation matrix
+    voxel_size = numpy.array([parameter_dict["lr_size"],
+                              parameter_dict["ap_size"],
+                              parameter_dict["cc_size"]])
+    position_vector = numpy.array([parameter_dict["lr_off_center"],
+                                   parameter_dict["ap_off_center"],
+                                   parameter_dict["cc_off_center"]])
+
+    A = numpy.eye(3)
+    for a,ang in enumerate(["lr_angulation", "ap_angulation", "cc_angulation"]):
+        axis = numpy.zeros(3)
+        axis[a] = 1
+        A = A @ rotation_matrix(parameter_dict[ang]/180*numpy.pi,axis)
+    e1 = A[:,0]
+    e1 = e1 / numpy.linalg.norm(e1)
+    e2 = A[:,1]
+    e2 = e2 / numpy.linalg.norm(e2)
+    
+    transform = transformation_matrix(e1,
+                                    e2,
+                                    position_vector,
+                                    voxel_size)
+
+
     return MRSData(raw_data,
                    dt,
                    parameter_dict["synthesizer_frequency"] * 1e-6,
                    te=parameter_dict["echo_time"],
-                   tr=parameter_dict["repetition_time"])
+                   tr=parameter_dict["repetition_time"],
+                   transform=transform)
 
 
 def _vax_to_ieee_single_float(data):
