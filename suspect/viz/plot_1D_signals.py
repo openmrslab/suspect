@@ -148,7 +148,7 @@ def apply_plot_params(plot_params,ax):
     plt.setp(line_handles, lw=plot_params['line_width'], ls=plot_params['line_style'],
              marker=plot_params['marker'])
     
-    if plot_params['line_color'] is not 'default':
+    if plot_params['line_color'] != 'default':
         plt.setp(line_handles,'color', plot_params['line_color'])
     
     # Autoscale data on the y-axis to reflect changes to the x-axis
@@ -259,16 +259,16 @@ def get_default_plot_params(plot_type=''):
     # 'color_order': ['#92c6ff', '#97f0aa', '#ff9f9a', '#d0bbff', '#fffea3', '#b0e0e6'] #Seaborn 'pastel'
     
     # Add more default plot-type specific parameters to the dictionary                  
-    if plot_type is 'spectrum':  # Best for plotting 1-5 lines on the same axis
+    if plot_type == 'spectrum':  # Best for plotting 1-5 lines on the same axis
         default_plot_params.update({'reverse_x': True})
         
-    elif plot_type is 'fid':  # Best for plotting 1-5 lines on the same axis
+    elif plot_type == 'fid':  # Best for plotting 1-5 lines on the same axis
         default_plot_params.update({'reverse_x': False})
         
-    elif plot_type is 'spectra':  # Best for plotting >5 lines on the same axis
+    elif plot_type == 'spectra':  # Best for plotting >5 lines on the same axis
         default_plot_params.update({'reverse_x': True, 'line_width': 1.0, 'overlay_average': True})
         
-    elif plot_type is 'fids':  # Best for plotting >5 lines on the same axis
+    elif plot_type == 'fids':  # Best for plotting >5 lines on the same axis
         default_plot_params.update({'reverse_x': False,'line_width': 1.0, 'overlay_average': True})
         
     else:
