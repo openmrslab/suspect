@@ -27,6 +27,8 @@ def load_dicom(filename):
     dt = 1.0 / sw
 
     f0 = dataset[0x0018, 0x9098].value
+    te = dataset[0x0018, 0x0081].value
+    tr = dataset[0x0018, 0x0080].value
 
     ppm0 = dataset[0x0018, 0x9053].value
 
@@ -45,4 +47,6 @@ def load_dicom(filename):
     return MRSData(data,
                    dt,
                    f0,
+                   te=te,
+                   tr=tr,
                    ppm0=ppm0)
