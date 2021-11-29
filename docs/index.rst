@@ -53,7 +53,7 @@ Suspect, here we provide a Jupyter notebook with the complete consensus
 pipeline implemented.
 
 .. toctree::
-   :caption: Concensus
+   :caption: Consensus
    :hidden:
 
    notebooks/consensus_playground.ipynb
