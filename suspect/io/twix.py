@@ -506,19 +506,35 @@ def anonymize_twix_header(header_string, new_patient_name='', new_patient_id='',
                           remove_age=True, remove_weight=True, remove_height=True, remove_exam_timestamp=True, verbose=False):
     """Removes the PHI from the supplied twix header and returns the sanitized version.
     This consists of:
-    1) Replacing the patient id and name with strings of lower case x
+    1) Replacing the patient id and name with strings of lower case x (or the provided new_patient_id/_name)
     characters.
-    2) Replacing the patient birthday with 19700101
-    3) Replacing the patient gender with the number 0
-    4) Replacing all digits in the patient age, weight and height with 0s
+    2) Replacing the patient birthday with 19700101 (or the provided new_patient_birthday)
+    3) Replacing the patient gender with the number 0 (if remove_gender is True)
+    4) Replacing all digits in the patient age, weight and height with 0s (if remove_age/_weight/_height is True)
     5) All references to the date and time of the exam have all alphanumeric
     characters replaced by lower case x. Other characters (notably the period)
-    are left unchanged.
+    are left unchanged. (if remove_exam_timestamp is True)
 
     Parameters
     ----------
     header_string : str
         The header string to be anonymized
+    new_patient_name : str
+        New patient name, or None to skip anonymization of patient name
+    new_patient_id : str
+        New patient ID, or None to skip anonymization of patient ID
+    new_patient_birthday : str
+        New patient birthday, or None to skip anonymization of patient birthday
+    remove_gender : bool
+        Whether to set patient gender to "0"
+    remove_age : bool
+        Whether to set patient age to "0"s
+    remove_weight : bool
+        Whether to set patient weight to "0"s
+    remove_height : bool
+        Whether to set patient height to "0"s
+    remove_exam_timestamp : bool
+        Whether to set exam timestamp to "x"s
 
     Returns
     -------
