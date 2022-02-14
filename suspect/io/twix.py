@@ -491,7 +491,19 @@ def load_twix(filename):
     return builder.build_mrsdata()
 
 
-def anonymize_twix_header(header_string):
+def crop_or_pad(s: str, length: int) -> str:
+    """
+    Select the first `length` characters from the string `s`, or pad the string to `length` by adding 'x's.
+    This ensures the result of this function is always a string of `length` characters.
+    """
+    if len(s) >= length:
+        return s[:length] # crop
+    else:
+        return s + 'x' * (length - len(s)) # pad
+
+
+def anonymize_twix_header(header_string, new_patient_name='', new_patient_id='', new_patient_birthday='19700101', remove_gender=True,
+                          remove_age=True, remove_weight=True, remove_height=True, remove_exam_timestamp=True, verbose=False):
     """Removes the PHI from the supplied twix header and returns the sanitized version.
     This consists of:
     1) Replacing the patient id and name with strings of lower case x
@@ -514,6 +526,17 @@ def anonymize_twix_header(header_string):
         The anonymized version of the header.
     """
 
+    if verbose:
+        print("Anonymizing header with settings:")
+        print(f"- new_patient_name={new_patient_name}")
+        print(f"- new_patient_id={new_patient_id}")
+        print(f"- new_patient_birthday={new_patient_birthday}")
+        print(f"- remove_gender={remove_gender}")
+        print(f"- remove_age={remove_age}")
+        print(f"- remove_weight={remove_weight}")
+        print(f"- remove_height={remove_height}")
+        print(f"- remove_exam_timestamp={remove_exam_timestamp}")
+
     patient_name = r"(<ParamString.\"t?Patients?Name\">\s*\{\s*\")(.+)(\"\s*\}\n)"
     patient_id = r"(<ParamString.\"PatientID\">\s*\{\s*\")(.+)(\"\s*\}\n)"
     patient_birthday = r"(<ParamString.\"PatientBirthDay\">\s*\{\s*\")(.+)(\"\s*\}\n)"
@@ -522,55 +545,65 @@ def anonymize_twix_header(header_string):
     patient_weight = r"(<ParamDouble.\"flUsedPatientWeight\">\s*\{\s*<Precision> \d+\s*)(\d+\.\d*)(\s*\}\n)"
     patient_height = r"(<ParamDouble.\"flPatientHeight\">\s*\{\s*<Unit> \"\[mm\]\"\s*<Precision> \d+\s*)(\d+\.\d*)(\s*\}\n)"
 
-    header_string = re.sub(patient_name, lambda match: "".join(
-        (match.group(1), ("x" * (len(match.group(2)))), match.group(3))),
-        header_string)
+    if new_patient_name is not None:
+        header_string = re.sub(patient_name, lambda match: "".join(
+            (match.group(1), crop_or_pad(new_patient_name, len(match.group(2))), match.group(3))),
+            header_string
+        )
 
-    header_string = re.sub(patient_id, lambda match: "".join(
-        (match.group(1), ("x" * (len(match.group(2)))), match.group(3))),
-        header_string)
+    if new_patient_id is not None:
+        header_string = re.sub(patient_id, lambda match: "".join(
+            (match.group(1), crop_or_pad(new_patient_id, len(match.group(2))), match.group(3))),
+            header_string)
 
-    header_string = re.sub(patient_birthday, lambda match: "".join(
-        (match.group(1), "19700101", match.group(3))),
-        header_string)
+    if new_patient_birthday is not None:
+        assert len(new_patient_birthday) == len("19700101"), "New patient birthday must be exactly 8 characters!"
+        header_string = re.sub(patient_birthday, lambda match: "".join(
+            (match.group(1), new_patient_birthday, match.group(3))),
+            header_string)
 
-    header_string = re.sub(patient_gender, lambda match: "".join(
-        (match.group(1), "0", match.group(3))),
-        header_string)
+    if remove_gender:
+        header_string = re.sub(patient_gender, lambda match: "".join(
+            (match.group(1), "0", match.group(3))),
+            header_string)
 
-    header_string = re.sub(patient_age, lambda match: "".join(
-        (match.group(1), re.sub(r"\d", "0", match.group(2)), match.group(3))),
-        header_string)
+    if remove_age:
+        header_string = re.sub(patient_age, lambda match: "".join(
+            (match.group(1), re.sub(r"\d", "0", match.group(2)), match.group(3))),
+            header_string)
 
-    header_string = re.sub(patient_weight, lambda match: "".join(
-        (match.group(1), re.sub(r"\d", "0", match.group(2)), match.group(3))),
-        header_string)
+    if remove_weight:
+        header_string = re.sub(patient_weight, lambda match: "".join(
+            (match.group(1), re.sub(r"\d", "0", match.group(2)), match.group(3))),
+            header_string)
 
-    header_string = re.sub(patient_height, lambda match: "".join(
-        (match.group(1), re.sub(r"\d", "0", match.group(2)), match.group(3))),
-        header_string)
+    if remove_height:
+        header_string = re.sub(patient_height, lambda match: "".join(
+            (match.group(1), re.sub(r"\d", "0", match.group(2)), match.group(3))),
+            header_string)
 
-    # We need to remove information which contains the date and time of the exam
-    # this is not stored in a helpful way which complicates finding it.
-    # I think that this FrameOfReference parameter is the correct time, it is
-    # certainly the correct date.
-    # As Siemens uses date and time to refer to other scans, we need to censor
-    # any string which contains the date of this exam. Also some references
-    # seem to use the date with the short form of the year so we match that
-    frame_of_reference = re.search(r"(<ParamString.\"FrameOfReference\">  { )(\".+\")(  }\n)", header_string).group(2)
-    exam_date_time = frame_of_reference.split(".")[10]
-    exam_date = exam_date_time[2:8]
+    if remove_exam_timestamp:
+        # We need to remove information which contains the date and time of the exam
+        # this is not stored in a helpful way which complicates finding it.
+        # I think that this FrameOfReference parameter is the correct time, it is
+        # certainly the correct date.
+        # As Siemens uses date and time to refer to other scans, we need to censor
+        # any string which contains the date of this exam. Also some references
+        # seem to use the date with the short form of the year so we match that
+        frame_of_reference = re.search(r"(<ParamString.\"FrameOfReference\">  { )(\".+\")(  }\n)", header_string).group(2)
+        exam_date_time = frame_of_reference.split(".")[10]
+        exam_date = exam_date_time[2:8]
 
-    # any string which contains the exam date has all alpha-numerics replaced
-    # by the character x
-    header_string = re.sub(r"\"[\d\.]*{0}[\d\.]*\"".format(exam_date),
-                           lambda match: re.sub(r"\w", "x", match.group()),
-                           header_string)
+        # any string which contains the exam date has all alpha-numerics replaced
+        # by the character x
+        header_string = re.sub(r"\"[\d\.]*{0}[\d\.]*\"".format(exam_date),
+                            lambda match: re.sub(r"\w", "x", match.group()),
+                            header_string)
 
     return header_string
 
 
-def anonymize_twix_vd(fin, fout):
+def anonymize_twix_vd(fin, fout, **kwargs):
     twix_id, num_measurements = struct.unpack("II", fin.read(8))
 
     fout.write(struct.pack("II", twix_id, num_measurements))
@@ -596,7 +629,7 @@ def anonymize_twix_vd(fin, fout):
         header = fin.read(header_size - 4)
         header_string = header[:-24].decode('latin-1')
 
-        anonymized_header = anonymize_twix_header(header_string)
+        anonymized_header = anonymize_twix_header(header_string, **kwargs)
         print("fout position")
         print(fout.tell())
         fout.seek(offset)
@@ -608,7 +641,7 @@ def anonymize_twix_vd(fin, fout):
         fout.write(fin.read(length - header_size))
 
 
-def anonymize_twix_vb(fin, fout):
+def anonymize_twix_vb(fin, fout, **kwargs):
     # first four bytes are the size of the header
     header_size = struct.unpack("I", fin.read(4))[0]
 
@@ -618,7 +651,7 @@ def anonymize_twix_vb(fin, fout):
     # is not a string, I don't know what it is
     header_string = header[:-24].decode('latin-1')
 
-    anonymized_header = anonymize_twix_header(header_string)
+    anonymized_header = anonymize_twix_header(header_string, **kwargs)
 
     fout.write(struct.pack("I", header_size))
     fout.write(anonymized_header.encode('latin-1'))
@@ -626,7 +659,7 @@ def anonymize_twix_vb(fin, fout):
     fout.write(fin.read())
 
 
-def anonymize_twix(filename, anonymized_filename):
+def anonymize_twix(filename, anonymized_filename, **kwargs):
     with open(filename, 'rb') as fin:
 
         # we can tell the type of file from the first two uints in the header
@@ -637,9 +670,9 @@ def anonymize_twix(filename, anonymized_filename):
 
         with open(anonymized_filename, 'wb') as fout:
             if first_uint == 0 and second_uint <= 64:
-                anonymize_twix_vd(fin, fout)
+                anonymize_twix_vd(fin, fout, **kwargs)
             else:
-                anonymize_twix_vb(fin, fout)
+                anonymize_twix_vb(fin, fout, **kwargs)
 
 
 def get_header(filename):
