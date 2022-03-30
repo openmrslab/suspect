@@ -54,8 +54,8 @@ def load_dicom(filename):
     data_shape = [parameters['frames'], parameters['rows'], parameters['cols'], parameters['num_second_spectral'],
                   parameters['num_points']]
 
-    # newer version of pydicom require explicit conversion from bytestring to list
-    if not type(dataset[0x5600, 0x0020].value) == list:
+    # versions of pydicom >2.0.0 require explicit conversion from bytestring to list
+    if type(dataset[0x5600, 0x0020].value) == bytes:
         data_iter = iter(np.fromstring(dataset[0x5600, 0x0020].value, dtype=np.float32))
     else:
         data_iter = iter(dataset[0x5600, 0x0020].value)
