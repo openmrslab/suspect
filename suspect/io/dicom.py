@@ -57,8 +57,12 @@ def load_dicom(filename):
     # versions of pydicom >2.0.0 require explicit conversion from bytestring to list
     if type(dataset[0x5600, 0x0020].value) == bytes:
         data_iter = iter(np.fromstring(dataset[0x5600, 0x0020].value, dtype=np.float32))
-    else:
+
+    elif type(dataset[0x5600, 0x0020].value) == list:
         data_iter = iter(dataset[0x5600, 0x0020].value)
+
+    else:
+        raise TypeError("Unknown data type for dataset[0x5600, 0x0020].value")
 
     data = complex_array_from_iter(data_iter, shape=data_shape, chirality=-1)
 
