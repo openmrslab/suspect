@@ -24,12 +24,12 @@ exponent = ('e' | 'E') ('+' | '-')? digits
 parser = parsley.makeGrammar(basis_grammar, {})
 
 
-def save_raw(filename, data):
+def save_raw(filename, data, seq='PRESS'):
     with open(filename, 'w') as fout:
         fout.write(" $SEQPAR\n")
         fout.write(" ECHOT = {}\n".format(data.te))
         fout.write(" HZPPPM = {}\n".format(data.f0))
-        fout.write(" SEQ = 'PRESS'\n")
+        fout.write(" SEQ = {}\n".format(seq))
         fout.write(" $END\n")
         fout.write(" $NMID\n")
         fout.write(" FMTDAT = '(2E15.6)'\n")
@@ -44,7 +44,7 @@ def save_raw(filename, data):
             fout.write("  {0: 4.6e}  {1: 4.6e}\n".format(float(point.real), float(point.imag)))
 
 
-def write_all_files(filename, data, wref_data=None, params=None):
+def write_all_files(filename, data, wref_data=None, params=None, filbas="/home/spectre/.lcmodel/basis-sets/provencher/press_te30_3t_gsh_v3.basis"):
     """
     Creates an LCModel control file for processing the supplied MRSData, and
     optional water reference data, updating the default parameters with any
@@ -90,7 +90,7 @@ def write_all_files(filename, data, wref_data=None, params=None):
     file_root, ext = os.path.splitext(file_root)
 
     base_params = {
-        "FILBAS": "/home/spectre/.lcmodel/basis-sets/provencher/press_te30_3t_gsh_v3.basis",
+        "FILBAS": filbas,
         "ICOLST": 1,
         "ICOLEN": shape[0],
         "NDCOLS": shape[0],
