@@ -7,3 +7,6 @@ lmfit
 pydicom
 parsley
 scipy
+parse
+nibabel
+PyWavelets
