@@ -25,10 +25,10 @@ rda_types = {
                 "StationName", "InstitutionName", "DeviceSerialNumber", "InstanceDate",
                 "InstanceTime", "InstanceComments", "SequenceName", "SequenceDescription",
                 "Nucleus", "TransmitCoil", "PatientSex", "HammingFilter", "FrequencyCorrection"],
-    "float_arrays": ["PositionVector", "RowVector", "ColumnVector"],
+    "float_arrays": ["PositionVector", "RowVector", "ColumnVector","SlabThickness"],
     "integer_arrays": ["CSIMatrixSize", "CSIMatrixSizeOfScan", "CSIGridShift"],
     "string_arrays": ["SoftwareVersion"],
-    "dictionaries": ["TransmitRefAmplitude"]
+    "dictionaries": ["TransmitRefAmplitude","SlabOrientation","MidSlabPosition",""]
 }
 
 
@@ -46,7 +46,7 @@ def load_rda(filename):
             elif key in rda_types["integers"]:
                 header_dict[key] = int(value)
             elif key in rda_types["floats"]:
-                header_dict[key] = float(value)
+                header_dict[key] = float(value.replace(",",".",1))
             elif "[" in key and "]" in key:
                 # could be a dict or a list
                 key, index = re.split(r"\]|\[", key)[0:2]
@@ -57,7 +57,7 @@ def load_rda(filename):
                 else:
                     # not a dictionary, must be a list
                     if key in rda_types["float_arrays"]:
-                        value = float(value)
+                        value = float(value.replace(",",".",1))
                     elif key in rda_types["integer_arrays"]:
                         value = int(value)
                     index = int(index)
@@ -90,6 +90,17 @@ def load_rda(filename):
     if "VOIReadoutFOV" not in header_dict:
         if "VOIReadoutVOV" in header_dict:
             header_dict["VOIReadoutFOV"] = header_dict.pop("VOIReadoutVOV")
+        #lazy workaround for new Viva scanner
+        elif "SlabOrientation" in header_dict:
+            header_dict["VOIReadoutFOV"] = 999.9
+            header_dict["VOIPhaseFOV"] = 999.9
+            header_dict["VOIThickness"] = 999.9
+            header_dict["VOIPositionSag"] = 999.9
+            header_dict["VOIPositionCor"] = 999.9
+            header_dict["VOIPositionTra"] = 999.9
+            #header_dict["PixelSpacingCol"] = 999.9
+            #header_dict["PixelSpacingRow"] = 999.9
+            header_dict["PixelSpacing3D"] = 999.9
 
     # combine positional elements in the header
     voi_size = (header_dict["VOIReadoutFOV"],
