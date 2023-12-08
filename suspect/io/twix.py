@@ -190,19 +190,22 @@ def parse_twix_header(header_string):
         r"sSpecPara\.sVoI\.sPosition\.dSag\s*=\s*(-?[[0-9]*[.]?[0-9]*]{0,})\s*",
         r"<ParamDouble\.\"VoI_Position_Sag\">  { <Precision> \d+(  -?[0-9\.]+)?  }",
         r"<ParamDouble\.\"VoiPositionSag\">\s*{\s*(-?[0-9\.]+)?\s*}",
-        r"<ParamDouble\.\"VoI_Position_Sag\">\s*{\s*(-?[0-9\.]+)?\s*}"
+        r"<ParamDouble\.\"VoI_Position_Sag\">\s*{\s*(-?[0-9\.]+)?\s*}",
+        r"<ParamDouble\.\"VoiPositionSag\">  { <Precision> \d+ (-?[0-9\.]+)? }"
     ]
     pos_cor_matches = [
         r"sSpecPara\.sVoI\.sPosition\.dCor\s*=\s*(-?[[0-9]*[.]?[0-9]*]{0,})\s*",
         r"<ParamDouble\.\"VoI_Position_Cor\">  { <Precision> \d+(  -?[0-9\.]+)?  }",
         r"<ParamDouble\.\"VoiPositionCor\">\s*{\s*(-?[0-9\.]+)?\s*}",
-        r"<ParamDouble\.\"VoI_Position_Cor\">\s*{\s*(-?[0-9\.]+)?\s*}"
+        r"<ParamDouble\.\"VoI_Position_Cor\">\s*{\s*(-?[0-9\.]+)?\s*}",
+        r"<ParamDouble\.\"VoiPositionCor\">  { <Precision> \d+ (-?[0-9\.]+)? }"
     ]
     pos_tra_matches = [
         r"sSpecPara\.sVoI\.sPosition\.dTra\s*=\s*(-?[[0-9]*[.]?[0-9]*]{0,})\s*",
         r"<ParamDouble\.\"VoI_Position_Tra\">  { <Precision> \d+(  -?[0-9\.]+)?  }",
         r"<ParamDouble\.\"VoiPositionTra\">\s*{\s*(-?[0-9\.]+)?\s*}",
-        r"<ParamDouble\.\"VoI_Position_Tra\">\s*{\s*(-?[0-9\.]+)?\s*}"
+        r"<ParamDouble\.\"VoI_Position_Tra\">\s*{\s*(-?[0-9\.]+)?\s*}",
+        r"<ParamDouble\.\"VoiPositionTra\">  { <Precision> \d+ (-?[0-9\.]+)? }"
     ]
     pos_sag = get_meta_regex(pos_sag_matches, header_string, default=0)
     pos_cor = get_meta_regex(pos_cor_matches, header_string, default=0)
