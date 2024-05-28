@@ -4,6 +4,7 @@ nbsphinx
 ipykernel
 numpy
 lmfit
+parse
 pydicom
 parsley
 scipy
