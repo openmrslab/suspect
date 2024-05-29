@@ -1,0 +1,12 @@
+setuptools>=26.0
+sphinx>=1.4
+nbsphinx
+ipykernel
+nibabel
+numpy
+lmfit
+parse
+parsley
+pydicom
+PyWavelets
+scipy
