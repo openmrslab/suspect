@@ -91,10 +91,15 @@ def spline(input_signal, num_splines, spline_order):
     # input signal  has to be a multiple of num_splines
     padded_input_signal = _pad(input_signal, int(numpy.ceil(len(input_signal) / float(num_splines))) * num_splines)
     stride = len(padded_input_signal) // num_splines
-    import scipy.signal
+
+    from scipy.interpolate import BSpline
     # we construct the spline basis by building the first one, then the rest
     # are identical copies offset by stride
-    first_spline = scipy.signal.bspline(numpy.arange(-spline_order, num_splines - spline_order, 1.0 / stride), spline_order)
+    first_spline = BSpline.basis_element(numpy.arange(-(spline_order+1)/2, (spline_order+3)/2))(
+        numpy.arange(
+            -spline_order, num_splines - spline_order, 1.0 / stride
+        ),
+    )
     first_spline = numpy.roll(first_spline, -spline_order * stride)
     spline_basis = numpy.zeros((num_splines + 1, len(padded_input_signal)), input_signal.dtype)
     for i in range(num_splines + 1):

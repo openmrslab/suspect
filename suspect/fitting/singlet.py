@@ -125,7 +125,7 @@ class Model:
             ModelResult
         """
         params = self.composite_model.make_params()
-        weights = np.ones_like(data, dtype=np.float)
+        weights = np.ones_like(data, dtype=np.float64)
         weights[:baseline_points] = 0
         return self.composite_model.fit(data,
                                         params=params,
