@@ -22,7 +22,7 @@ def phase_shift(in_data, phase0, phase1, spectral_width, num_points):
     tmp_data = np.ones_like(in_data)
     phase_ramp = np.linspace(-spectral_width / 2,
                              spectral_width / 2,
-                             int(num_points),
+                             int(np.round(num_points)),
                              endpoint=False)
     fixed_frequency = 0
     phase_shift = phase0 + phase1 * (fixed_frequency + phase_ramp)
