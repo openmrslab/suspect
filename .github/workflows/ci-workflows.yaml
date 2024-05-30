@@ -13,7 +13,7 @@ jobs:
     runs-on: ${{ matrix.os }}
     strategy:
       matrix:
-        python-version: [3.12]
+        python-version: [3.9, 3.10, 3.11, 3.12]
         os: [ubuntu-latest, windows-latest]
 
     steps:
@@ -28,7 +28,7 @@ jobs:
           pip install -r requirements_dev.txt
       - name: Test with pytest
         run: |
-          pip install pytest pytest-cov
+          pip install pytest-cov
           pytest tests/ --doctest-modules --junitxml=junit/test-results.xml --cov=suspect --cov-report lcov:cov.info
       - name: Coveralls
         uses: coverallsapp/github-action@v2
