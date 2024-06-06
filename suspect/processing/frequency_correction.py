@@ -69,7 +69,7 @@ def spectral_registration(data, target, initial_guess=(0.0, 0.0), frequency_rang
         spectral_weights = np.logical_and(frequency_range[0] < data.frequency_axis(),
                                           frequency_range[1] > data.frequency_axis())
     elif type(frequency_range) is slice:
-        spectral_weights = np.zeros_like(target, np.bool)
+        spectral_weights = np.zeros_like(target, np.bool_)
         spectral_weights[frequency_range] = 1
     else:
         spectral_weights = frequency_range

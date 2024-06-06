@@ -22,7 +22,7 @@ def transformation_matrix(x_vector, y_vector, translation, spacing):
     matrix : array
 
     """
-    matrix = numpy.zeros((4, 4), dtype=numpy.float)
+    matrix = numpy.zeros((4, 4), dtype=numpy.float64)
     matrix[:3, 0] = x_vector
     matrix[:3, 1] = y_vector
     z_vector = numpy.cross(x_vector, y_vector)
