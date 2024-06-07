@@ -247,7 +247,7 @@ class ImageBase(np.ndarray):
         # mgrid produces 3D index grids for the x, y and z coords separately
         II, JJ, KK = np.mgrid[0:shape[2],
                               0:shape[1],
-                              0:shape[0]].astype(np.float)
+                              0:shape[0]].astype(np.float64)
         # shift the indices from the corner to the centre
         II -= (shape[2] - 1) / 2
         JJ -= (shape[1] - 1) / 2
@@ -265,7 +265,7 @@ class ImageBase(np.ndarray):
                        + JJ[..., np.newaxis] * col_vector \
                        + KK[..., np.newaxis] * slice_vector + centre
 
-        image_coords = self.from_scanner(space_coords).reshape(*space_coords.shape)[..., ::-1].astype(np.int)
+        image_coords = self.from_scanner(space_coords).reshape(*space_coords.shape)[..., ::-1].astype(np.int_)
         resampled = scipy.interpolate.interpn([np.arange(dim) for dim in self.shape],
                                               self,
                                               image_coords,

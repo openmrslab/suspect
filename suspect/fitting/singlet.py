@@ -8,18 +8,32 @@ import suspect.basis
 
 
 # this is the underlying function for the GaussianPeak model class
-def gaussian(in_data, amplitude, frequency, phase, fwhm):
-    return amplitude * in_data.inherit(suspect.basis.gaussian(in_data.time_axis(), frequency, phase, fwhm))
+def gaussian(time_axis, amplitude, frequency, phase, fwhm):
+    result = amplitude * suspect.basis.gaussian(time_axis, frequency, phase, fwhm)
+    return result
 
 
 # this is the underlying function for the GlobalPhase model class
-def phase_shift(in_data, phase0, phase1):
-    return in_data.spectrum().inherit(np.ones_like(in_data)).adjust_phase(phase0, phase1)
+def phase_shift(in_data, phase0, phase1, spectral_width, num_points):
+    # Update:
+    # Since lmfit updates does not preserve suspect's MRS objects, we
+    # do phase adjustment and spectrum & FID conversion here
+    spectrum = np.fft.fftshift(np.fft.fft(in_data, axis=-1), axes=-1)
+    tmp_data = np.ones_like(in_data)
+    phase_ramp = np.linspace(-spectral_width / 2,
+                             spectral_width / 2,
+                             int(np.round(num_points)),
+                             endpoint=False)
+    fixed_frequency = 0
+    phase_shift = phase0 + phase1 * (fixed_frequency + phase_ramp)
+    phased_spectrum = tmp_data * np.exp(1j * phase_shift)
+    return phased_spectrum
 
 
 # this is the underlying function for combining the models together
 def apply_in_freq_domain(model, phase_shift):
-    return (model.spectrum() * phase_shift).fid()
+    spectrum = np.fft.fftshift(np.fft.fft(model, axis=-1), axes=-1)
+    return np.fft.ifft(np.fft.ifftshift((spectrum * phase_shift), axes=-1), axis=-1)
 
 
 class GaussianPeak(lmfit.Model):
@@ -125,12 +139,16 @@ class Model:
             ModelResult
         """
         params = self.composite_model.make_params()
-        weights = np.ones_like(data, dtype=np.float)
+        weights = np.ones_like(data, dtype=np.float64)
         weights[:baseline_points] = 0
-        return self.composite_model.fit(data,
-                                        params=params,
-                                        in_data=data,
-                                        weights=weights)
+        result = self.composite_model.fit(data,
+                                          params=params,
+                                          in_data=data,
+                                          time_axis=data.time_axis(),
+                                          spectral_width=data.spectrum().sw,
+                                          num_points=data.spectrum().np,
+                                          weights=weights)
+        return result
 
     @classmethod
     def load(cls, filename):
