@@ -2,13 +2,13 @@ suspect
 -------
 
 ============ =================
-Travis CI    |build_status|
+CI           |build_status|
 Coveralls    |coverage_status|
 Code Climate |code_climate|
 ============ =================
 
-.. |build_status| image:: https://travis-ci.org/openmrslab/suspect.svg?branch=master
-    :target: https://travis-ci.org/openmrslab/suspect
+.. |build_status| image:: https://github.com/openmrslab/suspect/actions/workflows/ci-workflows.yaml/badge.svg?branch=master
+    :target: https://github.com/openmrslab/suspect/actions/workflows/ci-workflows.yaml
 
 .. |coverage_status| image:: https://coveralls.io/repos/github/openmrslab/suspect/badge.svg?branch=master
     :target: https://coveralls.io/github/openmrslab/suspect?branch=master
