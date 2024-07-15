@@ -144,6 +144,17 @@ def parse_twix_header(header_string):
         exam_date_time = frame_of_reference.split(".")[10]
         exam_date = exam_date_time[2:8]
         exam_time = exam_date_time[8:14]
+
+    software_version_matches = [
+        r"<ParamString.\"tMeasuredBaselineString\">\s*{\s*(\".+\")\s*}\n",
+        r"<ParamString.\"tBaselineString\">\s*{\s*(\".+\")\s*}\n"
+    ]
+    software_version = get_meta_regex(software_version_matches, header_string)
+
+    manufacturer = re.search(r"<ParamString.\"Manufacturer\">\s*{\s*(\".+\")\s*}\n", header_string).group(1)
+    manufacturers_model_name = re.search(r"<ParamString.\"ManufacturersModelName\">\s*{\s*(\".+\")\s*}\n", header_string).group(1)
+    sequence_name = re.search(r"<ParamString.\"tSequenceFileName\">\s*{\s*(\".+\")\s*}\n", header_string).group(1)
+
     # get the scan parameters
     frequency_matches = [
         r"sTXSPEC\.asNucleusInfo\[0\]\.lFrequency\s*=\s*([[0-9]*[.]?[0-9]*]{0,})\s*",
@@ -280,7 +291,11 @@ def parse_twix_header(header_string):
             "te": te,
             "tr": tr,
             "exam_date": exam_date,
-            "exam_time": exam_time
+            "exam_time": exam_time,
+            "sequence_name": sequence_name,
+            "software_version": software_version,
+            "manufacturer": manufacturer,
+            "manufacturers_model_name": manufacturers_model_name
             }
 
 
