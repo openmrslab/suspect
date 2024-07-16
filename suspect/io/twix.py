@@ -124,7 +124,6 @@ def get_meta_regex(regex_list, header_string, convert=1, default=None):
 
 
 def parse_twix_header(header_string):
-    #print(header_string)
     # get the name of the protocol being acquired
     protocol_name_matches = [
         r"tProtocolName\s*=\s*\"(.*)\"\s*"
@@ -147,7 +146,8 @@ def parse_twix_header(header_string):
 
     software_version_matches = [
         r"<ParamString.\"tMeasuredBaselineString\">\s*{\s*(\".+\")\s*}\n",
-        r"<ParamString.\"tBaselineString\">\s*{\s*(\".+\")\s*}\n"
+        r"<ParamString.\"tBaselineString\">\s*{\s*(\".+\")\s*}\n",
+        r"<ParamString.\"SoftwareVersions\">\s*{\s*(\".+\")\s*}\n"
     ]
     software_version = get_meta_regex(software_version_matches, header_string)
 
