@@ -4,6 +4,15 @@
 Changelog
 =========
 
+* :release:`0.5.0 <08/08/24>`
+* :bug:`167` Compatibility issues in the latest version of Suspecs (v0.4.4)
+* :bug:`166` Travis CI not working
+* :support:`164` Added regex for extracting metadata on VIDA data
+* :support:`162` Allow update on lmfit's version
+* :bug:`160` pydicom >2.0.0 reads MRS with too many elements (thanks to @laurencejackson for this)
+* :feature:`157` Add kwargs to lcmodel RAW file generation methods (thanks for @neurosutton for this)
+* :bug:`155` Changed literal comparison of string to Python's comparison == (thanks for @joeranbosma for this)
+* :support:`153` Added transformation matrix info for Philips (thanks for @oscarjalnefjord for this)
 * :release:`0.4.9 <20/11/20>`
 * :bug:`149` improved reliability of twix file header reading (thanks to @darrencl for this)
 * :release:`0.4.3 <29/09/20>`
