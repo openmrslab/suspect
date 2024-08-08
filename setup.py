@@ -44,5 +44,7 @@ setup(
             'Programming Language :: Python :: 3.12',
         ],
         install_requires=['pywavelets', 'scipy', 'numpy', 'lmfit', 'pydicom', 'parsley', 'parse', 'nibabel'],
-        test_requires=['pytest', 'mock', 'numpydoc']
+        test_requires=['pytest', 'mock', 'numpydoc'],
+        long_description=open('README.rst').read(),
+        long_description_content_type='text/x-rst',
 )
