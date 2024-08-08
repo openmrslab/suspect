@@ -4,7 +4,7 @@
 Changelog
 =========
 
-* :release:`0.5.0 <08/08/24>`
+* :release:`0.5.1 <08/08/24>`
 * :bug:`167` Compatibility issues in the latest version of Suspecs (v0.4.4)
 * :bug:`166` Travis CI not working
 * :support:`164` Added regex for extracting metadata on VIDA data
