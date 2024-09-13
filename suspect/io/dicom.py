@@ -22,7 +22,7 @@ def load_dicom(filename):
     MRSData
         The loaded data from the file
     """
-    dataset = pydicom.dicomio.read_file(filename)
+    dataset = pydicom.dcmread(filename)
 
     # format for metadata dictionary elements:
     #   {'key': [[dicom_tag], required], ...}

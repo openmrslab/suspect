@@ -105,7 +105,7 @@ def load_siemens_dicom(filename):
     # the .IMA format is a DICOM standard, unfortunately most of the information is contained inside a private and very
     # complicated header with its own data storage format, we have to get that information out along with the data
     # start by reading in the DICOM file completely
-    dataset = pydicom.dicomio.read_file(filename)
+    dataset = pydicom.dcmread(filename)
     # now look through the tags (0029, 00xx) to work out which xx refers to the csa header
     # xx seems to start at 10 for Siemens
     xx = 0x0010
@@ -210,7 +210,7 @@ def load_siemens_dicom(filename):
 #     :param anonymized_filename:
 #     :return:
 #     """
-#     dataset = pydicom.dicomio.read_file(filename)
+#     dataset = pydicom.dcmread(filename)
 #     print(dataset.PatientName)
 #     xx = 0x0010
 #     header_index = 0
