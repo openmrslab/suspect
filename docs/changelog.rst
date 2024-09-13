@@ -4,6 +4,8 @@
 Changelog
 =========
 
+* :release:`0.5.2 <13/09/24>`
+* :bug:`174` Use `pydicom.dcmread` instead of `pydicom.dicomio.readfile` for future proof
 * :release:`0.5.1 <08/08/24>`
 * :bug:`167` Compatibility issues in the latest version of Suspecs (v0.4.4)
 * :bug:`166` Travis CI not working
