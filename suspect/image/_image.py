@@ -25,7 +25,7 @@ def load_dicom_volume(filename):
     """
     _, file_ext = os.path.splitext(filename)
     # load the supplied file and get the UID of the series
-    ds = pydicom.read_file(filename)
+    ds = pydicom.dcmread(filename)
     seriesUID = ds.SeriesInstanceUID
 
     # get the position of the image
@@ -49,7 +49,7 @@ def load_dicom_volume(filename):
         if name.endswith(file_ext): # name.lower().endswith(".ima") or name.lower().endswith(".dcm"):
             new_dicom_name = os.path.join(folder, name)
             try:
-                new_ds = pydicom.read_file(new_dicom_name)
+                new_ds = pydicom.dcmread(new_dicom_name)
             except pydicom.errors.InvalidDicomError as e:
                 continue
 

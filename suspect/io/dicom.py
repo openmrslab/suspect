@@ -3,7 +3,7 @@ import numpy as np
 
 from ._common import complex_array_from_iter
 
-import pydicom.dicomio
+import pydicom
 import pydicom.tag
 
 
@@ -22,7 +22,7 @@ def load_dicom(filename):
     MRSData
         The loaded data from the file
     """
-    dataset = pydicom.dicomio.read_file(filename)
+    dataset = pydicom.dcmread(filename)
 
     # format for metadata dictionary elements:
     #   {'key': [[dicom_tag], required], ...}
