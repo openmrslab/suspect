@@ -1,5 +1,5 @@
 import pydicom.tag
-import pydicom.dicomio
+import pydicom
 import numpy
 import struct
 import warnings

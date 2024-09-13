@@ -3,7 +3,7 @@ import numpy as np
 
 from ._common import complex_array_from_iter
 
-import pydicom.dicomio
+import pydicom
 import pydicom.tag
 
 
