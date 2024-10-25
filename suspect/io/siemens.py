@@ -106,14 +106,12 @@ def load_siemens_dicom(filename):
     # complicated header with its own data storage format, we have to get that information out along with the data
     # start by reading in the DICOM file completely
     dataset = pydicom.dcmread(filename)
-    # now look through the tags (0029, 00xx) to work out which xx refers to the csa header
-    # xx seems to start at 10 for Siemens
-    xx = 0x0010
+    # now loop through the available element in group (0029) to work out the element 
+    # number of the csa header
     header_index = 0
-    while (0x0029, xx) in dataset:
-        if dataset[0x0029, xx].value == "SIEMENS CSA HEADER":
-            header_index = xx
-        xx += 1
+    for e in dataset.group_dataset(0x0029).iterall():
+        if e.value == "SIEMENS CSA HEADER":
+            header_index = e.tag.element
     # check that we have found the header
     if header_index == 0:
         raise KeyError("Could not find header index")
@@ -131,14 +129,12 @@ def load_siemens_dicom(filename):
                   csa_header["DataPointColumns"],
                   )
 
-    # now look through the tags (0029, 00xx) to work out which xx refers to the csa header
-    # xx seems to start at 10 for Siemens
-    xx = 0x0010
+    # now loop through the available element in group (7fe1) to work out the element
+    # number of the data index
     data_index = 0
-    while (0x7fe1, xx) in dataset:
-        if dataset[0x7fe1, xx].value == "SIEMENS CSA NON-IMAGE":
-            data_index = xx
-        xx += 1
+    for e in dataset.group_dataset(0x7fe1).iterall():
+        if e.value == "SIEMENS CSA NON-IMAGE":
+            data_index = e.tag.element
     # check that we have found the data
     if data_index == 0:
         raise KeyError("Could not find data index")
