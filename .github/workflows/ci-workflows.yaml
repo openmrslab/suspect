@@ -9,7 +9,7 @@ on:
     branches:
     - master
 jobs:
-  test:
+  test-deps-pinned-version:
     runs-on: ${{ matrix.os }}
     strategy:
       matrix:
@@ -26,6 +26,32 @@ jobs:
         run: |
           python -m pip install --upgrade pip
           pip install -r requirements_dev.txt
+      - name: Test with pytest
+        run: |
+          pip install pytest-cov
+          pytest tests/ --doctest-modules --junitxml=junit/test-results.xml --cov=suspect --cov-report lcov:cov.info
+      - name: Coveralls
+        uses: coverallsapp/github-action@v2
+
+  test-deps-latest-version:
+    runs-on: ${{ matrix.os }}
+    strategy:
+      matrix:
+        python-version: ['3.9', '3.10', '3.11', '3.12']
+        os: [ubuntu-latest, windows-latest, macos-latest]
+
+    steps:
+      - uses: actions/checkout@v4
+      - name: "Set up Python ${{ matrix.python-version }}"
+        uses: actions/setup-python@v5
+        with:
+          python-version: ${{ matrix.python-version }}
+      - name: Install dependencies and update to latest version
+        run: |
+          python -m pip install --upgrade pip
+          pip install -r requirements_dev.txt
+          pip install pip-review
+          pip-review --auto
       - name: Test with pytest
         run: |
           pip install pytest-cov
