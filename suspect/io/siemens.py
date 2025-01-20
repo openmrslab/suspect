@@ -236,8 +236,8 @@ def _load_siemens_dicom_xa(dataset):
     # is 1 as opposed to 3. 
     volume_localization = dataset[0x0018, 0x9126]
 
-    # TODO: Check against TWIX, would be great if any DICOM and TWIX from same acquisitions!
-    in_plane_rot = dataset[0x5200,0x9229][0][0x00018, 0x9112][0][0x0018,0x1314].value
+    # TODO: In-plane rotation angle couldn't be found in the XA version! Flip angle is not the same!
+    in_plane_rot = 0
     normal_vector = numpy.array(volume_localization[0][0x0018, 0x9105].value)
     pos_vector = numpy.array(volume_localization[0][0x0018, 0x9106].value)
     voi_size = [volume_localization[2][0x0018, 0x9104].value,
