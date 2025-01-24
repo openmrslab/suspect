@@ -4,7 +4,7 @@
 #
 #    pip-compile --extra=dev --output-file==requirements_dev.txt
 #
-asteval==0.9.33
+asteval==1.0.6
     # via lmfit
 dill==0.3.8
     # via lmfit
