@@ -12,6 +12,13 @@ def test_svs_30():
     assert data.tr == 2000
 
 
+def test_svs_xa60():
+    # Not .ima, but might be best to leave it here for Siemens spectro DICOM
+    data = suspect.io.siemens.load_siemens_dicom("tests/test_data/siemens/SVS_XA60.dcm")
+    assert data.shape == (1024,)
+    assert data.te == 30
+    assert data.tr == 2000
+
 # def test_svs_30():
 #     data = suspect.io.siemens.load_siemens_dicom("suspect/tests/test_data/siemens_svs_30.IMA")
 #     assert data.shape == (1024,)

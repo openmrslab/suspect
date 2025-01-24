@@ -236,7 +236,7 @@ def _load_siemens_dicom_xa(dataset, other_ds):
     dt = int(dataset[0x5200, 0x9230].value[0][0x0021,0x10fe][0][0x0021, 0x1042].value) * 1e-9
     assert dt == mrsdata.dt, "Recorded dwell time is different from 1/sw."
     te = dataset[0x5200, 0x9229][0][0x0018, 0x9114][0][0x0018, 0x9082].value
-
+    tr = float(dataset[0x5200, 0x9229][0][0x0018, 0x9112][0][0x0018, 0x0080].value)
     # The voxel size etc. below could be moved into load_dicom, but looking at the test data acquired with Philips
     # (dicom/No_Name/Mrs_Dti_Qa/MRSshortTELN_401/IM-0001-0002.dcm), the length of volume localization (0018, 9126)
     # is 1 as opposed to 3. 
@@ -285,7 +285,7 @@ def _load_siemens_dicom_xa(dataset, other_ds):
                    dt,
                    mrsdata.f0,
                    te=te,
-                   tr=mrsdata.tr,
+                   tr=tr,
                    transform=transform)
 
 # def anonymize_siemens_dicom(filename, anonymized_filename):
