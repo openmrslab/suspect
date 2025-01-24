@@ -1,6 +1,7 @@
 import pydicom.tag
 import pydicom
 import numpy
+import re
 import struct
 import warnings
 
@@ -106,12 +107,15 @@ def load_siemens_dicom(filename):
 
     """
     # Start by reading in the DICOM file completely.
-    dataset = pydicom.dcmread(filename)
-    software_version = dataset[0x0018, 0x1020].value
-    if "XA" in software_version:
-        return _load_siemens_dicom_xa(dataset)
-    else:
-        return _load_siemens_dicom_nonxa(dataset)
+    with open(filename, "rb") as f:
+        dataset = pydicom.dcmread(f)
+        software_version = dataset[0x0018, 0x1020].value
+        if "XA" in software_version:
+            f.seek(0)
+            other_ds = pydicom.filereader.read_dataset(f, True, True)
+            return _load_siemens_dicom_xa(dataset, other_ds)
+        else:
+            return _load_siemens_dicom_nonxa(dataset)
 
 def _load_siemens_dicom_nonxa(dataset):
     """Imports a file in the Siemens .IMA format for older/non-XA version.
@@ -215,13 +219,15 @@ def _load_siemens_dicom_nonxa(dataset):
                    metadata=metadata)
 
 
-def _load_siemens_dicom_xa(dataset):
+def _load_siemens_dicom_xa(dataset, other_ds):
     """Imports a file in the Siemens .IMA format for XA version.
 
     Parameters
     ----------
     dataset : pydicom.dataset.FileDataset
         Loaded DICOM dataset object
+    other_ds : pydicom.dataset.FileDataset
+        Other dataset that contains meas headers 
 
     """
     # Newer XA version uses combination of DICOM Magnetic Resonance Spectroscopy format (SOP 1.2.840.10008.5.1.4.1.1.4.2)
@@ -236,10 +242,26 @@ def _load_siemens_dicom_xa(dataset):
     # is 1 as opposed to 3. 
     volume_localization = dataset[0x0018, 0x9126]
 
-    # TODO: In-plane rotation angle couldn't be found in the XA version! Flip angle is not the same!
-    in_plane_rot = 0
+    # Extract in-plane rotation angle from meas header as it is not parsed into DICOM headers
+    # Per testing, when in-plane rotation is 0, sSpecPara.sVoI.dInPlaneRot is simply missing!
+    rgx = r"sSpecPara\.sVoI\.dInPlaneRot\s*=\s*(-?[[0-9]*[.]?[0-9]*]{0,})\s*"
+    in_plane_rot_matches = re.findall(rgx, other_ds[0x0004, 0x00c0].value.decode("latin-1"))
+    if in_plane_rot_matches:
+        in_plane_rot = float(in_plane_rot_matches[0])
+    else:
+        in_plane_rot = 0
     normal_vector = numpy.array(volume_localization[0][0x0018, 0x9105].value)
+
+    # In the older DICOM, VOI position info is in CSA header, so the position is the same as TWIX. 
+    # In XA DICOM, it's not the same as TWIX. Per testing we can 'reverse' the Position by subtracting 
+    # with TablePosition.
+    # This, of course, assumes the TWIX is the correct one to reconstruct the voxel.
     pos_vector = numpy.array(volume_localization[0][0x0018, 0x9106].value)
+    table_position = numpy.array(
+        dataset[0x5200, 0x9230].value[0][0x0021,0x10fe][0][0x0021, 0x1059].value
+    )
+    pos_vector = pos_vector - table_position
+    
     voi_size = [volume_localization[2][0x0018, 0x9104].value,
                 volume_localization[1][0x0018, 0x9104].value,
                 volume_localization[0][0x0018, 0x9104].value]
