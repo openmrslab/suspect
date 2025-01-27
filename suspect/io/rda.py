@@ -25,7 +25,8 @@ rda_types = {
                 "StationName", "InstitutionName", "DeviceSerialNumber", "InstanceDate",
                 "InstanceTime", "InstanceComments", "SequenceName", "SequenceDescription",
                 "Nucleus", "TransmitCoil", "PatientSex", "HammingFilter", "FrequencyCorrection"],
-    "float_arrays": ["PositionVector", "RowVector", "ColumnVector"],
+    "float_arrays": ["PositionVector", "RowVector", "ColumnVector", "SlabOrientation",
+                     "MidSlabPosition", "SlabThickness"],
     "integer_arrays": ["CSIMatrixSize", "CSIMatrixSizeOfScan", "CSIGridShift"],
     "string_arrays": ["SoftwareVersion"],
     "dictionaries": ["TransmitRefAmplitude"]
@@ -60,13 +61,28 @@ def load_rda(filename):
                         value = float(value)
                     elif key in rda_types["integer_arrays"]:
                         value = int(value)
-                    index = int(index)
-                    # make sure there is a list in the header_dict, with enough entries
                     if not key in header_dict:
                         header_dict[key] = []
-                    while len(header_dict[key]) <= index:
-                        header_dict[key].append(0)
-                    header_dict[key][index] = value
+                    try:
+                        # 1D array
+                        index = int(index)
+                        while len(header_dict[key]) <= index:
+                            # Potentially we can simply append the value, but I think
+                            # we are anticipating if the index in the middle is missing
+                            header_dict[key].append(0)
+                        header_dict[key][index] = value
+                    except ValueError:
+                        # Hack: Handle 2d array by parsing the 2d index into tuple
+                        index = [int(x) for x in index.split(',')]
+                        
+                        # Initialise empty list for 1st indices
+                        while len(header_dict[key]) <= index[0]:
+                            header_dict[key].append([])
+                        while len(header_dict[key][index[0]]) <= index[1]:
+                            # Potentially we can simply append the value, but I think
+                            # we are anticipating if the index in the middle is missing
+                            header_dict[key][index[0]].append(0)
+                        header_dict[key][index[0]][index[1]] = value
             header_line = fin.readline().strip().decode('windows-1252')
         # now we can read the data
         data = fin.read()
@@ -92,16 +108,17 @@ def load_rda(filename):
             header_dict["VOIReadoutFOV"] = header_dict.pop("VOIReadoutVOV")
 
     # combine positional elements in the header
-    voi_size = (header_dict["VOIReadoutFOV"],
-                header_dict["VOIPhaseFOV"],
-                header_dict["VOIThickness"])
-    voi_center = (header_dict["VOIPositionSag"],
-                  header_dict["VOIPositionCor"],
-                  header_dict["VOIPositionTra"])
-    voxel_size = (header_dict["PixelSpacingCol"],
-                  header_dict["PixelSpacingRow"],
-                  header_dict["PixelSpacing3D"])
+    if "XA" in header_dict["SoftwareVersion"][0]:
+        voi_center = header_dict["MidSlabPosition"][0]
+        voxel_size = header_dict["SlabThickness"]
 
+    else:
+        voi_center = (header_dict["VOIPositionSag"],
+                      header_dict["VOIPositionCor"],
+                      header_dict["VOIPositionTra"])
+        voxel_size = (header_dict["PixelSpacingCol"],
+                      header_dict["PixelSpacingRow"],
+                      header_dict["PixelSpacing3D"])
     x_vector = numpy.array(header_dict["RowVector"])
     y_vector = numpy.array(header_dict["ColumnVector"])
 
@@ -109,7 +126,6 @@ def load_rda(filename):
 
     # put useful components from the header in the metadata
     metadata = {
-        "voi_size": voi_size,
         "position": voi_center,
         "voxel_size": voxel_size,
         "protocol": header_dict["ProtocolName"],
