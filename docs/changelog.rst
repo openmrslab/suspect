@@ -4,6 +4,12 @@
 Changelog
 =========
 
+* :release:`0.6.0 <13/09/24>`
+* :support:`181` Loader for XA RDA
+* :support:`178` Loader for XA DICOM
+* :support:`179` Use pip-review to install latest in new job
+* :bug:`177` Updated regex for normal and pos
+* :bug:`175` More general way to loop over dicom group
 * :release:`0.5.2 <13/09/24>`
 * :bug:`174` Use `pydicom.dcmread` instead of `pydicom.dicomio.readfile` for future proof
 * :release:`0.5.1 <08/08/24>`
