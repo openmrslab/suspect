@@ -4,6 +4,7 @@ import struct
 import numpy
 #import quaternion
 import re
+import io
 
 # This file largely relies on information from Siemens regarding the structure
 # of the TWIX file formats. Most of the parameters that are read use the same
@@ -97,10 +98,14 @@ def get_meta_regex(regex_list, header_string, convert=1, default=None):
 
     Parameters
     ----------
-    regex_list : List of regex string
-    header_string : TWIX header string
-    convert : Unit convertion, if value is number. Defaults to 1 (means no convertion)
-    default : Default value if match found, but value is empty. Defaults to None.
+    regex_list : list
+        List of regex string
+    header_string : string
+        TWIX header string
+    convert : int, optional
+        Unit convertion, if value is number. Defaults to 1 (means no convertion)
+    default
+        Default value if match found, but value is empty. Defaults to None.
 
     Returns
     -------
@@ -502,10 +507,24 @@ def load_twix_vd(fin, builder):
         # move the file pointer to the start of the next scan
         fin.seek(initial_position + DMA_length)
 
+def load_twix(filename, buffering=io.DEFAULT_BUFFER_SIZE):
+    """
+    Load TWIX data. 
 
-def load_twix(filename):
-    with open(filename, 'rb') as fin:
+    Parameters
+    ----------
+    filename : str
+        File path of TWIX file
+    buffering : int, optional
+        Buffer size to be passed to `open()` function. Defaults to 
+        `io.DEFAULT_BUFFER_SIZE`
 
+    Returns
+    -------
+    suspect.MRSData
+
+    """
+    with open(filename, 'rb', buffering=buffering) as fin:
         # we can tell the type of file from the first two uints in the header
         first_uint, second_uint = struct.unpack("II", fin.read(8))
 
