@@ -39,6 +39,10 @@ def test_veriofile():
          [0, 0, 0, 1]]
     ))
 
+    # Test loading via file-like object and ensure same result
+    with open("tests/test_data/siemens/twix_vd.dat", "rb") as f:
+        data_from_binary_stream = suspect.io.load_twix(f)
+        assert numpy.all(data == data_from_binary_stream)
 #def test_skyra():
 #    data = suspect.io.load_twix("tests/test_data/twix_vd_csi.dat")
 #    assert data.np == 2048

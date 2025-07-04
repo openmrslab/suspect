@@ -1,3 +1,4 @@
+from contextlib import contextmanager
 from suspect import MRSData, transformation_matrix, rotation_matrix
 
 import struct
@@ -5,6 +6,7 @@ import numpy
 #import quaternion
 import re
 import io
+import os
 
 # This file largely relies on information from Siemens regarding the structure
 # of the TWIX file formats. Most of the parameters that are read use the same
@@ -507,24 +509,33 @@ def load_twix_vd(fin, builder):
         # move the file pointer to the start of the next scan
         fin.seek(initial_position + DMA_length)
 
-def load_twix(filename, buffering=io.DEFAULT_BUFFER_SIZE):
+def load_twix(source_file, buffering=io.DEFAULT_BUFFER_SIZE):
     """
     Load TWIX data. 
 
     Parameters
     ----------
-    filename : str
+    source_file : str or file-like
         File path of TWIX file
-    buffering : int, optional
-        Buffer size to be passed to `open()` function. Defaults to 
-        `io.DEFAULT_BUFFER_SIZE`
 
     Returns
     -------
     suspect.MRSData
 
     """
-    with open(filename, 'rb', buffering=buffering) as fin:
+    @contextmanager
+    def open_if_filepath(file_or_path, mode='r', **kwargs):
+        """Context manager to open a file if argument is string"""
+        if isinstance(file_or_path, (str, os.PathLike)):
+            f = open(file_or_path, mode, **kwargs)
+            try:
+                yield f
+            finally:
+                f.close()
+        else:
+            yield file_or_path
+
+    with open_if_filepath(source_file, 'rb') as fin:
         # we can tell the type of file from the first two uints in the header
         first_uint, second_uint = struct.unpack("II", fin.read(8))
 
