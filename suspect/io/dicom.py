@@ -56,7 +56,7 @@ def load_dicom(filename):
 
     # versions of pydicom >2.0.0 require explicit conversion from bytestring to list
     if type(dataset[0x5600, 0x0020].value) == bytes:
-        data_iter = iter(np.fromstring(dataset[0x5600, 0x0020].value, dtype=np.float32))
+        data_iter = iter(np.frombuffer(dataset[0x5600, 0x0020].value, dtype=np.float32))
 
     elif type(dataset[0x5600, 0x0020].value) == list:
         data_iter = iter(dataset[0x5600, 0x0020].value)
