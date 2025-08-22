@@ -4,7 +4,10 @@
 Changelog
 =========
 
-* :release:`0.6.0 <13/09/24>`
+* :release:`0.6.1 <22/08/25>`
+* :support:`184` Handle both enhanced and interoperability tags Siemens DICOM XA
+* :feature:`183` `suspect.io.load_twix()` to accept binary stream input
+* :release:`0.6.0 <28/01/25>`
 * :support:`181` Loader for XA RDA
 * :support:`178` Loader for XA DICOM
 * :support:`179` Use pip-review to install latest in new job
