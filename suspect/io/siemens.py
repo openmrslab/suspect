@@ -233,7 +233,31 @@ def _load_siemens_dicom_xa(dataset, other_ds):
     # Newer XA version uses combination of DICOM Magnetic Resonance Spectroscopy format (SOP 1.2.840.10008.5.1.4.1.1.4.2)
     # and a new Siemens-specific DICOM tags for some metadata (not CSA header anymore)
     mrsdata = load_dicom(dataset.filename)
-    dt = int(dataset[0x5200, 0x9230].value[0][0x0021,0x10fe][0][0x0021, 0x1042].value) * 1e-9
+
+    possible_inner_tags = [
+        {
+            "inner_tag": (0x0021,0x10fe),
+            "dt": (0x0021,0x1042),
+            "table_position": (0x0021, 0x1059)
+        },
+        {
+            "inner_tag": (0x0021,0x11fe),
+            "dt": (0x0021,0x1142),
+            "table_position": (0x0021, 0x1159)
+        }
+    ]
+    used_inner_tag_idx = None
+    for i, tag_dict in enumerate(possible_inner_tags):
+        if dataset[0x5200, 0x9230].value[0].get(tag_dict["inner_tag"]):
+            used_inner_tag_idx = i
+            spectro_private_section = dataset[0x5200, 0x9230].value[0].get(
+                tag_dict["inner_tag"]
+            )[0]
+            break
+
+    dt = spectro_private_section[possible_inner_tags[used_inner_tag_idx]["dt"]].value  
+    dt = int(dt) * 1e-9
+
     assert dt == mrsdata.dt, "Recorded dwell time is different from 1/sw."
     te = dataset[0x5200, 0x9229][0][0x0018, 0x9114][0][0x0018, 0x9082].value
     tr = float(dataset[0x5200, 0x9229][0][0x0018, 0x9112][0][0x0018, 0x0080].value)
@@ -245,7 +269,14 @@ def _load_siemens_dicom_xa(dataset, other_ds):
     # Extract in-plane rotation angle from meas header as it is not parsed into DICOM headers
     # Per testing, when in-plane rotation is 0, sSpecPara.sVoI.dInPlaneRot is simply missing!
     rgx = r"sSpecPara\.sVoI\.dInPlaneRot\s*=\s*(-?[[0-9]*[.]?[0-9]*]{0,})\s*"
-    in_plane_rot_matches = re.findall(rgx, other_ds[0x0004, 0x00c0].value.decode("latin-1"))
+
+    meas_binary_possible_tags = [(0x0004, 0x00c0), (0x0004, 0x00bc)]
+
+    for tag in meas_binary_possible_tags:
+        if other_ds.get(tag):
+            in_plane_rot_matches = re.findall(
+                rgx, other_ds.get(tag).value.decode("latin-1")
+            )
     if in_plane_rot_matches:
         in_plane_rot = float(in_plane_rot_matches[0])
     else:
@@ -258,7 +289,9 @@ def _load_siemens_dicom_xa(dataset, other_ds):
     # This, of course, assumes the TWIX is the correct one to reconstruct the voxel.
     pos_vector = numpy.array(volume_localization[0][0x0018, 0x9106].value)
     table_position = numpy.array(
-        dataset[0x5200, 0x9230].value[0][0x0021,0x10fe][0][0x0021, 0x1059].value
+        spectro_private_section[
+            possible_inner_tags[used_inner_tag_idx]["table_position"]
+        ].value
     )
     pos_vector = pos_vector - table_position
     
@@ -272,8 +305,6 @@ def _load_siemens_dicom_xa(dataset, other_ds):
         x_vector = numpy.array([-1, 0, 0])
     orthogonal_x = x_vector - numpy.dot(x_vector, normal_vector) * normal_vector
     orthonormal_x = orthogonal_x / numpy.linalg.norm(orthogonal_x)
-    #rotation_quaternion = quaternion.from_rotation_vector(in_plane_rot * normal_vector)
-    #row_vector2 = quaternion.rotate_vectors(rotation_quaternion, orthonormal_x)
     rot_matrix = rotation_matrix(in_plane_rot, normal_vector)
     row_vector = numpy.dot(rot_matrix, orthonormal_x)
     column_vector = numpy.cross(row_vector, normal_vector)
