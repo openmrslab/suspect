@@ -1,8 +1,10 @@
-import numpy
-import os
 import itertools
-import parsley
+import os
+import re
 import warnings
+
+import numpy
+import parsley
 
 basis_grammar = r"""
 namelist = '$' name:n pairs:p ws -> (n, dict(p))
@@ -166,6 +168,13 @@ def write_all_files(filename, data, wref_data=None, params=None, filbas="/home/s
 
 
 def read_coord(filename):
+
+    # This regex pattern finds any sequence that is an integer or a float.
+    # -?      matches an optional negative sign.
+    # \d+     matches one or more digits.
+    # \.?\d* matches an optional decimal point followed by zero or more digits.
+    number_pattern = r'-?\d+\.?\d*'
+
     with open(filename, 'rt') as fin:
         coord_lines = fin.readlines()
 
@@ -212,12 +221,13 @@ def read_coord(filename):
     # misc_output_info_line = metabolite_table_info_line + metabolite_table_line_count + 1
     misc_output_line_count = int(coord_lines[misc_output_info_line].split()[0])
     misc_output_lines = coord_lines[(misc_output_info_line + 1):(misc_output_info_line + misc_output_line_count + 1)]
+    [phase0, phase1] = map(float, re.findall(number_pattern, misc_output_lines[2]))
     misc_output = {
         "fwhm": float(misc_output_lines[0].split()[2]),
         "snr": float(misc_output_lines[0].split()[6]),
         "frequency_shift": float(misc_output_lines[1].split("=")[1].split()[0]),
-        "phase0": float(misc_output_lines[2].split()[1]),
-        "phase1": float(misc_output_lines[2].split()[3])
+        "phase0": phase0,
+        "phase1": phase1
     }
 
     # get the ppm axis
