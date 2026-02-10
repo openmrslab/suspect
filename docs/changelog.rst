@@ -4,6 +4,8 @@
 Changelog
 =========
 
+* :release:`0.6.2 <10/02/26>`
+* :support:`186` Numpy 2.4.0 requires explicit ndarray to scalar conversion
 * :release:`0.6.1 <22/08/25>`
 * :support:`184` Handle both enhanced and interoperability tags Siemens DICOM XA
 * :feature:`183` `suspect.io.load_twix()` to accept binary stream input
