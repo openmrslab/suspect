@@ -81,10 +81,10 @@ def hsvd(data, rank, L=None):
     components = []
     for i in range(rank):
         components.append({
-            "amplitude": float(abs(beta[i])),
-            "phase": float(numpy.angle(beta[i])),
+            "amplitude": float(abs(beta[i].item())),
+            "phase": float(numpy.angle(beta[i].item())),
             "fwhm": damping_coeffs[i] / numpy.pi,
-            "frequency": frequency_coeffs[i]
+            "frequency": frequency_coeffs[i].item()
         })
 
     return components
