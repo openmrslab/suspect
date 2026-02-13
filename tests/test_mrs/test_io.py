@@ -1,14 +1,14 @@
-import suspect
-import suspect.io.tarquin
-import pytest
-import unittest.mock
 import builtins
-from unittest.mock import patch
 import os
-
-from suspect.io._common import complex_array_from_iter
+import unittest.mock
+from math import isclose
+from unittest.mock import patch
 
 import numpy
+
+import suspect
+import suspect.io.tarquin
+from suspect.io._common import complex_array_from_iter
 
 
 def test_complex_from_iter():
@@ -76,10 +76,14 @@ def test_lcmodel_all_files():
 def test_lcmodel_read_coord():
     fitting_result = suspect.io.lcmodel.read_coord("tests/test_data/lcmodel/svs_97.COORD")
     assert len(fitting_result["metabolite_fits"]) == 41
+    assert isclose(fitting_result["misc_output"]["phase0"], 21.0)
+    assert isclose(fitting_result["misc_output"]["phase1"], 12.2)
 
 
 def test_lcmodel_read_liver_coord():
     fitting_result = suspect.io.lcmodel.read_coord("tests/test_data/lcmodel/liver.COORD")
+    assert isclose(fitting_result["misc_output"]["phase0"], -136.0)
+    assert isclose(fitting_result["misc_output"]["phase1"], 0.3)
 
 
 def test_lcmodel_read_basis():
